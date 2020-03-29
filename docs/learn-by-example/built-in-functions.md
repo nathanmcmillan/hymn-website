@@ -1,0 +1,29 @@
+# Built In Functions
+
+- echo
+- println
+- printf
+- sprintf
+- sprintln
+- format
+- push
+- len
+- cap
+- str
+- integer
+- i8
+- i16
+- i32
+- i64
+- uinteger
+- u8
+- u16
+- u32
+- u64
+- floating
+- f32
+- f64
+- cat
+- system
+- exit
+- chdir
