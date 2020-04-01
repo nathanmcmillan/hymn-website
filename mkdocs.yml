@@ -6,16 +6,17 @@ nav:
     - Home: index.md
     - About: about.md
     - Learn By Example:
-        - Introduction: learn-by-example/introduction.md
-        - Hello World: learn-by-example/hello_world.md
-        - Primitives: learn-by-example/primitives.md
-        - Conditionals: learn-by-example/conditionals.md
-        - Classes: learn-by-example/classes.md
-        - Enums: learn-by-example/enums.md
-        - Interfaces: learn-by-example/interfaces.md
-        - Matching: learn-by-example/matching.md
-        - Built In Functions: learn-by-example/built-in-functions.md
-        - Casting: learn-by-example/casting.md
+        - Introduction: examples/introduction.md
+        - Hello World: examples/hello_world.md
+        - Conditionals: examples/conditionals.md
+        - Classes: examples/classes.md
+        - Enums: examples/enums.md
+        - Interfaces: examples/interfaces.md
+        - Matching: examples/matching.md
+        - Try + Catch: examples/try_catch.md
     - Book:
         - Introduction: book/introduction.md
         - Getting Started: book/getting_started.md
+        - Primitives: book/primitives.md
+        - Casting: book/casting.md
+        - Built In Functions: book/built-in-functions.md

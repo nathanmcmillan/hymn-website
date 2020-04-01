@@ -10,8 +10,8 @@ enum snake
 def main
     s = snake.python
     match s
-        python echo("I am a python!")
-        viper  echo("I am a viper!")
+        python: echo("I am a python!")
+        viper:  echo("I am a viper!")
         cobra
             echo("I am a cobra!")
             echo("I have venom!")
@@ -37,6 +37,6 @@ def main
     match c
         '0' | '1' | '2' | '3' |
         '4' | '5' | '6' | '7' |
-        '8' | '9' echo("I am a digit!")
-        _ pass
+        '8' | '9': echo("I am a digit!")
+        _: pass
 ```
