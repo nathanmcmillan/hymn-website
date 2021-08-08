@@ -1,0 +1,22 @@
+function fizzbuzz(n)
+  const f = "Fizz"
+  const b = "Buzz"
+
+  if n == 0
+    return
+  end
+
+  fizzbuzz(n - 1)
+
+  if n % 15 == 0
+    print f + b
+  elif n % 5 == 0
+    print b
+  elif n % 3 == 0
+    print f
+  else
+    print n
+  end
+end
+
+fizzbuzz(100)

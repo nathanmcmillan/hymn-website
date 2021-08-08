@@ -1,0 +1,66 @@
+:root {
+  --header-color: rgb(255, 255, 255);
+  --header-background: rgb(0, 0, 0);
+  --nav-background: rgb(100, 100, 100);
+  --main-background: rgb(50, 50, 50);
+  --code-background: rgb(250, 248, 245);
+  --button-color: rgb(73, 66, 55);
+  --button-background: rgb(255, 153, 0);
+  --button-hover: rgb(236, 172, 74);
+}
+
+comment {
+  color: white;
+}
+
+include {
+  color: rgb(133, 153, 0);
+}
+
+include_name {
+  color: rgb(133, 153, 0);
+}
+
+macro {
+  color: rgb(133, 153, 0);
+}
+
+macro_name {
+  color: rgb(133, 153, 0);
+}
+
+type {
+  color: rgb(220, 50, 47);
+}
+
+call {
+  color: rgb(133, 153, 0);
+}
+
+control {
+  color: rgb(133, 153, 0);
+}
+
+struct {
+  color: rgb(133, 153, 0);
+}
+
+pointer {
+  color: rgb(133, 153, 0);
+}
+
+this {
+  color: white;
+}
+
+number {
+  color: rgb(42, 161, 152);
+}
+
+function {
+  color: rgb(38, 139, 210);
+}
+
+null {
+  color: rgb(181, 137, 0);
+}

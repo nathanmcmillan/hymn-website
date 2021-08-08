@@ -7,18 +7,7 @@
   </head>
 
   <body>
-    <header>
-      <nav>
-        <div><a href="index.html">Hymn</a></div>
-        <ul>
-          <li><a href="learn.html">Learn</a></li>
-          <li><a href="play.html">Play</a></li>
-          <li><a href="download.html">Download</a></li>
-          <li><a href="documentation.html">Documentation</a></li>
-          <li><a href="https://github.com/nathanmcmillan/hymn-lang">Source</a></li>
-        </ul>
-      </nav>
-    </header>
+    <header></header>
     <main id="index">
       <h1>Pleaceful scripting.</h1>
       <article id="home">
@@ -49,26 +38,7 @@
           </ul>
         </section>
         <aside>
-          <pre><code><function>function</function> new_node(value)
-  <control>return</control> { value: value, next: <null>none</null> }
-<control>end</control>
-
-<function>function</function> node_add(list, value)
-  <type>let</type> node = list
-  <control>while</control> true
-    <control>if</control> node.next == <null>none</null> <control>break</control> <control>end</control>
-    node = node.next
-  <control>end</control>
-  node.next = new_node(value)
-<control>end</control>
-
-<type>const</type> list = new_node(<string>&quot;hello&quot;</string>)
-node_add(list, <string>&quot;world&quot;</string>)
-
-iterate i, value in list
-  <call>print</call> value
-<control>end</control>
-</code></pre>
+          <pre>link_list.hm</pre>
         </aside>
       </article>
       <article id="foss">
@@ -77,13 +47,6 @@ iterate i, value in list
         <a href="https://github.com/nathanmcmillan/hymn-lang">Source Code</a>
       </article>
     </main>
-    <footer>
-      <nav>
-        <ul>
-          <li><a href="https://github.com/nathanmcmillan/hymn-lang">Source Code</a></li>
-          <li><a href="/dark/index.html">Dark Theme</a></li>
-        </ul>
-      </nav>
-    </footer>
+    <footer></footer>
   </body>
 </html>
