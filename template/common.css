@@ -76,23 +76,20 @@ footer {
 footer nav {
   max-width: var(--width);
   margin: auto;
+  text-align: center;
 }
 
-footer nav ul {
-  display: inline-flex;
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
+footer nav p {
+  padding: 2rem;
+  color: var(--nav-background);
 }
 
-footer nav ul li:hover {
-  background-color: var(--nav-background);
-}
-
-footer nav ul li a {
-  display: block;
-  padding: 1rem;
+footer nav p a {
   color: var(--header-color);
+}
+
+footer nav p a:hover {
+  text-decoration: underline;
 }
 
 pre {

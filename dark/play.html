@@ -1,34 +1,46 @@
+<!-- Any copyright is dedicated to the Public Domain.
+     https://creativecommons.org/publicdomain/zero/1.0/ -->
+
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Play</title>
+    <title>Hymn</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" type="text/css" href="/css/dark.css" />
+    <link rel="stylesheet" type="text/css" href="/css/play.css" />
   </head>
-
   <body>
-    <header>
-      <nav>
-        <div><a href="/darkindex.html">Hymn</a></div>
-        <ul>
-          <li><a href="/darklearn.html">Learn</a></li>
-          <li><a href="/darkplay.html">Play</a></li>
-          <li><a href="/darkdownload.html">Download</a></li>
-          <li><a href="/darkdocumentation.html">Documentation</a></li>
-          <li><a href="https://github.com/nathanmcmillan/hymn-lang">Source</a></li>
-        </ul>
-      </nav>
-    </header>
-    <main>
-      <section>Content</section>
-    </main>
-    <footer>
-      <nav>
-        <ul>
-          <li><a href="https://github.com/nathanmcmillan/hymn-lang">Source Code</a></li>
-          <li><a href="/play.html">Dark Theme</a></li>
-        </ul>
-      </nav>
-    </footer>
+    <script src="hymn.js"></script>
+    <section id="top"><button onclick="run()">Run</button></section>
+    <section id="play">
+      <div id="code">
+        <textarea id="source" autocorrect="off" autocomplete="off" autocapitalize="none" spellcheck="false">print "hello world!"</textarea>
+      </div>
+      <p id="out"></p>
+    </section>
+    <script>
+      const source = localStorage.getItem('source')
+      if (source) {
+        document.getElementById('source').value = source
+      }
+      function run() {
+        const source = document.getElementById('source').value
+        localStorage.setItem('source', source)
+        const out = document.getElementById('out')
+        out.textContent = ''
+        const hymn = new Hymn()
+        hymn.print = (text) => {
+          out.textContent += text + '\r\n'
+        }
+        try {
+          const error = hymnInterpret(hymn, source)
+          if (error !== null) {
+            out.textContent += error
+          }
+        } catch (exception) {
+          out.textContent += exception
+          console.error(exception)
+        }
+      }
+    </script>
   </body>
 </html>
