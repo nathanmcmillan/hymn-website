@@ -24,6 +24,11 @@ const HYMN_VALUE_FUNC = 8
 const HYMN_VALUE_FUNC_NATIVE = 9
 const HYMN_VALUE_POINTER = 10
 
+const node = typeof window === 'undefined'
+
+const node_fs = node ? require('fs') : null
+const node_path = node ? require('path') : null
+
 class HymnValue {
   constructor(is, value) {
     this.is = is
@@ -86,7 +91,7 @@ class HymnFrame {
   }
 }
 
-function print(text) {
+function printOut(text) {
   console.log(text)
 }
 
@@ -100,7 +105,7 @@ class Hymn {
     this.paths = []
     this.imports = new Map()
     this.error = null
-    this.print = print
+    this.print = printOut
   }
 }
 
@@ -367,6 +372,7 @@ rules[TOKEN_BIT_RIGHT_SHIFT] = new Rule(null, compileBinary, PRECEDENCE_BITS)
 rules[TOKEN_BIT_XOR] = new Rule(null, compileBinary, PRECEDENCE_BITS)
 rules[TOKEN_BREAK] = new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_CASE] = new Rule(null, null, PRECEDENCE_NONE)
+rules[TOKEN_COLON] = new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_CLEAR] = new Rule(clearExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_COMMA] = new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_CONST] = new Rule(null, null, PRECEDENCE_NONE)
@@ -617,64 +623,6 @@ function tokenName(token) {
   }
 }
 
-function valueToString(value, quote) {
-  switch (value.is) {
-    case HYMN_VALUE_UNDEFINED:
-      return STRING_UNDEFINED
-    case HYMN_VALUE_NONE:
-      return STRING_NONE
-    case HYMN_VALUE_BOOL:
-      return value.value ? STRING_TRUE : STRING_FALSE
-    case HYMN_VALUE_INTEGER:
-    case HYMN_VALUE_FLOAT:
-      return value.value
-    case HYMN_VALUE_STRING:
-      if (quote) {
-        return '"' + value.value + '"'
-      }
-      return value.value
-    case HYMN_VALUE_ARRAY: {
-      const array = value.value
-      let more = false
-      let print = '['
-      for (const item of array) {
-        if (more) {
-          print += ', '
-        }
-        more = true
-        print += valueToString(item, true)
-      }
-      print += ']'
-      return print
-    }
-    case HYMN_VALUE_TABLE: {
-      const table = value.value
-      const keys = Array.from(table.keys())
-      keys.sort()
-      let more = false
-      let print = '{ '
-      for (const key of keys) {
-        if (more) {
-          print += ', '
-        }
-        more = true
-        print += key + ': ' + valueToString(table.get(key), true)
-      }
-      print += ' }'
-      return print
-    }
-    case HYMN_VALUE_FUNC:
-    case HYMN_VALUE_FUNC_NATIVE:
-      return value.value.name
-    case HYMN_VALUE_POINTER:
-      return '[Pointer ' + value.value + ']'
-  }
-}
-
-function debugValueToString(value) {
-  return valueName(value.is) + ': ' + valueToString(value, false)
-}
-
 function sourceSubstring(compiler, len, start) {
   return compiler.source.substring(start, start + len)
 }
@@ -728,14 +676,6 @@ function newFunction(script) {
 
 function newNativeFunction(name, func) {
   return new HymnNativeFunction(name, func)
-}
-
-function newArray() {
-  return []
-}
-
-function newTable() {
-  return new Map()
 }
 
 function isUndefined(value) {
@@ -995,13 +935,6 @@ function advance(compiler) {
   while (true) {
     let c = nextChar(compiler)
     switch (c) {
-      case '#':
-        c = peekChar(compiler)
-        while (c !== '\n' && c !== '\0') {
-          nextChar(compiler)
-          c = peekChar(compiler)
-        }
-        continue
       case ' ':
       case '\t':
       case '\r':
@@ -1012,6 +945,20 @@ function advance(compiler) {
           c = peekChar(compiler)
         }
         continue
+      case '-': {
+        if (peekChar(compiler) === '-') {
+          nextChar(compiler)
+          c = peekChar(compiler)
+          while (c !== '\n' && c !== '\0') {
+            nextChar(compiler)
+            c = peekChar(compiler)
+          }
+          continue
+        } else {
+          token(compiler, TOKEN_SUBTRACT)
+          return
+        }
+      }
       case '!':
         if (peekChar(compiler) === '=') {
           nextChar(compiler)
@@ -1064,9 +1011,6 @@ function advance(compiler) {
         return
       case '+':
         token(compiler, TOKEN_ADD)
-        return
-      case '-':
-        token(compiler, TOKEN_SUBTRACT)
         return
       case '%':
         token(compiler, TOKEN_MODULO)
@@ -1170,14 +1114,14 @@ function advance(compiler) {
           pushIdentToken(compiler, start, end)
           return
         } else {
-          compileError(compiler, compiler.current, 'Unknown Character: `' + c + '`')
+          compileError(compiler, compiler.current, 'Unknown character: `' + c + '`')
         }
       }
     }
   }
 }
 
-function valueMatch(a, b) {
+function matchValues(a, b) {
   if (a.is !== b.is) {
     return false
   }
@@ -1229,6 +1173,24 @@ function byteCodeAddConstant(code, value) {
   return code.constants.length - 1
 }
 
+function arrayIndexOf(array, input) {
+  for (let i = 0; i < array.length; i++) {
+    if (matchValues(input, array[i])) {
+      return i
+    }
+  }
+  return -1
+}
+
+function tableKeyOf(table, input) {
+  for (const [key, value] of table) {
+    if (matchValues(input, value)) {
+      return newString(key)
+    }
+  }
+  return newNone()
+}
+
 function writeOp(code, byte, row) {
   const count = code.count
   const size = code.instructions.length
@@ -1258,10 +1220,6 @@ function writeConstant(compiler, value, row) {
   }
   writeTwoOp(current(compiler), OP_CONSTANT, constant, row)
   return constant
-}
-
-function hymnSetGlobal(hymn, name, value) {
-  hymn.globals.set(name, value)
 }
 
 function check(compiler, type) {
@@ -1620,9 +1578,9 @@ function compileDot(compiler, assign) {
   const name = identConstant(compiler, compiler.previous)
   if (assign && match(compiler, TOKEN_ASSIGN)) {
     expression(compiler)
-    emitTwo(compiler, OP_SET_PROPERTY, compiler)
+    emitTwo(compiler, OP_SET_PROPERTY, name)
   } else {
-    emitTwo(compiler, OP_GET_PROPERTY, compiler)
+    emitTwo(compiler, OP_GET_PROPERTY, name)
   }
 }
 
@@ -1980,81 +1938,163 @@ function iterateStatement(compiler) {
 
   // parameters
 
-  let index
+  let id
 
   let value = compiler.scope.localCount
-  variable(compiler, true, 'Expected parameter name.')
+  variable(compiler, true, 'Iterator: Missing parameter.')
   localInitialize(compiler)
 
   if (match(compiler, TOKEN_COMMA)) {
-    index = value
-    writeConstant(compiler, newInt(0), compiler.previous.row)
+    id = value
+    emit(compiler, OP_NONE)
 
     value = compiler.scope.localCount
-    variable(compiler, true, 'Expected second parameter name.')
+    variable(compiler, true, 'Iterator: Missing second parameter.')
     localInitialize(compiler)
     emit(compiler, OP_NONE)
   } else {
     emit(compiler, OP_NONE)
 
-    index = pushHiddenLocal(compiler)
-    writeConstant(compiler, newInt(0), compiler.previous.row)
+    id = pushHiddenLocal(compiler)
+    emit(compiler, OP_NONE)
   }
 
-  consume(compiler, TOKEN_IN, "Expected 'in' after iterate parameters.")
+  consume(compiler, TOKEN_IN, "Iterator: Missing 'in' after parameters.")
 
   // setup
 
-  const local = pushHiddenLocal(compiler)
+  const object = pushHiddenLocal(compiler)
   expression(compiler)
 
-  const len = pushHiddenLocal(compiler)
-  emitTwo(compiler, OP_GET_LOCAL, local)
+  const keys = pushHiddenLocal(compiler)
+  emit(compiler, OP_NONE)
+
+  const length = pushHiddenLocal(compiler)
+  emit(compiler, OP_NONE)
+
+  const index = pushHiddenLocal(compiler)
+  writeConstant(compiler, newInt(0), compiler.previous.row)
+
+  // type check
+
+  const type = pushHiddenLocal(compiler)
+  emitTwo(compiler, OP_GET_LOCAL, object)
+  emit(compiler, OP_TYPE)
+
+  emitTwo(compiler, OP_GET_LOCAL, type)
+  writeConstant(compiler, newString(STRING_TABLE), compiler.previous.row)
+  emit(compiler, OP_EQUAL)
+
+  const jump_not_table = emitJump(compiler, OP_JUMP_IF_FALSE)
+
+  // type is table
+
+  emit(compiler, OP_POP)
+
+  emitTwo(compiler, OP_GET_LOCAL, object)
+  emit(compiler, OP_KEYS)
+  emitTwo(compiler, OP_SET_LOCAL, keys)
   emit(compiler, OP_LEN)
+  emitTwo(compiler, OP_SET_LOCAL, length)
+  emit(compiler, OP_POP)
+
+  const jumpTableEnd = emitJump(compiler, OP_JUMP)
+
+  patchJump(compiler, jump_not_table)
+
+  emit(compiler, OP_POP)
+
+  emitTwo(compiler, OP_GET_LOCAL, type)
+  writeConstant(compiler, newString(STRING_ARRAY), compiler.previous.row)
+  emit(compiler, OP_EQUAL)
+
+  const jumpNotArray = emitJump(compiler, OP_JUMP_IF_FALSE)
+
+  // type is array
+
+  emit(compiler, OP_POP)
+  emitTwo(compiler, OP_GET_LOCAL, object)
+  emit(compiler, OP_LEN)
+  emitTwo(compiler, OP_SET_LOCAL, length)
+  emit(compiler, OP_POP)
+
+  const jump_array_end = emitJump(compiler, OP_JUMP)
+
+  // unexpected type
+
+  patchJump(compiler, jumpNotArray)
+
+  emit(compiler, OP_POP)
+  writeConstant(compiler, newString('Iterator: Expected `Array` or `Table`'), compiler.previous.row)
+  emit(compiler, OP_THROW)
+
+  patchJump(compiler, jumpTableEnd)
+  patchJump(compiler, jump_array_end)
 
   // compare
 
   const compare = current(compiler).count
 
-  const loop = new LoopList()
-  loop.start = -1
-  loop.depth = compiler.scope.depth + 1
-  loop.next = compiler.loop
-  compiler.loop = loop
-
   emitTwo(compiler, OP_GET_LOCAL, index)
-  emitTwo(compiler, OP_GET_LOCAL, len)
+  emitTwo(compiler, OP_GET_LOCAL, length)
   emit(compiler, OP_LESS)
 
   const jump = emitJump(compiler, OP_JUMP_IF_FALSE)
   emit(compiler, OP_POP)
 
-  // update
-
-  emitTwo(compiler, OP_GET_LOCAL, local)
-  emitTwo(compiler, OP_GET_LOCAL, index)
-  emit(compiler, OP_GET_DYNAMIC)
-
-  emitTwo(compiler, OP_SET_LOCAL, value)
-  emit(compiler, OP_POP)
-
-  // inside
-
-  block(compiler)
-
   // increment
 
-  patchIteratorJumpList(compiler)
+  const body = emitJump(compiler, OP_JUMP)
+  const increment = current(compiler).count
+
+  const loop = new LoopList()
+  loop.start = increment
+  loop.depth = compiler.scope.depth + 1
+  loop.next = compiler.loop
+  compiler.loop = loop
 
   emitTwo(compiler, OP_GET_LOCAL, index)
   writeConstant(compiler, newInt(1), compiler.previous.row)
   emit(compiler, OP_ADD)
   emitTwo(compiler, OP_SET_LOCAL, index)
+
+  emit(compiler, OP_POP)
+  emitLoop(compiler, compare)
+
+  // body
+
+  patchJump(compiler, body)
+
+  emitTwo(compiler, OP_GET_LOCAL, object)
+
+  emitTwo(compiler, OP_GET_LOCAL, keys)
+  emit(compiler, OP_NONE)
+  emit(compiler, OP_EQUAL)
+
+  const jumpNoKeys = emitJump(compiler, OP_JUMP_IF_FALSE)
+
+  emit(compiler, OP_POP)
+  emitTwo(compiler, OP_GET_LOCAL, index)
+
+  const jumpNoKeysEnd = emitJump(compiler, OP_JUMP)
+
+  patchJump(compiler, jumpNoKeys)
+
+  emit(compiler, OP_POP)
+  emitTwo(compiler, OP_GET_LOCAL, keys)
+  emitTwo(compiler, OP_GET_LOCAL, index)
+  emit(compiler, OP_GET_DYNAMIC)
+
+  patchJump(compiler, jumpNoKeysEnd)
+
+  emitTwo(compiler, OP_SET_LOCAL, id)
+  emit(compiler, OP_GET_DYNAMIC)
+
+  emitTwo(compiler, OP_SET_LOCAL, value)
   emit(compiler, OP_POP)
 
-  // next
-
-  emitLoop(compiler, compare)
+  block(compiler)
+  emitLoop(compiler, increment)
 
   // end
 
@@ -2066,7 +2106,7 @@ function iterateStatement(compiler) {
   patchJumpList(compiler)
   endScope(compiler)
 
-  consume(compiler, TOKEN_END, "Expected 'end'.")
+  consume(compiler, TOKEN_END, "Iterator: Missing 'end'.")
 }
 
 function forStatement(compiler) {
@@ -2436,6 +2476,98 @@ function compile(hymn, script, source) {
   return { func: func, error: compiler.error }
 }
 
+function valueToStringRecursive(value, set, quote) {
+  switch (value.is) {
+    case HYMN_VALUE_UNDEFINED:
+      return STRING_UNDEFINED
+    case HYMN_VALUE_NONE:
+      return STRING_NONE
+    case HYMN_VALUE_BOOL:
+      return value.value ? STRING_TRUE : STRING_FALSE
+    case HYMN_VALUE_INTEGER:
+    case HYMN_VALUE_FLOAT:
+      return value.value
+    case HYMN_VALUE_STRING:
+      if (quote) {
+        return '"' + value.value + '"'
+      }
+      return value.value
+    case HYMN_VALUE_ARRAY: {
+      const array = value.value
+      if (!array || array.length === 0) {
+        return '[]'
+      }
+      if (set === null) {
+        set = new Set()
+      } else if (set.has(array)) {
+        return '[..]'
+      }
+      set.add(array)
+      let print = '['
+      for (let i = 0; i < array.length; i++) {
+        const item = array[i]
+        if (i !== 0) {
+          print += ', '
+        }
+        print += valueToStringRecursive(item, set, true)
+      }
+      print += ']'
+      return print
+    }
+    case HYMN_VALUE_TABLE: {
+      const table = value.value
+      if (!table || table.size === 0) {
+        return '{}'
+      }
+      if (set === null) {
+        set = new Set()
+      } else if (set.has(table)) {
+        return '{ .. }'
+      }
+      set.add(table)
+      const keys = Array.from(table.keys())
+      keys.sort()
+      let print = '{ '
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i]
+        const item = table.get(key)
+        if (i !== 0) {
+          print += ', '
+        }
+        print += key + ': ' + valueToStringRecursive(item, set, true)
+      }
+      print += ' }'
+      return print
+    }
+    case HYMN_VALUE_FUNC: {
+      const func = value.value
+      if (func.name) {
+        return func.name
+      }
+      if (func.script) {
+        return func.script
+      }
+      return 'Script'
+    }
+    case HYMN_VALUE_FUNC_NATIVE:
+      return value.value.name
+    case HYMN_VALUE_POINTER:
+      return '' + value.value
+  }
+}
+
+function valueToString(value) {
+  return valueToStringRecursive(value, null, false)
+}
+
+function hymnConcat(a, b) {
+  return newString(valueToString(a) + valueToString(b))
+}
+
+function debugValueToString(value) {
+  return valueName(value.is) + ': ' + valueToString(value)
+}
+
 function hymnResetStack(hymn) {
   hymn.stackTop = 0
   hymn.frameCount = 0
@@ -2504,7 +2636,7 @@ function hymnException(hymn) {
     hymn.stackTop = frame.stack
     hymn.frameCount--
     if (hymn.frameCount === 0 || frame.func.name === null) {
-      hymn.error = valueToString(result, false)
+      hymn.error = valueToString(result)
       return null
     }
     hymnPush(hymn, result)
@@ -2668,7 +2800,7 @@ function readConstant(frame) {
   return frame.func.code.constants[readByte(frame)]
 }
 
-function hymnDo(hymn, source) {
+async function hymnDo(hymn, source) {
   const result = compile(hymn, null, source)
 
   const func = result.func
@@ -2683,7 +2815,7 @@ function hymnDo(hymn, source) {
   hymnPush(hymn, funcValue)
   hymnCall(hymn, func, 0)
 
-  error = hymnRun(hymn)
+  error = await hymnRun(hymn)
   if (error) {
     return hymnThrowExistingError(hymn, error)
   }
@@ -2691,8 +2823,161 @@ function hymnDo(hymn, source) {
   return currentFrame(hymn)
 }
 
-function hymnImport(hymn, file) {
-  throw 'Import not implemented'
+function httpPathParent(path) {
+  if (path.length < 2) {
+    return path
+  }
+  let i = path.length - 2
+  while (true) {
+    if (i === 0) break
+    if (path[i] === '/') break
+    i--
+  }
+  return path.substring(0, i)
+}
+
+async function hymnImport(hymn, file) {
+  const imports = hymn.imports
+
+  let script = null
+  let p = 1
+  while (true) {
+    const frame = parentFrame(hymn, p)
+    if (frame === null) {
+      break
+    }
+    script = frame.func.script
+    if (script !== null) {
+      break
+    }
+    p++
+  }
+
+  const paths = hymn.paths
+  const size = paths.length
+
+  let module = null
+  let source = null
+
+  if (node) {
+    const parent = script ? node_path.dirname(script) : null
+
+    for (let i = 0; i < size; i++) {
+      const value = paths[i]
+      if (!isString(value)) {
+        continue
+      }
+      const question = value.value
+
+      const replace = question.replace(/<path>/g, file)
+      const path = parent ? replace.replace(/<parent>/g, parent) : replace
+      const use = node_path.resolve(path)
+
+      if (imports.has(use)) {
+        return currentFrame(hymn)
+      }
+
+      if (node_fs.existsSync(use)) {
+        module = use
+        break
+      }
+    }
+
+    if (module === null) {
+      let missing = 'Import not found: ' + file + '\n'
+
+      for (let i = 0; i < size; i++) {
+        const value = paths[i]
+        if (!isString(value)) {
+          continue
+        }
+        const question = value.value
+
+        const replace = question.replace(/<path>/g, file)
+        const path = parent ? replace.replace(/<parent>/g, parent) : replace
+        const use = node_path.resolve(path)
+
+        missing += '\nno file ' + use
+      }
+
+      return hymnPushError(hymn, missing)
+    }
+
+    imports.set(module, true)
+
+    source = node_fs.readFileSync(module, { encoding: 'utf-8' })
+  } else {
+    const parent = script ? httpPathParent(script) : null
+
+    for (let i = 0; i < size; i++) {
+      const value = paths[i]
+      if (!isString(value)) {
+        continue
+      }
+      const question = value.value
+
+      const replace = question.replace(/<path>/g, file)
+      const use = parent ? replace.replace(/<parent>/g, parent) : replace
+
+      if (imports.has(use)) {
+        return currentFrame(hymn)
+      }
+
+      const response = await fetch(use).catch((exception) => {
+        return { ok: false, status: 404 }
+      })
+
+      if (response.ok) {
+        source = await response.text().catch((exception) => {
+          return ''
+        })
+        module = use
+        break
+      }
+    }
+
+    if (module === null) {
+      let missing = 'Import not found: ' + file + '\n'
+
+      for (let i = 0; i < size; i++) {
+        const value = paths[i]
+        if (!isString(value)) {
+          continue
+        }
+        const question = value.value
+
+        const replace = question.replace(/<path>/g, file)
+        const use = parent ? replace.replace(/<parent>/g, parent) : replace
+
+        missing += '\nno file ' + use
+      }
+
+      return hymnPushError(hymn, missing)
+    }
+
+    imports.set(module, true)
+  }
+
+  const result = compile(hymn, module, source)
+
+  const func = result.func
+  let error = result.error
+
+  if (error) {
+    return hymnThrowExistingError(hymn, error)
+  }
+
+  const funcValue = newFuncValue(func)
+
+  hymnPush(hymn, funcValue)
+  hymnCall(hymn, func, 0)
+
+  error = await hymnRun(hymn)
+  if (error) {
+    return hymnThrowExistingError(hymn, error)
+  }
+
+  return currentFrame(hymn)
 }
 
 function debugConstantInstruction(name, code, index) {
@@ -2861,7 +3146,7 @@ function debugTrace(hymn, code, ip) {
   return debug
 }
 
-function hymnRun(hymn) {
+async function hymnRun(hymn) {
   let frame = currentFrame(hymn)
   while (true) {
     if (HYMN_DEBUG_TRACE) console.debug(debugTrace(hymn, frame.func.code, frame.ip))
@@ -3060,17 +3345,17 @@ function hymnRun(hymn) {
         const a = hymnPop(hymn)
         if (isNone(a)) {
           if (isString(b)) {
-            hymnPush(hymn, newString(STRING_NONE + b.value))
+            hymnPush(hymn, hymnConcat(a, b))
           } else {
-            frame = hymnThrowError(hymn, "Operation Error: 1st and 2nd values can't be added.")
+            frame = hymnThrowError(hymn, "Add: 1st and 2nd values can't be added.")
             if (frame === null) return
             else break
           }
         } else if (isBool(a)) {
           if (isString(b)) {
-            hymnPush(hymn, newString((a.value ? STRING_TRUE : STRING_FALSE) + b.value))
+            hymnPush(hymn, hymnConcat(a, b))
           } else {
-            frame = hymnThrowError(hymn, "Operation Error: 1st and 2nd values can't be added.")
+            frame = hymnThrowError(hymn, "Add: 1st and 2nd values can't be added.")
             if (frame === null) return
             else break
           }
@@ -3082,9 +3367,9 @@ function hymnRun(hymn) {
             b.value += a.value
             hymnPush(hymn, a)
           } else if (isString(b)) {
-            hymnPush(hymn, newString(String(a.value) + b.value))
+            hymnPush(hymn, hymnConcat(a, b))
           } else {
-            frame = hymnThrowError(hymn, "Operation Error: 1st and 2nd values can't be added.")
+            frame = hymnThrowError(hymn, "Add: 1st and 2nd values can't be added.")
             if (frame === null) return
             else break
           }
@@ -3096,43 +3381,16 @@ function hymnRun(hymn) {
             a.value += b.value
             hymnPush(hymn, a)
           } else if (isString(b)) {
-            hymnPush(hymn, newString(String(a.value) + b.value))
+            hymnPush(hymn, hymnConcat(a, b))
           } else {
-            frame = hymnThrowError(hymn, "Operation Error: 1st and 2nd values can't be added.")
+            frame = hymnThrowError(hymn, "Add: 1st and 2nd values can't be added.")
             if (frame === null) return
             else break
           }
         } else if (isString(a)) {
-          const s = a.value
-          let add = null
-          switch (b.is) {
-            case HYMN_VALUE_NONE:
-              add = s + STRING_NONE
-              break
-            case HYMN_VALUE_BOOL:
-              add = s + (b.value ? STRING_TRUE : STRING_FALSE)
-              break
-            case HYMN_VALUE_INTEGER:
-            case HYMN_VALUE_FLOAT:
-            case HYMN_VALUE_STRING:
-              add = s + b.value
-              break
-            case HYMN_VALUE_ARRAY:
-            case HYMN_VALUE_TABLE:
-              add = s + '[' + b.value + ']'
-              break
-            case HYMN_VALUE_FUNC:
-            case HYMN_VALUE_FUNC_NATIVE:
-              add = s + b.value.name
-              break
-            default:
-              frame = hymnThrowError(hymn, "Operands can't be added.")
-              if (frame === null) return
-              else break
-          }
-          hymnPush(hymn, newString(add))
+          hymnPush(hymn, hymnConcat(a, b))
         } else {
-          frame = hymnThrowError(hymn, "Operands can't be added.")
+          frame = hymnThrowError(hymn, "Add: 1st and 2nd values can't be added.")
           if (frame === null) return
           else break
         }
@@ -3149,7 +3407,7 @@ function hymnRun(hymn) {
             a.value -= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer` or `Float`.')
+            frame = hymnThrowError(hymn, 'Subtract: 2nd value must be `Integer` or `Float`.')
             if (frame === null) return
             else break
           }
@@ -3161,12 +3419,12 @@ function hymnRun(hymn) {
             a.value -= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer` or `Float`.')
+            frame = hymnThrowError(hymn, 'Subtract: 1st and 2nd values must be `Integer` or `Float`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer` or `Float`.')
+          frame = hymnThrowError(hymn, 'Subtract: 1st and 2nd values must be `Integer` or `Float`.')
           if (frame === null) return
           else break
         }
@@ -3183,7 +3441,7 @@ function hymnRun(hymn) {
             a.value *= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer` or `Float`.')
+            frame = hymnThrowError(hymn, 'Multiply: 2nd value must be `Integer` or `Float`.')
             if (frame === null) return
             else break
           }
@@ -3195,12 +3453,12 @@ function hymnRun(hymn) {
             a.value *= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer` or `Float`.')
+            frame = hymnThrowError(hymn, 'Multiply: 1st and 2nd values must be `Integer` or `Float`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer` or `Float`.')
+          frame = hymnThrowError(hymn, 'Multiply: 1st and 2nd values must be `Integer` or `Float`.')
           if (frame === null) return
           else break
         }
@@ -3217,7 +3475,7 @@ function hymnRun(hymn) {
             a.value /= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer` or `Float`.')
+            frame = hymnThrowError(hymn, 'Divide: 2nd value must be `Integer` or `Float`.')
             if (frame === null) return
             else break
           }
@@ -3229,12 +3487,12 @@ function hymnRun(hymn) {
             a.value /= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer` or `Float`.')
+            frame = hymnThrowError(hymn, 'Divide: 1st and 2nd values must be `Integer` or `Float`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer` or `Float`.')
+          frame = hymnThrowError(hymn, 'Divide: 1st and 2nd values must be `Integer` or `Float`.')
           if (frame === null) return
           else break
         }
@@ -3248,12 +3506,12 @@ function hymnRun(hymn) {
             a.value %= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer`.')
+            frame = hymnThrowError(hymn, 'Modulo: 2nd value must be `Integer`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer`.')
+          frame = hymnThrowError(hymn, 'Modulo: 1st and 2nd values must be `Integer`.')
           if (frame === null) return
           else break
         }
@@ -3265,7 +3523,7 @@ function hymnRun(hymn) {
           value.value = ~value.value
           hymnPush(hymn, value)
         } else {
-          frame = hymnThrowError(hymn, 'Bitwise operand must integer.')
+          frame = hymnThrowError(hymn, 'Bitwise Not: Operand must integer.')
           if (frame === null) return
           else break
         }
@@ -3279,12 +3537,12 @@ function hymnRun(hymn) {
             a.value |= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer`.')
+            frame = hymnThrowError(hymn, 'Bitwise Or: 2nd value must be `Integer`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer`.')
+          frame = hymnThrowError(hymn, 'Bitwise Or: 1st and 2nd values must be `Integer`.')
           if (frame === null) return
           else break
         }
@@ -3298,12 +3556,12 @@ function hymnRun(hymn) {
             a.value &= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer`.')
+            frame = hymnThrowError(hymn, 'Bitwise And: 2nd value must be `Integer`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer`.')
+          frame = hymnThrowError(hymn, 'Bitwise And: 1st and 2nd values must be `Integer`.')
           if (frame === null) return
           else break
         }
@@ -3317,12 +3575,12 @@ function hymnRun(hymn) {
             a.value ^= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer`.')
+            frame = hymnThrowError(hymn, 'Bitwise Xor: 2nd value must be `Integer`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer`.')
+          frame = hymnThrowError(hymn, 'Bitwise Xor: 1st and 2nd values must be `Integer`.')
           if (frame === null) return
           else break
         }
@@ -3336,12 +3594,12 @@ function hymnRun(hymn) {
             a.value <<= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer`.')
+            frame = hymnThrowError(hymn, 'Bitwise Left Shift: 2nd value must be `Integer`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer`.')
+          frame = hymnThrowError(hymn, 'Bitwise Left Shift: 1st and 2nd values must be `Integer`.')
           if (frame === null) return
           else break
         }
@@ -3355,12 +3613,12 @@ function hymnRun(hymn) {
             a.value >>= b.value
             hymnPush(hymn, a)
           } else {
-            frame = hymnThrowError(hymn, 'Operation Error: 2nd value must be `Integer`.')
+            frame = hymnThrowError(hymn, 'Bitwise Right Shift: 2nd value must be `Integer`.')
             if (frame === null) return
             else break
           }
         } else {
-          frame = hymnThrowError(hymn, 'Operation Error: 1st and 2nd values must be `Integer`.')
+          frame = hymnThrowError(hymn, 'Bitwise Right Shift: 1st and 2nd values must be `Integer`.')
           if (frame === null) return
           else break
         }
@@ -3373,7 +3631,7 @@ function hymnRun(hymn) {
         } else if (isFloat(value)) {
           value.value = -value.value
         } else {
-          frame = hymnThrowError(hymn, 'Operand must be a number.')
+          frame = hymnThrowError(hymn, 'Negate: Operand must be a number.')
           if (frame === null) return
           else break
         }
@@ -3385,7 +3643,7 @@ function hymnRun(hymn) {
         if (isBool(value)) {
           value.value = !value.value
         } else {
-          frame = hymnThrowError(hymn, 'Operand must be a boolean.')
+          frame = hymnThrowError(hymn, 'Not: Operand must be a boolean.')
           if (frame === null) return
           else break
         }
@@ -3396,11 +3654,11 @@ function hymnRun(hymn) {
         let value = readConstant(frame)
         switch (value.is) {
           case HYMN_VALUE_ARRAY: {
-            value = newArrayValue(newArray())
+            value = newArrayValue([])
             break
           }
           case HYMN_VALUE_TABLE: {
-            value = newTableValue(newTable())
+            value = newTableValue(new Map())
             break
           }
           default:
@@ -3454,13 +3712,12 @@ function hymnRun(hymn) {
         const p = hymnPop(hymn)
         const v = hymnPop(hymn)
         if (!isTable(v)) {
-          frame = hymnThrowError(hymn, 'Only tables can set properties.')
+          frame = hymnThrowError(hymn, 'Set Property: Only tables can set properties.')
           if (frame === null) return
           else break
         }
         const table = v.value
         const name = readConstant(frame).value
-        const previous = table.get(name)
         table.set(name, p)
         hymnPush(hymn, p)
         break
@@ -3510,7 +3767,7 @@ function hymnRun(hymn) {
           if (index == size) {
             array.push(s)
           } else {
-            array.items[index] = s
+            array[index] = s
           }
         } else if (isTable(v)) {
           if (!isString(i)) {
@@ -3568,7 +3825,7 @@ function hymnRun(hymn) {
             }
             const array = v.value
             const size = array.length
-            const index = i.value
+            let index = i.value
             if (index >= size) {
               frame = hymnThrowError(hymn, 'Array index out of bounds %d >= %d.', index, size)
               if (frame === null) return
@@ -3589,7 +3846,7 @@ function hymnRun(hymn) {
           case HYMN_VALUE_TABLE: {
             if (!isString(i)) {
               const is = valueName(i.is)
-              frame = hymnThrowError(hymn, 'Dynamic Get: Expected 2nd argument to be `String`, but was `%s`.', is)
+              frame = hymnThrowError(hymn, 'Dynamic Get: Expected 2nd argument to be `String`, but was `' + is + '`.')
               if (frame === null) return
               else break
             }
@@ -3741,11 +3998,13 @@ function hymnRun(hymn) {
           }
           const table = v.value
           const name = i.value
-          const value = table.delete(name)
-          if (isUndefined(value)) {
-            value.is = HYMN_VALUE_NONE
+          const value = table.get(name)
+          if (value) {
+            table.delete(name)
+            hymnPush(hymn, value)
+          } else {
+            hymnPush(hymn, newNone())
           }
-          hymnPush(hymn, value)
         } else {
           frame = hymnThrowError(hymn, 'Expected array or table for `delete` function.')
           if (frame === null) return
@@ -3766,12 +4025,12 @@ function hymnRun(hymn) {
             hymnPush(hymn, value)
             break
           case HYMN_VALUE_ARRAY: {
-            const copy = newArrayCopy(value.value)
+            const copy = value.value.slice()
             hymnPush(hymn, newArrayValue(copy))
             break
           }
           case HYMN_VALUE_TABLE: {
-            const copy = newTableCopy(value.value)
+            const copy = new Map(value.value)
             hymnPush(hymn, newTableValue(copy))
             break
           }
@@ -3789,81 +4048,78 @@ function hymnRun(hymn) {
           if (frame === null) return
           else break
         }
-        const left = a.value
+        const start = a.value
         if (isString(v)) {
           const original = v.value
           const size = original.length
-          let right
+          let end
           if (isInt(b)) {
-            right = b.value
+            end = b.value
           } else if (isNone(b)) {
-            right = size
+            end = size
           } else {
             frame = hymnThrowError(hymn, 'Integer required for slice expression.')
             if (frame === null) return
             else break
           }
-          if (right > size) {
-            frame = hymnThrowError(hymn, 'String index out of bounds %d > %d.', right, size)
+          if (end > size) {
+            frame = hymnThrowError(hymn, 'String index out of bounds %d > %d.', end, size)
             if (frame === null) return
             else break
           }
-          if (right < 0) {
-            right = size + right
-            if (right < 0) {
-              frame = hymnThrowError(hymn, 'String index out of bounds %d.', right)
+          if (end < 0) {
+            end = size + end
+            if (end < 0) {
+              frame = hymnThrowError(hymn, 'String index out of bounds %d.', end)
               if (frame === null) return
               else break
             }
           }
-          if (left >= right) {
-            frame = hymnThrowError(hymn, 'String start index %d > right index %d.', left, right)
+          if (start >= end) {
+            frame = hymnThrowError(hymn, 'String start index %d > end index %d.', start, end)
             if (frame === null) return
             else break
           }
-          const sub = original.substring(left, right - left)
+          const sub = original.substring(start, end)
           hymnPush(hymn, newString(sub))
         } else if (isArray(v)) {
           const array = v.value
           const size = array.length
-          let right
+          let end
           if (isInt(b)) {
-            right = b.value
+            end = b.value
           } else if (isNone(b)) {
-            right = size
+            end = size
           } else {
             frame = hymnThrowError(hymn, 'Integer required for slice expression.')
             if (frame === null) return
             else break
           }
-          if (right > size) {
-            frame = hymnThrowError(hymn, 'Array index out of bounds %d > %d.', right, size)
+          if (end > size) {
+            frame = hymnThrowError(hymn, 'Array index out of bounds %d > %d.', end, size)
             if (frame === null) return
             else break
           }
-          if (right < 0) {
-            right = size + right
-            if (right < 0) {
-              frame = hymnThrowError(hymn, 'Array index out of bounds %d.', right)
+          if (end < 0) {
+            end = size + end
+            if (end < 0) {
+              frame = hymnThrowError(hymn, 'Array index out of bounds %d.', end)
               if (frame === null) return
               else break
             }
           }
-          if (left >= right) {
-            frame = hymnThrowError(hymn, 'Array start index %d >= right index %d.', left, right)
+          if (start >= end) {
+            frame = hymnThrowError(hymn, 'Array start index %d >= end index %d.', start, end)
             if (frame === null) return
             else break
           }
-          const copy = newArraySlice(array, left, right)
+          const copy = array.slice(start, end)
           hymnPush(hymn, newArrayValue(copy))
-
-          break
         } else {
           frame = hymnThrowError(hymn, 'Expected string or array for `slice` function.')
           if (frame === null) return
           else break
         }
-
         break
       }
       case OP_CLEAR: {
@@ -3883,13 +4139,13 @@ function hymnRun(hymn) {
             break
           case HYMN_VALUE_ARRAY: {
             const array = value.value
-            arrayClear(hymn, array)
+            array.length = 0
             hymnPush(hymn, value)
             break
           }
           case HYMN_VALUE_TABLE: {
             const table = value.value
-            tableClear(hymn, table)
+            table.clear()
             hymnPush(hymn, value)
             break
           }
@@ -3911,9 +4167,12 @@ function hymnRun(hymn) {
           else break
         } else {
           const table = value.value
-          const array = tableKeys(table)
-          const keys = newArrayValue(array)
-          hymnPush(hymn, keys)
+          const keys = Array.from(table.keys())
+          keys.sort()
+          for (let i = 0; i < keys.length; i++) {
+            keys[i] = newString(keys[i])
+          }
+          hymnPush(hymn, newArrayValue(keys))
         }
         break
       }
@@ -3927,25 +4186,15 @@ function hymnRun(hymn) {
               if (frame === null) return
               else break
             }
-            const index = 0
-            const found = stringFind(a.value, b.value, index)
-            if (found) {
-              hymnPush(hymn, newInt(index))
-            } else {
-              hymnPush(hymn, newInt(-1))
-            }
+            const index = a.value.indexOf(b.value)
+            hymnPush(hymn, newInt(index))
             break
           }
           case HYMN_VALUE_ARRAY:
             hymnPush(hymn, newInt(arrayIndexOf(a.value, b)))
             break
           case HYMN_VALUE_TABLE: {
-            const key = tableKeyOf(a.value, b)
-            if (key == NULL) {
-              hymnPush(hymn, newNone())
-            } else {
-              hymnPush(hymn, newString(key))
-            }
+            hymnPush(hymn, tableKeyOf(a.value, b))
             break
           }
           default:
@@ -4038,44 +4287,12 @@ function hymnRun(hymn) {
       }
       case OP_TO_STRING: {
         const value = hymnPop(hymn)
-        switch (value.is) {
-          case HYMN_VALUE_UNDEFINED:
-          case HYMN_VALUE_NONE:
-            hymnPush(hymn, newString(STRING_NONE))
-            break
-          case HYMN_VALUE_BOOL:
-            hymnPush(hymn, value.value ? newString(STRING_TRUE) : newString(STRING_FALSE))
-            break
-          case HYMN_VALUE_INTEGER:
-            hymnPush(hymn, newString(String(value.value)))
-            break
-          case HYMN_VALUE_FLOAT:
-            hymnPush(hymn, newString(String(value.value)))
-            break
-          case HYMN_VALUE_STRING:
-            hymnPush(hymn, value)
-            break
-          case HYMN_VALUE_ARRAY:
-            hymnPush(hymn, newString('[array ' + value.value + ']'))
-            break
-          case HYMN_VALUE_TABLE:
-            hymnPush(hymn, newString('[table ' + value.value + ']'))
-            break
-          case HYMN_VALUE_FUNC:
-            hymnPush(hymn, newString(value.value.name))
-            break
-          case HYMN_VALUE_FUNC_NATIVE:
-            hymnPush(hymn, newString(value.value.name))
-            break
-          case HYMN_VALUE_POINTER:
-            hymnPush(hymn, newString('[pointer ' + value.value + ']'))
-            break
-        }
+        hymnPush(hymn, newString(valueToString(value)))
         break
       }
       case OP_PRINT: {
         const value = hymnPop(hymn)
-        hymn.print(valueToString(value, false))
+        hymn.print(valueToString(value))
         break
       }
       case OP_THROW: {
@@ -4091,7 +4308,7 @@ function hymnRun(hymn) {
       case OP_DO: {
         const code = hymnPop(hymn)
         if (isString(code)) {
-          frame = hymnDo(hymn, code.value)
+          frame = await hymnDo(hymn, code.value)
           if (frame === null) return
         } else {
           frame = hymnThrowError(hymn, "Expected string for 'do' command.")
@@ -4103,7 +4320,7 @@ function hymnRun(hymn) {
       case OP_USE: {
         const file = hymnPop(hymn)
         if (isString(file)) {
-          frame = hymnImport(hymn, file.value)
+          frame = await hymnImport(hymn, file.value)
           if (frame === null) return
         } else {
           frame = hymnThrowError(hymn, "Expected string for 'use' command.")
@@ -4128,8 +4345,8 @@ function hymnAddPointer(hymn, name, pointer) {
   hymn.globals.set(name, newPointerValue(pointer))
 }
 
-function hymnInterpret(hymn, source) {
-  const result = compile(hymn, null, source)
+async function hymnScriptInterpret(hymn, script, source) {
+  const result = compile(hymn, script, source)
 
   const func = result.func
   if (result.error !== null) {
@@ -4140,7 +4357,7 @@ function hymnInterpret(hymn, source) {
   hymnPush(hymn, funcVal)
   hymnCall(hymn, func, 0)
 
-  hymnRun(hymn)
+  await hymnRun(hymn)
   if (hymn.error !== null) {
     return hymn.error
   }
@@ -4149,6 +4366,34 @@ function hymnInterpret(hymn, source) {
   return null
 }
 
+async function hymnInterpret(hymn, source) {
+  return hymnScriptInterpret(hymn, null, source)
+}
+
 function newHymn() {
-  return new Hymn()
+  const hymn = new Hymn()
+
+  if (node) {
+    hymn.paths.push(newString('<parent>/<path>.hm'))
+    hymn.paths.push(newString('./<path>.hm'))
+    hymn.paths.push(newString('./modules/<path>.hm'))
+  } else {
+    const address = window.location.href
+    const url = address.substring(0, address.lastIndexOf('/') + 1)
+    hymn.paths.push(newString(url + '<path>.hm'))
+    hymn.paths.push(newString(url + 'modules/<path>.hm'))
+  }
+
+  hymn.globals.set('__paths', newArrayValue(hymn.paths))
+  hymn.globals.set('__imports', newTableValue(hymn.imports))
+
+  return hymn
+}
+
+if (node) {
+  module.exports = {
+    init: newHymn,
+    interpret: hymnInterpret,
+    scriptInterpret: hymnScriptInterpret,
+  }
 }
