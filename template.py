@@ -29,13 +29,13 @@ def search_and_replace(path):
     out = []
 
     for line in content:
-        if line.strip().startswith('<header>'):
+        if line.strip().startswith('<header></header>'):
             space = whitespace(line)
             out.append(space + '<header>\n')
             for h in header:
                 out.append(space + '  ' + h)
             out.append(space + '</header>\n')
-        elif line.strip().startswith('<footer>'):
+        elif line.strip().startswith('<footer></footer>'):
             space = whitespace(line)
             out.append(space + '<footer>\n')
             for f in footer:
@@ -50,8 +50,7 @@ def search_and_replace(path):
             out.append(line)
 
     content = "".join(out)
-    content = content.replace('<!--this-->', path)
-    content = content.replace('<!--link-->', 'https://nathanmcmillan.github.io/' + path)
+    content = content.replace('${this}', path)
 
     with open(path, 'w', encoding='utf8') as file:
         file.write(content)

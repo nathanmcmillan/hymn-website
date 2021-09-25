@@ -1,6 +1,6 @@
 :root {
-  --header-color: rgb(255, 255, 255);
-  --header-background: rgb(0, 0, 0);
+  --header-color: rgb(32, 32, 32);
+  --header-background: rgb(255, 255, 255);
   --nav-background: rgb(100, 100, 100);
   --main-background: rgb(50, 50, 50);
   --code-background: rgb(250, 248, 245);

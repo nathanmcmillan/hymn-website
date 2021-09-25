@@ -10,10 +10,19 @@
   </head>
   <body>
     <script src="hymn.js"></script>
-    <section id="top"><button onclick="run()">Run</button></section>
+    <section id="top">
+      <div id="run">
+        <button onclick="run()">Run</button>
+      </div>
+      <select id="examples" onchange="example()">
+        <option>Hello World</option>
+        <option>Linked List</option>
+        <option>Imports</option>
+      </select>
+    </section>
     <section id="play">
       <div id="code">
-        <textarea id="source" autocorrect="off" autocomplete="off" autocapitalize="none" spellcheck="false">print "hello world!"</textarea>
+        <textarea id="source" autocorrect="off" autocomplete="off" autocapitalize="none" spellcheck="false"></textarea>
       </div>
       <p id="out"></p>
     </section>
@@ -22,23 +31,39 @@
       if (source) {
         document.getElementById('source').value = source
       }
-      function run() {
+      async function run() {
         const source = document.getElementById('source').value
         localStorage.setItem('source', source)
         const out = document.getElementById('out')
         out.textContent = ''
-        const hymn = new Hymn()
+        const hymn = newHymn()
         hymn.print = (text) => {
           out.textContent += text + '\r\n'
         }
-        try {
-          const error = hymnInterpret(hymn, source)
-          if (error !== null) {
-            out.textContent += error
-          }
-        } catch (exception) {
-          out.textContent += exception
+        const error = await hymnInterpret(hymn, source).catch((exception) => {
           console.error(exception)
+          return exception
+        })
+        if (error !== null) {
+          out.textContent += error
+        }
+      }
+      const examples = new Map()
+      function example() {
+        const select = document.getElementById('examples')
+        const option = select.value.toLowerCase().replace(' ', '_') + '.js'
+        if (examples.has(option)) {
+          document.getElementById('source').value = examples.get(option)
+        } else {
+          const script = document.createElement('script')
+          script.type = 'text/javascript'
+          script.src = 'examples/' + option
+          script.onload = function () {
+            const hymn = examples.get('new')
+            document.getElementById('source').value = hymn
+            examples.set(option, hymn)
+          }
+          document.getElementsByTagName('body')[0].appendChild(script)
         }
       }
     </script>

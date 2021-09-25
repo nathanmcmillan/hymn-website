@@ -1,6 +1,6 @@
 {
   "syntax": [
-    ["#.*$", ["comment"]],
+    ["--.*$", ["comment"]],
     ["\\b(use)\\b(.+)$", [null, "include", "include_name"]],
     ["\\b(let|const)\\b", [null, "type"]],
     ["\\b(print|push|insert|len|pop|delete|index|keys)\\b", [null, "call"]],

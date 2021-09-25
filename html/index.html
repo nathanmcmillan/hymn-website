@@ -7,45 +7,44 @@
   </head>
 
   <body>
-    <header></header>
+    <header>
+      <div class="header-left"></div>
+      <div>
+        <a href="learn.html">Learn</a>
+        <a href="play.html">Play</a>
+        <a href="https://github.com/nathanmcmillan/hymn-lang">Download</a>
+        <a href="documentation.html">Documentation</a>
+        <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+        <a href="/dark/${this}">Dark</a>
+      </div>
+    </header>
     <main id="index">
-      <h1>Pleaceful scripting.</h1>
-      <article id="home">
-        <section>
-          <h2>Hymn is a programming language designed for simplicity.</h2>
-          <nav>
-            <a href="download.html">Install Hymn</a>
-            <a href="play.html">Try it online</a>
-          </nav>
-          <h3>Small</h3>
-          <ul>
-            <li>Portable C11 code that passes with `-Wall` `-Wextra` `-Werror` `-pedantic` flags</li>
-            <li>Less than 4,000 semicolons of C code</li>
-          </ul>
-          <h3>Simple</h3>
-          <ul>
-            <li>No closures</li>
-            <li>No namespaces</li>
-            <li>No classes</li>
-            <li>No new langauage features</li>
-          </ul>
-          <h3>Simple</h3>
-          <ul>
-            <li>No closures</li>
-            <li>No namespaces</li>
-            <li>No classes</li>
-            <li>No new langauage features</li>
-          </ul>
-        </section>
-        <aside>
-          <pre>link_list.hm</pre>
-        </aside>
-      </article>
-      <article id="foss">
-        <h2>Free, Open Source</h2>
-        <p>Hymn is licensed under the <a href="https://mozilla.org/MPL/2.0/">Mozilla Public License Version 2.0</a>. It's source code is free to view and distribute.</p>
-        <a href="https://github.com/nathanmcmillan/hymn-lang">Source Code</a>
-      </article>
+      <h1>Hymn Script</h1>
+      <hr />
+      <section>
+        <h2>A tiny scripting language so simple, it's peaceful 🙏</h2>
+        <p>Hymn is easy to learn. <a href="play.html">Try it online</a>!</p>
+        <pre>index.hm</pre>
+        <h3>Small</h3>
+        <p>
+          Hymn is written in portable C11 code that passes with `-Wall` `-Wextra` `-Werror` `-pedantic` flags. It uses zero external dependencies. Both Make and CMake builds for
+          GCC and Windows MSVC are available.
+        </p>
+        <p>Hymn uses less than 4,000 semicolons of C code. The JavaScript implementation uses less than 5,000 total lines.</p>
+        <h3>Simple</h3>
+        <p>Hymn has no classes, closures, or namespaces. Tables and arrays are the building blocks for all complex algorithms and data structures.</p>
+        <p>Hymn emphasizes one way to do things right. Most programming languages evolve over time, adding significant changes and new syntax. Hymn will not.</p>
+        <p>Hymn uses reference counting for memory management. This means scripts keep a smaller footprint, and release memory deterministically.</p>
+        <p>
+          Hymn natively supports both 64 bit signed integers, and 64 bit floats. Many scripting languages only support a single number type. Hymn stores integers and real numbers
+          as distinct types.
+        </p>
+        <h3>Open Source</h3>
+        <p>
+          Hymn is licensed under the <a href="https://mozilla.org/MPL/2.0/">Mozilla Public License Version 2.0</a>. The
+          <a href="https://github.com/nathanmcmillan/hymn-lang">source code</a> is free to view, distribute, and modify.
+        </p>
+      </section>
     </main>
     <footer></footer>
   </body>
