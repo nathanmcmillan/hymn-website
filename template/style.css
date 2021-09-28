@@ -11,18 +11,18 @@
 html {
   width: 100%;
   height: 100%;
-  color: black;
-  background-color: white;
+  color: var(--color);
+  background-color: var(--background);
   font-family: Verdana, sans-serif;
 }
 
 a {
-  color: red;
+  color: var(--href-color);
   text-decoration: underline;
 }
 
 a:hover {
-  color: lightpink;
+  color: var(--href-hover-color);
 }
 
 hr {
@@ -30,8 +30,8 @@ hr {
   height: 1px;
   border-left: 0;
   border-right: 0;
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
+  border-top: 1px solid var(--hr-color);
+  border-bottom: 1px solid var(--hr-color);
   margin-bottom: 0.5rem;
 }
 
@@ -62,7 +62,7 @@ header a {
 
 footer {
   width: 100%;
-  background-color: lightgrey;
+  background-color: var(--footer-background);
 }
 
 footer p {
@@ -76,8 +76,9 @@ pre {
   padding: 1rem;
   margin-top: 2rem;
   margin-bottom: 2rem;
-  background-color: lightgrey;
-  border: solid 1px grey;
+  background-color: var(--pre-color);
+  background-color: var(--pre-background);
+  border: solid 1px var(--pre-border);
   border-radius: 3px;
   white-space: pre-wrap;
   word-wrap: break-word;

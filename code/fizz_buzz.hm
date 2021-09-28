@@ -1,6 +1,6 @@
 function fizzbuzz(n)
-  const f = "Fizz"
-  const b = "Buzz"
+  let f = "Fizz"
+  let b = "Buzz"
 
   if n == 0
     return

@@ -10,10 +10,10 @@
     <header>
       <div class="header-left"></div>
       <div>
-        <a href="learn.html">Learn</a>
-        <a href="play.html">Play</a>
+        <a href="/learn.html">Learn</a>
+        <a href="/play.html">Play</a>
         <a href="https://github.com/nathanmcmillan/hymn-lang">Download</a>
-        <a href="documentation.html">Documentation</a>
+        <a href="/documentation.html">Documentation</a>
         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
         <a href="/dark/index.html">Dark</a>
       </div>
@@ -25,35 +25,35 @@
         <h2>A tiny scripting language so simple, it's peaceful 🙏</h2>
         <p>Hymn is easy to learn. <a href="play.html">Try it online</a>!</p>
         <pre><code><comment>-- import scripts with the `use` statement.</comment>
-<include>use</include><include_name> &quot;math&quot;</include_name>
+<keyword>use</keyword> <string>&quot;math&quot;</string>
 
 <comment>-- tables hold key and value pairs</comment>
-<function>function</function> new_node(value)
-  <control>return</control> { value: value, next: <null>none</null> }
-<control>end</control>
+<keyword>function</keyword> <entity>new_node</entity>(value)
+  <keyword>return</keyword> { value: value, next: <constant>none</constant> }
+<keyword>end</keyword>
 
-<function>function</function> node_add(list, value)
-  <type>let</type> node = list
-  <control>while</control> true
-    <control>if</control> node.next == <null>none</null> <control>break</control> <control>end</control>
-    node = node.next
-  <control>end</control>
-  node.next = new_node(value)
-<control>end</control>
+<keyword>function</keyword> <entity>node_add</entity>(list, value)
+  <keyword>let</keyword> node <keyword>=</keyword> list
+  <keyword>while</keyword> <constant>true</constant>
+    <keyword>if</keyword> node.next <keyword>=</keyword><keyword>=</keyword> <constant>none</constant> <keyword>break</keyword> <keyword>end</keyword>
+    node <keyword>=</keyword> node.next
+  <keyword>end</keyword>
+  node.next <keyword>=</keyword> new_node(value)
+<keyword>end</keyword>
 
 <comment>-- objects are passed by reference</comment>
-<type>const</type> list = new_node(<string>&quot;hello&quot;</string>)
+<keyword>let</keyword> list <keyword>=</keyword> new_node(<string>&quot;hello&quot;</string>)
 node_add(list, <string>&quot;world&quot;</string>)
 
 <comment>-- print statements will show all nested values in an object</comment>
-<call>print</call> list
+<constant>print</constant> list
 </code></pre>
         <h3>Small</h3>
         <p>
           Hymn is written in portable C11 code that passes with `-Wall` `-Wextra` `-Werror` `-pedantic` flags. It uses zero external dependencies. Both Make and CMake builds for
           GCC and Windows MSVC are available.
         </p>
-        <p>Hymn uses less than 4,000 semicolons of C code. The JavaScript implementation uses less than 5,000 total lines.</p>
+        <p>Hymn uses less than 6,000 lines of C code. The JavaScript implementation uses less than 5,000 lines.</p>
         <h3>Simple</h3>
         <p>Hymn has no classes, closures, or namespaces. Tables and arrays are the building blocks for all complex algorithms and data structures.</p>
         <p>Hymn emphasizes one way to do things right. Most programming languages evolve over time, adding significant changes and new syntax. Hymn will not.</p>
@@ -71,7 +71,7 @@ node_add(list, <string>&quot;world&quot;</string>)
     </main>
     <footer>
       <p>
-        Made with ❤ by <a href="nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the source code to the website
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the source code to the website
         <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
       </p>
     </footer>

@@ -7,10 +7,12 @@
 import sys
 import os
 import code
-from pathlib import Path
+import dark
+
 
 with open('template/header.html', 'r', encoding='utf8') as file:
     header = file.readlines()
+
 
 with open('template/footer.html', 'r', encoding='utf8') as file:
     footer = file.readlines()
@@ -21,8 +23,7 @@ def whitespace(a):
     return a[0:count]
 
 
-def search_and_replace(path):
-
+def search_and_replace(path, dark_mode):
     with open(path, 'r', encoding='utf8') as file:
         content = file.readlines()
 
@@ -50,12 +51,19 @@ def search_and_replace(path):
             out.append(line)
 
     content = "".join(out)
-    content = content.replace('${this}', path)
+    content = content.replace('${this}', path.replace('\\', '/'))
+
+    if dark_mode:
+        content = dark.dark_search_and_replace(content)
 
     with open(path, 'w', encoding='utf8') as file:
         file.write(content)
 
 
-for path in sys.argv:
-    if path.endswith('.html'):
-        search_and_replace(path)
+for file in os.listdir("."):
+    if file.endswith(".html"):
+        search_and_replace(file, False)
+
+for file in os.listdir("dark"):
+    if file.endswith(".html"):
+        search_and_replace(os.path.join("dark", file), True)

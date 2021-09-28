@@ -13,7 +13,7 @@ function node_add(list, value)
   node.next = new_node(value)
 end
 
-const list = new_node("hello")
+let list = new_node("hello")
 node_add(list, "world")
 
 print list`

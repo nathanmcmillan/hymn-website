@@ -16,7 +16,7 @@ function node_add(list, value)
 end
 
 -- objects are passed by reference
-const list = new_node("hello")
+let list = new_node("hello")
 node_add(list, "world")
 
 -- print statements will show all nested values in an object

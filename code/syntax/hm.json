@@ -1,13 +1,14 @@
 {
   "syntax": [
     ["--.*$", ["comment"]],
-    ["\\b(use)\\b(.+)$", [null, "include", "include_name"]],
-    ["\\b(let|const)\\b", [null, "type"]],
-    ["\\b(print|push|insert|len|pop|delete|index|keys)\\b", [null, "call"]],
-    ["\\b(function)\\b", [null, "function"]],
-    ["\\b(none)\\b", [null, "null"]],
-    ["\\b(if|elif|else|for|while|return|break|continue|end)\\b", [null, "control"]],
-    ["\\b(?:\\+|-)?\\d+(?:\\.\\d+)?f?\\b", ["number"]],
-    ["\".*?\"", ["string"]]
+    ["\\b(copy|delete|float|index|int|insert|keys|pop|print|push|int|string)\\b", [null, "constant"]],
+    ["\\b(do|use|let|if|elif|else|for|while|return|break|continue|end|iterate|in)\\b", [null, "keyword"]],
+    ["\\b(function) (\\w+)", [null, "keyword", "entity"]],
+    ["(=|>=|<=|!=|<|>|==)", [null, "keyword"]],
+    ["(\\+|-|\\*|\\/|%|&|\\||\\^|~|<<|>>)", [null, "keyword"]],
+    ["\\b(true|false|none)\\b", [null, "constant"]],
+    ["\\b([0-9]+(?:\\.[0-9]+)?)\\b", [null, "constant"]],
+    ["\".*?\"", ["string"]],
+    ["'.*?'", ["string"]]
   ]
 }

@@ -1,63 +1,31 @@
 :root {
-  --header-color: rgb(255, 255, 255);
-  --header-background: rgb(0, 0, 0);
-  --nav-background: rgb(100, 100, 100);
-  --main-background: rgb(50, 50, 50);
-  --code-background: rgb(250, 248, 245);
+  --color: rgb(156, 220, 254);
+  --background: rgb(39, 40, 34);
+  --href-color: rgb(255, 0, 77);
+  --href-hover-color: rgb(240, 146, 146);
+  --hr-color: rgb(174, 129, 225);
+  --footer-background: rgb(174, 129, 225);
+  --pre-color: rgb(60, 80, 90);
+  --pre-background: black;
+  --pre-border: white;
+}
+
+constant {
+  color: rgb(120, 192, 256);
 }
 
 comment {
-  color: white;
+  color: rgb(140, 148, 158);
 }
 
-include {
-  color: rgb(133, 153, 0);
+entity {
+  color: rgb(210, 168, 255);
 }
 
-include_name {
-  color: rgb(133, 153, 0);
+keyword {
+  color: rgb(255, 122, 114);
 }
 
-macro {
-  color: rgb(133, 153, 0);
-}
-
-macro_name {
-  color: rgb(133, 153, 0);
-}
-
-type {
-  color: rgb(220, 50, 47);
-}
-
-call {
-  color: rgb(133, 153, 0);
-}
-
-control {
-  color: rgb(133, 153, 0);
-}
-
-struct {
-  color: rgb(133, 153, 0);
-}
-
-pointer {
-  color: rgb(133, 153, 0);
-}
-
-this {
-  color: white;
-}
-
-number {
-  color: rgb(42, 161, 152);
-}
-
-function {
-  color: rgb(38, 139, 210);
-}
-
-null {
-  color: rgb(181, 137, 0);
+string {
+  color: rgb(164, 214, 255);
 }
