@@ -4359,6 +4359,8 @@ function newHymn() {
     const url = address.substring(0, address.lastIndexOf('/') + 1)
     hymn.paths.push(newString(url + '<path>.hm'))
     hymn.paths.push(newString(url + 'modules/<path>.hm'))
+    hymn.paths.push(newString('/<path>.hm'))
+    hymn.paths.push(newString('/modules/<path>.hm'))
   }
 
   hymn.globals.set('__paths', newArrayValue(hymn.paths))

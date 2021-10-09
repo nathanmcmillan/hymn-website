@@ -11,5 +11,4 @@ def dark_search_and_replace(content):
     content = content.replace('>Dark<', '>Light<')
     content = content.replace('href="/', 'href="/dark/')
     content = content.replace('href="/dark/dark/dark', 'href="')
-    content = content.replace('href="/dark/css/light.css"', 'href="/css/dark.css"')
     return content

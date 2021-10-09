@@ -2,6 +2,17 @@
  * https://creativecommons.org/publicdomain/zero/1.0/ */
 
 :root {
+  --top: lightskyblue;
+  --run-color: black;
+  --run-background: steelblue;
+  --run-hover: royalblue;
+  --examples: black;
+  --source-color: black;
+  --source-background: lightgoldenrodyellow;
+  --out-color: black;
+  --out-background: white;
+}
+:root {
   --select-offset: 0.2rem;
 }
 
@@ -27,7 +38,7 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  background-color: lightskyblue;
+  background-color: var(--top);
 }
 
 #run {
@@ -38,8 +49,8 @@ body {
   display: inline-block;
   padding: 0.5rem 1rem;
   margin: 0.7rem;
-  color: black;
-  background-color: steelblue;
+  color: var(--run-color);
+  background-color: var(--run-background);
   min-width: 6rem;
   border: 0;
   outline: none;
@@ -52,14 +63,14 @@ body {
 
 #run button:hover {
   cursor: pointer;
-  background-color: royalblue;
+  background-color: var(--run-hover);
 }
 
 #examples {
   display: inline-block;
   padding: 0.5rem 1rem;
   margin: 0.7rem;
-  color: black;
+  color: var(--examples);
   outline: none;
   border-color: transparent;
   border-radius: 2px;
@@ -93,7 +104,8 @@ body {
   margin: 0;
   padding: 1rem;
   font-family: monospace;
-  background-color: lightgoldenrodyellow;
+  color: var(--source-color);
+  background-color: var(--source-background);
   border: none;
   outline: none;
   resize: none;
@@ -106,6 +118,7 @@ body {
   margin: 0;
   padding: 1rem;
   font-family: monospace;
-  background-color: white;
+  color: var(--out-color);
+  background-color: var(--out-background);
   white-space: pre;
 }

@@ -1,0 +1,14 @@
+/* Any copyright is dedicated to the Public Domain.
+ * https://creativecommons.org/publicdomain/zero/1.0/ */
+
+:root {
+  --top: lightskyblue;
+  --run-color: black;
+  --run-background: steelblue;
+  --run-hover: royalblue;
+  --examples: black;
+  --source-color: black;
+  --source-background: lightgoldenrodyellow;
+  --out-color: black;
+  --out-background: white;
+}

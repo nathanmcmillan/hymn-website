@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="/dark/css/play.css" />
   </head>
   <body>
-    <script src="hymn.js"></script>
+    <script src="/hymn.js"></script>
     <section id="top">
       <div id="run">
         <button onclick="run()">Run</button>
@@ -57,7 +57,7 @@
         } else {
           const script = document.createElement('script')
           script.type = 'text/javascript'
-          script.src = 'examples/' + option
+          script.src = '/examples/' + option
           script.onload = function () {
             const hymn = examples.get('new')
             document.getElementById('source').value = hymn
