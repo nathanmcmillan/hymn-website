@@ -1,0 +1,6 @@
+try
+  throw "Oh no!"
+catch error
+  print error
+end
+print "So anyways..."

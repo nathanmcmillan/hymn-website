@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Not Found</title>
+    <title>Exceptions</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="/css/light.css" />
   </head>
@@ -15,12 +15,26 @@
         <a href="/play.html">Play</a>
         <a href="https://github.com/nathanmcmillan/hymn-lang">Download</a>
         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-        <a href="/dark/404.html">Dark</a>
+        <a href="/dark/exceptions.html">Dark</a>
       </div>
     </header>
-    <main id="not-found">
+    <main id="index">
+      <h1>Exceptions</h1>
+      <hr />
       <section>
-        <p>Page not found</p>
+        <p>Exceptions are used to communicate something went wrong.</p>
+        <pre><code>try
+  throw <string>&quot;Oh no!&quot;</string>
+catch error
+  <constant>print</constant> error
+<keyword>end</keyword>
+<constant>print</constant> <string>&quot;So anyways...&quot;</string>
+</code></pre>
+        <p>Catching an exception always provides a string value.</p>
+        <p>Exceptions always stop the current execution and jump to the closest catch block on the stack. If there is no catch block, then the program ends.</p>
+        <p>
+          <a href="/tables.html">Back to Tables</a>
+        </p>
       </section>
     </main>
     <footer>

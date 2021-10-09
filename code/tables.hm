@@ -1,0 +1,1 @@
+{ foo: "bar", ok: true, number: 1, missing: none }

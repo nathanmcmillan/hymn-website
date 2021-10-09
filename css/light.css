@@ -59,10 +59,8 @@ a:hover {
 hr {
   width: 100%;
   height: 1px;
-  border-left: 0;
-  border-right: 0;
+  border: 0;
   border-top: 1px solid var(--hr-color);
-  border-bottom: 1px solid var(--hr-color);
   margin-bottom: 0.5rem;
 }
 
@@ -119,6 +117,13 @@ code {
   font-size: 0.9rem;
 }
 
+ul {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  margin-left: 4rem;
+  margin-right: 1rem;
+}
+
 main {
   max-width: var(--main);
   margin: auto;
@@ -126,6 +131,10 @@ main {
 
 main {
   min-height: 100vh;
+}
+
+.right {
+  float: right;
 }
 
 #index h1 {
@@ -151,13 +160,6 @@ main {
 
 #index section p {
   margin: 1rem;
-}
-
-#index section ul {
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
-  margin-left: 2rem;
-  margin-right: 1rem;
 }
 
 #not-found {
