@@ -16,6 +16,7 @@
       </div>
       <select id="examples" onchange="example()">
         <option>Hello World</option>
+        <option>Primes</option>
         <option>Linked List</option>
         <option>Imports</option>
       </select>
@@ -36,11 +37,11 @@
         localStorage.setItem('source', source)
         const out = document.getElementById('out')
         out.textContent = ''
-        const hymn = newHymn()
+        const hymn = newVM()
         hymn.print = (text) => {
           out.textContent += text + '\r\n'
         }
-        const error = await hymnInterpret(hymn, source).catch((exception) => {
+        const error = await interpret(hymn, source).catch((exception) => {
           console.error(exception)
           return exception
         })

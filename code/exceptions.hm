@@ -1,6 +1,6 @@
 try
   throw "Oh no!"
-catch error
+except error
   print error
 end
 print "So anyways..."

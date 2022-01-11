@@ -93,8 +93,15 @@ header a {
 }
 
 footer {
-  width: 100%;
-  background-color: var(--footer-background);
+  /* width: 100%; */
+  /* background-color: var(--footer-background); */
+  max-width: var(--main);
+  height: 1px;
+  border: 0;
+  border-top: 1px solid var(--hr-color);
+  margin-bottom: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 footer p {
@@ -118,6 +125,16 @@ pre {
 
 code {
   font-size: 0.9rem;
+}
+
+.backtick {
+  padding: 0.1rem;
+  background-color: var(--pre-color);
+  background-color: var(--pre-background);
+  border: solid 1px var(--pre-border);
+  border-radius: 3px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 ul {

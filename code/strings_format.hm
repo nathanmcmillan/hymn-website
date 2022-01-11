@@ -1,0 +1,7 @@
+let x = 42
+"The answer is {x}"
+
+let y = 84
+"Is x less than y? {x < y}"
+
+"An escaped {{ curly"

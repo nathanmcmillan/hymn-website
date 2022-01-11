@@ -13,7 +13,7 @@
         <a href="/index.html">Home</a>
         <a href="/learn.html">Learn</a>
         <a href="/play.html">Play</a>
-        <a href="https://github.com/nathanmcmillan/hymn-lang">Download</a>
+        <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
         <a href="/dark/strings.html">Dark</a>
       </div>
@@ -35,6 +35,18 @@ world&quot;
         <p>Escape characters in strings using a backslash.</p>
         <pre><code><string>&quot;foo \&quot;</string>quote\<string>&quot; bar&quot;</string>
 <string>&quot;foo \n new line bar&quot;</string>
+</code></pre>
+        <p>Adjacent strings are automatically bunched together.</p>
+        <pre><code><string>&quot;I&quot;</string> <string>&quot; am &quot;</string> <string>&quot;one&quot;</string> <string>&quot; string&quot;</string>
+</code></pre>
+        <p>Curly brackets are used to execute code and concatenate the result within a string.</p>
+        <pre><code><keyword>let</keyword> x <keyword>=</keyword> <constant>42</constant>
+<string>&quot;The answer is {x}&quot;</string>
+
+<keyword>let</keyword> y <keyword>=</keyword> <constant>84</constant>
+<string>&quot;Is x less than y? {x &lt; y}&quot;</string>
+
+<string>&quot;An escaped {{ curly&quot;</string>
 </code></pre>
         <p>
           <a href="/primitives.html">Back to Primitives</a>
