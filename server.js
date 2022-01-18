@@ -19,6 +19,7 @@ const extensions = {
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.ttf': 'font/ttf',
   '.wav': 'audio/wav',
 }
 

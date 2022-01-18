@@ -8,22 +8,40 @@
 
   <body>
     <header>
-      <div class="header-left"></div>
-      <div>
-        <a href="/dark/learn.html">Learn</a>
-        <a href="/dark/play.html">Play</a>
-        <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-        <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-        <a href="/index.html">Light</a>
+      <div class="header">
+        <div class="header-left"></div>
+        <div>
+          <a href="/dark/learn">Learn</a>
+          <a href="/dark/play">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+          <a href="/index.html">Light</a>
+        </div>
       </div>
     </header>
     <main id="index">
-      <h1>Hymn Script</h1>
-      <hr />
-      <section>
+      <section id="home">
+        <h1>Hymn Script</h1>
         <h2>A tiny scripting language so simple, it's peaceful 🙏</h2>
-        <p>Hymn is easy to learn. <a href="play.html">Try it online</a>!</p>
-        <pre><code><comment>-- import scripts with the `use` statement.</comment>
+        <div>
+          <a class="big-button" href="/dark/learn">LEARN</a>
+          <a class="big-button" href="https://github.com/nathanmcmillan/hymn-lang/tags">DOWNLOAD</a>
+          <a class="big-button" href="/dark/play">TRY ONLINE</a>
+        </div>
+      </section>
+      <section id="release">
+        <div class="section-top">
+          <h3>Latest Release <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.3">0.3.0</a></h3>
+        </div>
+        <p>January 11, 2022 · <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/blob/master/RELEASE.md">Release notes</a></p>
+      </section>
+      <hr />
+      <section class="background-3">
+        <div class="section-top">
+          <h3>Syntax</h3>
+        </div>
+        <p>Hymn syntax uses only a handful of easy to read keywords.</p>
+        <div class="code"><pre><code><comment>-- import scripts with the `use` statement.</comment>
 <keyword>use</keyword> <string>&quot;math&quot;</string>
 
 <comment>-- tables hold key and value pairs</comment>
@@ -46,31 +64,40 @@ node_add(list, <string>&quot;world&quot;</string>)
 
 <comment>-- print statements will show all nested values in an object</comment>
 <constant>print</constant>(list)
-</code></pre>
-        <h3>Small</h3>
+</code></pre></div>
+        <p>Hymn is easy to learn. <a class="link" href="/dark/play">Try it online</a>!</p>
+      </section>
+      <section class="background-1">
+        <div class="section-top">
+          <h3>Small</h3>
+        </div>
         <p>
-          Hymn is written in portable C11 code that passes with <span class="backtick">-Wall</span> <span class="backtick">-Wextra</span> <span class="backtick">-Werror</span>
-          <span class="backtick">-pedantic</span> flags. It uses zero external dependencies. Both Make and CMake builds for GCC and Windows MSVC are available.
+          Hymn is written in portable C11 code that passes with -Wall -Wextra -Werror -pedantic flags. It uses zero external dependencies. Linux and Windows along with GCC, Clang
+          and MSVC are all supported.
         </p>
         <p>Hymn uses less than 7,000 lines of C code. The JavaScript implementation uses less than 6,000 lines.</p>
-        <h3>Simple</h3>
+      </section>
+      <section class="background-2">
+        <div class="section-top">
+          <h3>Simple</h3>
+        </div>
         <p>Hymn has no classes, closures, or namespaces. Tables and arrays are the building blocks for all complex algorithms and data structures.</p>
-        <p>Hymn emphasizes one way to do things right. Most programming languages evolve over time, adding significant changes and new syntax. Hymn will not.</p>
         <p>Hymn uses reference counting for memory management. This means scripts keep a smaller footprint, and release memory deterministically.</p>
+        <p>Hymn natively supports both 64 bit signed integers, and 64 bit floats. They are stored as distinct types.</p>
+      </section>
+      <section>
+        <div class="section-top">
+          <h3>Open Source</h3>
+        </div>
         <p>
-          Hymn natively supports both 64 bit signed integers, and 64 bit floats. Many scripting languages only support a single number type. Hymn stores integers and real numbers
-          as distinct types.
-        </p>
-        <h3>Open Source</h3>
-        <p>
-          Hymn is licensed under the <a href="https://mozilla.org/MPL/2.0/">Mozilla Public License Version 2.0</a>. The
-          <a href="https://github.com/nathanmcmillan/hymn-lang">source code</a> is free to view, distribute, and modify.
+          Hymn is licensed under the <a class="link" href="https://mozilla.org/MPL/2.0/">Mozilla Public License Version 2.0</a>. The
+          <a class="link" href="https://github.com/nathanmcmillan/hymn-lang">source code</a> is free to view, distribute, and modify.
         </p>
       </section>
     </main>
     <footer>
       <p>
-        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the source code to the website
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
         <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
       </p>
     </footer>

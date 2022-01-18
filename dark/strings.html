@@ -8,14 +8,16 @@
 
   <body>
     <header>
-      <div class="header-left"></div>
-      <div>
-        <a href="/dark/index.html">Home</a>
-        <a href="/dark/learn.html">Learn</a>
-        <a href="/dark/play.html">Play</a>
-        <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-        <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-        <a href="/strings.html">Light</a>
+      <div class="header">
+        <div class="header-left"></div>
+        <div>
+          <a href="/dark/index.html">Home</a>
+          <a href="/dark/learn.html">Learn</a>
+          <a href="/dark/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+          <a href="/strings.html">Light</a>
+        </div>
       </div>
     </header>
     <main id="index">
@@ -23,31 +25,31 @@
       <hr />
       <section>
         <p>A string is an array of characters used to represent text. Literal strings are surrounded in either single or doubles quotes.</p>
-        <pre><code><string>&#x27;hello hymn&#x27;</string>
+        <div class="code"><pre><code><string>&#x27;hello hymn&#x27;</string>
 <string>&quot;hello hymn&quot;</string>
-</code></pre>
+</code></pre></div>
         <p>Strings can be written across multiple lines. Spaces are preserved.</p>
-        <pre><code>&quot;hello
+        <div class="code"><pre><code>&quot;hello
   across
   the
 world&quot;
-</code></pre>
+</code></pre></div>
         <p>Escape characters in strings using a backslash.</p>
-        <pre><code><string>&quot;foo \&quot;</string>quote\<string>&quot; bar&quot;</string>
+        <div class="code"><pre><code><string>&quot;foo \&quot;</string>quote\<string>&quot; bar&quot;</string>
 <string>&quot;foo \n new line bar&quot;</string>
-</code></pre>
+</code></pre></div>
         <p>Adjacent strings are automatically bunched together.</p>
-        <pre><code><string>&quot;I&quot;</string> <string>&quot; am &quot;</string> <string>&quot;one&quot;</string> <string>&quot; string&quot;</string>
-</code></pre>
+        <div class="code"><pre><code><string>&quot;I&quot;</string> <string>&quot; am &quot;</string> <string>&quot;one&quot;</string> <string>&quot; string&quot;</string>
+</code></pre></div>
         <p>Curly brackets are used to execute code and concatenate the result within a string.</p>
-        <pre><code><keyword>let</keyword> x <keyword>=</keyword> <constant>42</constant>
+        <div class="code"><pre><code><keyword>let</keyword> x <keyword>=</keyword> <constant>42</constant>
 <string>&quot;The answer is {x}&quot;</string>
 
 <keyword>let</keyword> y <keyword>=</keyword> <constant>84</constant>
 <string>&quot;Is x less than y? {x &lt; y}&quot;</string>
 
 <string>&quot;An escaped {{ curly&quot;</string>
-</code></pre>
+</code></pre></div>
         <p>
           <a href="/dark/primitives.html">Back to Primitives</a>
           <a class="right" href="/dark/lists.html">Learn Lists</a>
@@ -56,7 +58,7 @@ world&quot;
     </main>
     <footer>
       <p>
-        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the source code to the website
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
         <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
       </p>
     </footer>

@@ -44,14 +44,14 @@ def search_and_replace(path, dark_mode):
             out.append(space + '</footer>\n')
         elif line.strip().startswith('<pre>'):
             space = whitespace(line)
-            out.append(space + '<pre><code>')
+            out.append(space + '<div class="code"><pre><code>')
             source = line.strip().replace('<pre>', '').replace('</pre>', '')
-            out.append(code.highlight(source) + '</code></pre>\n')
+            out.append(code.highlight(source) + '</code></pre></div>\n')
         else:
             out.append(line)
 
     content = "".join(out)
-    content = content.replace('${this}', path.replace('\\', '/'))
+    content = content.replace('(This)', path.replace('\\', '/'))
 
     if dark_mode:
         content = dark.dark_search_and_replace(content)
