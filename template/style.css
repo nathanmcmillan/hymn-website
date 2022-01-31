@@ -22,7 +22,7 @@ html {
 }
 
 hr {
-  width: var(--content);
+  max-width: var(--content);
   height: 1px;
   border: 0;
   border-top: 1px solid var(--line-color);
@@ -31,7 +31,7 @@ hr {
 }
 
 .section-line {
-  width: var(--main);
+  max-width: var(--main);
 }
 
 .padding {
