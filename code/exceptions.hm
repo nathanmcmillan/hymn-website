@@ -1,6 +1,6 @@
 try
   throw "Oh no!"
 except error
-  print error
+  echo error
 end
-print "So anyways..."
+echo "So anyways..."

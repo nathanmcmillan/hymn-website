@@ -9,13 +9,13 @@ function fizzbuzz(n)
   fizzbuzz(n - 1)
 
   if n % 15 == 0
-    print f + b
+    echo f + b
   elif n % 5 == 0
-    print b
+    echo b
   elif n % 3 == 0
-    print f
+    echo f
   else
-    print n
+    echo n
   end
 end
 

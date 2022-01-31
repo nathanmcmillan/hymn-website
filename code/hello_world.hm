@@ -4,4 +4,4 @@ end
 
 let hi = hello()
 
-print hi + " world"
+echo hi + " world"

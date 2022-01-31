@@ -15,5 +15,5 @@ let list = new_node("hello")
 node_add(list, "world")
 
 iterate i, value in list
-  print value
+  echo value
 end

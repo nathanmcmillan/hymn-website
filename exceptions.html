@@ -21,21 +21,24 @@
       </div>
     </header>
     <main id="index">
-      <h1>Exceptions</h1>
-      <hr />
+      <h1 class="centered-header">Exceptions</h1>
+      <hr class="section-line" />
       <section>
+        <hr class="padding" />
         <p>Exceptions are used to communicate something went wrong.</p>
-        <div class="code"><pre><code>try
+        <div class="code"><pre><code><keyword>try</keyword>
   throw <string>&quot;Oh no!&quot;</string>
-except error
-  <constant>print</constant> error
+<keyword>except</keyword> error
+  <constant>echo</constant> error
 <keyword>end</keyword>
-<constant>print</constant> <string>&quot;So anyways...&quot;</string>
+<constant>echo</constant> <string>&quot;So anyways...&quot;</string>
 </code></pre></div>
         <p>Catching an exception always provides a string value.</p>
         <p>Exceptions always stop the current execution and jump to the closest catch block on the stack. If there is no catch block, then the program ends.</p>
+        <hr class="padding" />
         <p>
-          <a href="/loops.html">Back to Loops</a>
+          <a class="link" href="/loops">Back to Loops</a>
+          <a class="link right" href="/learn">Back to Table of Contents</a>
         </p>
       </section>
     </main>

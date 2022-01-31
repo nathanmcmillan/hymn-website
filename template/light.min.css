@@ -4,13 +4,11 @@
 :root {
   --color: black;
   --background: white;
-  --href-color: rgb(255, 0, 80);
-  --href-hover-color: rgb(240, 146, 146);
-  --hr-color: black;
-  --footer-background: rgb(200, 200, 200);
-  --pre-color: rgb(60, 80, 90);
-  --pre-background: rgb(252, 252, 252);
-  --pre-border: rgb(220, 220, 230);
+  --line-color: lightgrey;
+  --focus-color: white;
+  --focus-background: cornflowerblue;
+  --off-color: grey;
+  --code-border: lightgrey;
 }
 
 constant {

@@ -1,8 +1,8 @@
 {
   "syntax": [
     ["--.*$", ["comment"]],
-    ["\\b(copy|delete|float|index|int|insert|keys|pop|print|push|int|string)\\b", [null, "constant"]],
-    ["\\b(do|use|let|if|elif|else|for|while|return|break|continue|end|iterate|in)\\b", [null, "keyword"]],
+    ["\\b(copy|delete|float|index|int|insert|keys|pop|echo|print|push|int|string)\\b", [null, "constant"]],
+    ["\\b(do|use|let|if|elif|else|for|while|return|break|continue|end|in|try|except)\\b", [null, "keyword"]],
     ["\\b(function) (\\w+)", [null, "keyword", "entity"]],
     ["(=|>=|<=|!=|<|>|==)", [null, "keyword"]],
     ["(\\+|-|\\*|\\/|%|&|\\||\\^|~|<<|>>)", [null, "keyword"]],

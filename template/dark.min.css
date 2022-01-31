@@ -4,13 +4,11 @@
 :root {
   --color: rgb(156, 220, 254);
   --background: rgb(39, 40, 34);
-  --href-color: rgb(255, 0, 77);
-  --href-hover-color: rgb(240, 146, 146);
-  --hr-color: rgb(174, 129, 225);
-  --footer-background: rgb(174, 129, 225);
-  --pre-color: rgb(60, 80, 90);
-  --pre-background: black;
-  --pre-border: white;
+  --line-color: lightgrey;
+  --focus-color: white;
+  --focus-background: rgb(174, 129, 225);
+  --off-color: lightgrey;
+  --code-border: white;
 }
 
 constant {
