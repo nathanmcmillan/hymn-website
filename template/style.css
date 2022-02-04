@@ -69,6 +69,10 @@ header {
 
 .header-left {
   flex: 1;
+  font-size: 2rem;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+  color: var(--focus-color);
 }
 
 .header-left a {
@@ -182,6 +186,14 @@ main {
   font-size: 1.8rem;
 }
 
+h4 {
+  max-width: var(--main);
+  font-family: Verdana, sans-serif;
+  margin: auto;
+  padding: 1rem;
+  font-size: 1.5rem;
+}
+
 #home {
   background-color: var(--focus-background);
   color: var(--focus-color);
@@ -237,7 +249,6 @@ ul li {
 #home div a:hover {
   color: var(--focus-background);
   background-color: var(--focus-color);
-  border-radius: 0;
 }
 
 #release {
@@ -273,6 +284,15 @@ td {
   border: 1px solid var(--focus-background);
   padding: 0.5rem;
   color: var(--off-color);
+}
+
+table td a {
+  color: var(--focus-background);
+  text-decoration: none;
+}
+
+table td a:hover {
+  text-decoration: underline;
 }
 
 #not-found {

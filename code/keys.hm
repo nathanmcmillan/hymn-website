@@ -1,0 +1,3 @@
+>>> let table = { foo: 2, bar: 4 }
+>>> echo keys(table)
+["bar", "foo"]

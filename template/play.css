@@ -2,12 +2,17 @@
   --select-offset: 0.2rem;
 }
 
+@font-face {
+  font-family: 'Roboto';
+  src: url('/Roboto.ttf');
+}
+
 html {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: 'Roboto', Verdana, Arial, sans-serif;
 }
 
 body {
@@ -36,20 +41,20 @@ body {
   padding: 0.5rem 1rem;
   margin: 0.7rem;
   color: var(--run-color);
-  background-color: var(--run-background);
   min-width: 6rem;
-  border: 0;
   outline: none;
-  border-color: transparent;
-  border-radius: 2px;
+  border: 2px solid var(--run-color);
+  background-color: transparent;
   box-sizing: border-box;
   text-align: center;
   font-size: 1.2rem;
+  font-family: Verdana, sans-serif;
 }
 
 #run button:hover {
   cursor: pointer;
-  background-color: var(--run-hover);
+  color: var(--top);
+  background-color: var(--run-color);
 }
 
 #examples {
@@ -106,5 +111,6 @@ body {
   font-family: monospace;
   color: var(--out-color);
   background-color: var(--out-background);
+  border-top: 1px solid black;
   white-space: pre;
 }

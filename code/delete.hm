@@ -1,0 +1,8 @@
+>>> let array = [2, 4]
+>>> delete(array, 0)
+>>> echo array
+[4]
+>>> let table = { foo: 8, bar: 16 }
+>>> delete(table, "foo")
+>>> echo table
+{ bar: 16 }

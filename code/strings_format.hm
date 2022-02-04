@@ -1,7 +1,9 @@
-let x = 42
-"The answer is {x}"
+>>> let x = 42
+>>> echo "The answer is {x}"
+The answer is 42
 
-let y = 84
-"Is x less than y? {x < y}"
+>>> echo "The answer doubled is {x * 2}"
+The answer doubled is 84
 
-"An escaped {{ curly"
+>>> echo "An escaped {{ curly"
+An escaped { curly

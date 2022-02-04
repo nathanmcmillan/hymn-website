@@ -9,7 +9,7 @@
   <body>
     <header>
       <div class="header">
-        <div class="header-left"></div>
+        <div class="header-left">Hymn Script</div>
         <div>
           <a href="/dark/index.html">Home</a>
           <a href="/dark/learn.html">Learn</a>
@@ -28,57 +28,104 @@
         <p>Code comments start with two dashes `--` and end at the next new line.</p>
         <h2>Scope</h2>
         <p>Variable scope uses `begin` and `end`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
-        <h2>Reserved words</h2>
-        <p>
-          <table>
-            <tr><th>Keyword</th><th>Description</th></tr>
-            <tr><td>and</td><td>Two conditionals must be true</td></tr>
-            <tr><td>begin</td><td>Start of a new scope</td></tr>
-            <tr><td>break</td><td>Exits a loop</td></tr>
-            <tr><td>continue</td><td>Starts the next iteration of a loop</td></tr>
-            <tr><td>elif</td><td>Else if for an if statement</td></tr>
-            <tr><td>else</td><td>Non-matching condition for an if statement</td></tr>
-            <tr><td>end</td><td>Ends the current scope</td></tr>
-            <tr><td>except</td><td>Takes in an error string after a try block</td></tr>
-            <tr><td>false</td><td>Boolean false value</td></tr>
-            <tr><td>for</td><td>For loop</td></tr>
-            <tr><td>function</td><td>Starts a new function declaration</td></tr>
-            <tr><td>if</td><td>If statement</td></tr>
-            <tr><td>in</td><td>For ... in statement</td></tr>
-            <tr><td>let</td><td>Declares a variable</td></tr>
-            <tr><td>none</td><td>None type</td></tr>
-            <tr><td>or</td><td>One or both conditions must be true</td></tr>
-            <tr><td>return</td><td>Exits the current function</td></tr>
-            <tr><td>throw</td><td>Generates an exception</td></tr>
-            <tr><td>true</td><td>Boolean true</td></tr>
-            <tr><td>try</td><td>Begins a try block</td></tr>
-            <tr><td>use</td><td>Imports a separate Hymn script</td></tr>
-            <tr><td>while</td><td>While loop</td></tr>
-          </table>
-        </p>
-        <h2>Built-in Functions</h2>
-        <p>
-          <table>
-            <tr><th>Function</th><th>Description</th></tr>
-            <tr><td>clear</td><td>Removes all elements inside arrays and tables. Strings become blank</td></tr>
-            <tr><td>copy</td><td>Copies all elements in an array or table and returns a new one</td></tr>
-            <tr><td>delete</td><td>Delete all elements in an array or table</td></tr>
-            <tr><td>echo</td><td>Print to standard out with a new line</td></tr>
-            <tr><td>exists</td><td>Returns true if a given key exists with a value in a table</td></tr>
-            <tr><td>float</td><td>Casts a value to a float</td></tr>
-            <tr><td>index</td><td>Returns the index number or table key for the given value</td></tr>
-            <tr><td>insert</td><td>Inserts a value</td></tr>
-            <tr><td>integer</td><td>Casts a value to an integer</td></tr>
-            <tr><td>keys</td><td>Returns an array of keys for a table</td></tr>
-            <tr><td>len</td><td>Returns the length of an array or size of a table</td></tr>
-            <tr><td>print</td><td>Prints to standard out or standard error without a new line</td></tr>
-            <tr><td>push</td><td>Pushes a value to the end of an array</td></tr>
-            <tr><td>string</td><td>Casts a value to a string</td></tr>
-          </table>
-        </p>
+        <h2>Reserved Words</h2>
+        <table>
+          <!-- <tr>
+            <th colspan="2">Keyword</th>
+          </tr> -->
+          <tr>
+            <td>and</td>
+            <td>Logical operator where two conditionals must be true</td>
+          </tr>
+          <tr>
+            <td>begin</td>
+            <td>Starts a new scope</td>
+          </tr>
+          <tr>
+            <td>break</td>
+            <td>Breaks out of the current loop</td>
+          </tr>
+          <tr>
+            <td>continue</td>
+            <td>Continues on to the next iteration of the current loop</td>
+          </tr>
+          <tr>
+            <td>elif</td>
+            <td>Used for an additional conditional statement following an if statement</td>
+          </tr>
+          <tr>
+            <td>else</td>
+            <td>Non-matching condition as part of an if statement</td>
+          </tr>
+          <tr>
+            <td>end</td>
+            <td>Ends the current scope</td>
+          </tr>
+          <tr>
+            <td>except</td>
+            <td>Used at the end of a try block to capture an exception</td>
+          </tr>
+          <tr>
+            <td>false</td>
+            <td>Boolean false value</td>
+          </tr>
+          <tr>
+            <td>for</td>
+            <td>Creates a loop to iterate over a value or sequence</td>
+          </tr>
+          <tr>
+            <td>function</td>
+            <td>Defines a new function</td>
+          </tr>
+          <tr>
+            <td>if</td>
+            <td>Creates a conditional statement</td>
+          </tr>
+          <tr>
+            <td>in</td>
+            <td>Used in a for loop for specifying a value to iterate over</td>
+          </tr>
+          <tr>
+            <td>let</td>
+            <td>Used to declare a new variable</td>
+          </tr>
+          <tr>
+            <td>none</td>
+            <td>None type that represents the absence of a value</td>
+          </tr>
+          <tr>
+            <td>or</td>
+            <td>Logical operator where one or both conditions must be true</td>
+          </tr>
+          <tr>
+            <td>return</td>
+            <td>Exits the current function</td>
+          </tr>
+          <tr>
+            <td>throw</td>
+            <td>Generates an exception</td>
+          </tr>
+          <tr>
+            <td>true</td>
+            <td>Boolean true value</td>
+          </tr>
+          <tr>
+            <td>try</td>
+            <td>Begins a try block</td>
+          </tr>
+          <tr>
+            <td>use</td>
+            <td>Imports a Hymn script</td>
+          </tr>
+          <tr>
+            <td>while</td>
+            <td>Creates a loop that will not end until the given condition is true</td>
+          </tr>
+        </table>
         <hr class="padding" />
         <p>
-          <a class="link right" href="/dark/primitives">Learn Primitives</a>
+          <a class="link" href="/dark/learn">Back to Table of Contents</a>
+          <a class="link right" href="/dark/built-in">Learn Built-ins</a>
         </p>
       </section>
     </main>

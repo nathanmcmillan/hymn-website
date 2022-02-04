@@ -16,5 +16,5 @@ end
 let list = new_node("hello")
 node_add(list, "world")
 
-print(list)`
+echo list`
 )

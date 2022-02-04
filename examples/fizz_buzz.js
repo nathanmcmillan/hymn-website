@@ -1,6 +1,9 @@
+examples.set(
+  'new',
+  `let f = "Fizz"
+let b = "Buzz"
+
 function fizzbuzz(n)
-  let f = "Fizz"
-  let b = "Buzz"
 
   if n == 0
     return
@@ -19,4 +22,5 @@ function fizzbuzz(n)
   end
 end
 
-fizzbuzz(100)
+fizzbuzz(20)`
+)

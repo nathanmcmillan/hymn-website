@@ -1,0 +1,6 @@
+>>> print(0, "This ")
+>>> print(0, "is ")
+>>> print(0, "ok")
+This is ok
+>>> print(1, "Error")
+Error

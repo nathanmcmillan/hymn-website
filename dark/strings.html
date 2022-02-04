@@ -9,7 +9,7 @@
   <body>
     <header>
       <div class="header">
-        <div class="header-left"></div>
+        <div class="header-left">Hymn Script</div>
         <div>
           <a href="/dark/index.html">Home</a>
           <a href="/dark/learn.html">Learn</a>
@@ -43,13 +43,15 @@ world&quot;
         <div class="code"><pre><code><string>&quot;I&quot;</string> <string>&quot; am &quot;</string> <string>&quot;one&quot;</string> <string>&quot; string&quot;</string>
 </code></pre></div>
         <p>Curly brackets are used to execute code and concatenate the result within a string.</p>
-        <div class="code"><pre><code><keyword>let</keyword> x <keyword>=</keyword> <constant>42</constant>
-<string>&quot;The answer is {x}&quot;</string>
+        <div class="code"><pre><code><keyword>&gt;&gt;</keyword><keyword>&gt;</keyword> <keyword>let</keyword> x <keyword>=</keyword> <constant>42</constant>
+<keyword>&gt;&gt;</keyword><keyword>&gt;</keyword> <constant>echo</constant> <string>&quot;The answer is {x}&quot;</string>
+The answer is <constant>42</constant>
 
-<keyword>let</keyword> y <keyword>=</keyword> <constant>84</constant>
-<string>&quot;Is x less than y? {x &lt; y}&quot;</string>
+<keyword>&gt;&gt;</keyword><keyword>&gt;</keyword> <constant>echo</constant> <string>&quot;The answer doubled is {x * 2}&quot;</string>
+The answer doubled is <constant>84</constant>
 
-<string>&quot;An escaped {{ curly&quot;</string>
+<keyword>&gt;&gt;</keyword><keyword>&gt;</keyword> <constant>echo</constant> <string>&quot;An escaped {{ curly&quot;</string>
+An escaped { curly
 </code></pre></div>
         <hr class="padding" />
         <p>

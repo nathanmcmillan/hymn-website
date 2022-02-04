@@ -2,13 +2,11 @@
  * https://creativecommons.org/publicdomain/zero/1.0/ */
 
 :root {
-  --top: lightskyblue;
-  --run-color: black;
-  --run-background: steelblue;
-  --run-hover: royalblue;
+  --top: cornflowerblue;
+  --run-color: white;
   --examples: black;
   --source-color: black;
-  --source-background: lightgoldenrodyellow;
+  --source-background: white;
   --out-color: black;
   --out-background: white;
 }

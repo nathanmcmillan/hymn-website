@@ -2,5 +2,5 @@ examples.set(
   'new',
   `use "math"
 
-print(abs(-1))`
+echo abs(-1)`
 )

@@ -1,7 +1,0 @@
-function hello()
-  return "hello"
-end
-
-let hi = hello()
-
-echo hi + " world"

@@ -4,5 +4,5 @@ examples.set(
 function world()
   return " world"
 end
-print(hello + world())`
+echo hello + world()`
 )

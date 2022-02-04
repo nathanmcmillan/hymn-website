@@ -17,5 +17,5 @@ for i = 0, i < N
   end
 end
 
-print("primes: {primes}")`
+echo "primes: {primes}"`
 )

@@ -19,6 +19,7 @@
         <option>Primes</option>
         <option>Linked List</option>
         <option>Imports</option>
+        <option>Fizz Buzz</option>
       </select>
     </section>
     <section id="play">
@@ -39,6 +40,12 @@
         out.textContent = ''
         const hymn = newVM()
         hymn.print = (text) => {
+          out.textContent += text
+        }
+        hymn.printError = (text) => {
+          out.textContent += text
+        }
+        hymn.printLine = (text) => {
           out.textContent += text + '\r\n'
         }
         const error = await interpret(hymn, source).catch((exception) => {

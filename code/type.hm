@@ -1,0 +1,6 @@
+>>> echo type(256)
+Integer
+>>> echo type(256.0)
+Float
+>>> echo type("256")
+String

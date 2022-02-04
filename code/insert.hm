@@ -1,0 +1,4 @@
+>>> let array = [2, 4]
+>>> insert(array, 1, 8)
+>>> echo array
+[2, 8, 4]
