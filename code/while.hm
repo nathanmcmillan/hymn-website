@@ -1,5 +1,5 @@
 let i = 0
-while i < 12
+while i < 12 {
   print("Hi!")
   i += 2
-end
+}

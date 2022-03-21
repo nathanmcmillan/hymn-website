@@ -1,14 +1,14 @@
-function abs(n)
-  if n < 0 return -n end
+function abs(n) {
+  if n < 0 { return -n }
   return n
-end
+}
 
-function min(a, b)
-  if a < b return a end
+function min(a, b) {
+  if a < b { return a }
   return b
-end
+}
 
-function max(a, b)
-  if a > b return a end
+function max(a, b) {
+  if a > b { return a }
   return b
-end
+}

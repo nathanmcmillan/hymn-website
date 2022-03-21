@@ -10,6 +10,6 @@ mkdir dark/css
 cp -r html/* .
 cp -r html/* dark
 
-./make.py
+./make.hm
 
 ./css-make.sh

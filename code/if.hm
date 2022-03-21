@@ -1,17 +1,17 @@
-if 1 < 2
+if 1 < 2 {
   print("Yes!")
-end
+}
 
-if 1 < 2
+if 1 < 2 {
   print("Yes!")
-elif 2 < 4
+} elif 2 < 4 {
   print("Yes!")
-end
+}
 
-if 1 < 2
+if 1 < 2 {
   print("Yes!")
-elif 2 < 4
+} elif 2 < 4 {
   print("Yes!")
-else
+} else {
   print("No!")
-end
+}

@@ -1,7 +1,7 @@
-for value in { a: 2, b: 4, c: 6 }
+for value in { a: 2, b: 4, c: 6 } {
   print(value)
-end
+}
 
-for id, value in { a: 2, b: 4, c: 6 }
+for id, value in { a: 2, b: 4, c: 6 } {
   print("{id}: {value}")
-end
+}

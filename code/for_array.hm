@@ -1,7 +1,7 @@
-for value in [2, 4, 6]
+for value in [2, 4, 6] {
   print(value)
-end
+}
 
-for id, value in [2, 4, 6]
+for id, value in [2, 4, 6] {
   print("{id}: {value}")
-end
+}

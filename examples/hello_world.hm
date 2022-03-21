@@ -1,8 +1,7 @@
-examples.set('new', `let hello = "hello"
+let hello = "hello"
 
 function world() {
   return " world"
 }
 
 echo hello + world()
-`)

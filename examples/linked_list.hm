@@ -1,4 +1,4 @@
-examples.set('new', `function new_node(value) {
+function new_node(value) {
   return { value: value, next: none }
 }
 
@@ -15,4 +15,3 @@ let list = new_node("hello")
 node_add(list, "world")
 
 echo list
-`)

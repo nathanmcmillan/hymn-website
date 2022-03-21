@@ -8,17 +8,17 @@
 
   <body>
     <header>
-      <div class="header">
-        <div class="header-left">Hymn Script</div>
-        <div>
-          <a href="/dark/index.html">Home</a>
-          <a href="/dark/learn.html">Learn</a>
-          <a href="/dark/play.html">Play</a>
-          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-          <a href="/conditionals.html">Light</a>
-        </div>
-      </div>
+     <div class="header">
+       <div class="header-left">Hymn Script</div>
+       <div>
+         <a href="/dark/index.html">Home</a>
+         <a href="/dark/learn.html">Learn</a>
+         <a href="/dark/play.html">Play</a>
+         <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+         <a href="/conditionals.html">Light</a>
+       </div>
+     </div>
     </header>
     <main id="index">
       <h1 class="centered-header">Conditionals</h1>
@@ -26,23 +26,23 @@
       <section>
         <hr class="padding" />
         <p>Conditionals are used to control the flow of a program.</p>
-        <div class="code"><pre><code><keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>end</keyword>
+        <div class="code"><pre><code>if 1 < 2 {
+  print("Yes!")
+}
 
-<keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>elif</keyword> <constant>2</constant> <keyword>&lt;</keyword> <constant>4</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>end</keyword>
+if 1 < 2 {
+  print("Yes!")
+} elif 2 < 4 {
+  print("Yes!")
+}
 
-<keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>elif</keyword> <constant>2</constant> <keyword>&lt;</keyword> <constant>4</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>else</keyword>
-  <constant>print</constant>(<string>&quot;No!&quot;</string>)
-<keyword>end</keyword>
+if 1 < 2 {
+  print("Yes!")
+} elif 2 < 4 {
+  print("Yes!")
+} else {
+  print("No!")
+}
 </code></pre></div>
         <hr class="padding" />
         <p>
@@ -52,10 +52,10 @@
       </section>
     </main>
     <footer>
-      <p>
-        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
-        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
-      </p>
+     <p>
+       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+     </p>
     </footer>
   </body>
 </html>
