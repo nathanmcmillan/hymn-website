@@ -1,13 +1,13 @@
 {
   "syntax": [
-    ["#*", ["comment"]],
-    ["copy(", [null, "constant"]],
-    ["use ", [null, "keyword"]],
-    ["function *", [null, "keyword", "entity"]],
-    ["==", [null, "keyword"]],
-    ["+", [null, "keyword"]],
-    ["true", [null, "constant"]],
-    ["\"*\"", ["string"]],
-    ["'*'", ["string"]]
+    ["#*", "comment"],
+    ["(copy)\\(", "constant"],
+    ["use", "keyword"],
+    ["(function) (*)", "keyword", "entity"],
+    ["==", "keyword"],
+    ["+", "keyword"],
+    ["true", "constant"],
+    ["\"*\"", "string"],
+    ["'*'", "string"]
   ]
 }

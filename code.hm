@@ -7,5 +7,6 @@ let syntax_directory = 'code/syntax/'
 
 function code_highlight(path) {
   let source = io.read(directory + path)
+  let data = json.parse(source)
   return source
 }
