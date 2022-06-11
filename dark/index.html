@@ -3,7 +3,7 @@
   <head>
     <title>Hymn Script</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
   </head>
 
   <body>
@@ -11,11 +11,11 @@
       <div class="header">
         <div class="header-left"></div>
         <div>
-          <a href="/dark/learn">Learn</a>
-          <a href="/dark/play">Play</a>
+          <a href="/learn">Learn</a>
+          <a href="/play">Play</a>
           <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
           <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-          <a href="/index.html">Light</a>
+          <a href="/dark/(This)">Dark</a>
         </div>
       </div>
     </header>
@@ -24,9 +24,9 @@
         <h1>Hymn Script</h1>
         <h2>A tiny scripting language so simple, it's peaceful 🙏</h2>
         <div>
-          <a class="link-button" href="/dark/learn">LEARN</a>
+          <a class="link-button" href="/learn">LEARN</a>
           <a class="link-button" href="https://github.com/nathanmcmillan/hymn-lang/tags">INSTALL</a>
-          <a class="link-button" href="/dark/play">TRY ONLINE</a>
+          <a class="link-button" href="/play">TRY ONLINE</a>
         </div>
       </section>
       <section id="release">
@@ -40,31 +40,8 @@
         <div class="section-top">
           <h3>Syntax</h3>
         </div>
-        <p>Hymn syntax uses only a handful of easy to read keywords. <a class="link" href="/dark/play">Try it online</a>!</p>
-        <div class="code"><pre><code># import scripts with the `use` statement.
-use "math"
-
-# tables hold key and value pairs
-function new_node(value) {
-  return { value: value, next: none }
-}
-
-function node_add(list, value) {
-  let node = list
-  while true {
-    if node.next == none { break }
-    node = node.next
-  }
-  node.next = new_node(value)
-}
-
-# objects are passed by reference
-let list = new_node("hello")
-node_add(list, "world")
-
-# echo statements will show all nested values in an object
-echo list
-</code></pre></div>
+        <p>Hymn syntax uses only a handful of easy to read keywords. <a class="link" href="/play">Try it online</a>!</p>
+        <pre>home.hm</pre>
       </section>
       <section>
         <div class="section-top">
@@ -94,11 +71,6 @@ echo list
         </p>
       </section>
     </main>
-    <footer>
-     <p>
-       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
-       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
-     </p>
-    </footer>
+    <footer></footer>
   </body>
 </html>

@@ -1,0 +1,14 @@
+{
+  "syntax": [
+    ["#.*$", ["comment"]],
+    ["%s(copy|delete|float|index|int|insert|keys|pop|echo|print|push|int|string|exists|type)%s", [null, "constant"]],
+    ["%s(use|let|if|elif|else|for|while|return|break|continue|in|try|except)%s", [null, "keyword"]],
+    ["%s(function) (%w+)", [null, "keyword", "entity"]],
+    ["(=|>=|<=|!=|<|>|==)", [null, "keyword"]],
+    ["(\\+|-|\\*|\\/|%|&|\\||\\^|~|<<|>>)", [null, "keyword"]],
+    ["%s(true|false|none)%s", [null, "constant"]],
+    ["%s(%d+(?:\\.%d+)?)%s", [null, "constant"]],
+    ["\".-\"", ["string"]],
+    ["'.-'", ["string"]]
+  ]
+}

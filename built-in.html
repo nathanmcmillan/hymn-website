@@ -7,19 +7,7 @@
   </head>
 
   <body>
-    <header>
-     <div class="header">
-       <div class="header-left">Hymn Script</div>
-       <div>
-         <a href="/index.html">Home</a>
-         <a href="/learn.html">Learn</a>
-         <a href="/play.html">Play</a>
-         <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-         <a href="/dark/./built-in.html">Dark</a>
-       </div>
-     </div>
-    </header>
+    <header></header>
     <main id="index">
       <h1 class="centered-header">Built-in Functions</h1>
       <hr class="section-line" />
@@ -93,123 +81,52 @@
         </table>
         <h4><a name="clear">clear(object)</a></h4>
         <p>Removes all elements inside arrays and tables. Strings become blank.</p>
-        <div class="code"><pre><code>>>> let array = [2, 4]
->>> clear(array)
->>> echo array
-[]
-</code></pre></div>
+        <pre>clear.hm</pre>
         <h4><a name="copy">copy(object)</a></h4>
         <p>Copies all elements in an array or table and returns a new one.</p>
-        <div class="code"><pre><code>>>> let foo = [2, 4]
->>> let bar = copy(array)
->>> echo bar
-[2, 4]
-</code></pre></div>
+        <pre>copy.hm</pre>
         <h4><a name="delete">delete(object, index)</a></h4>
         <p>Deletes element at index in an array or table.</p>
-        <div class="code"><pre><code>>>> let array = [2, 4]
->>> delete(array, 0)
->>> echo array
-[4]
->>> let table = { foo: 8, bar: 16 }
->>> delete(table, "foo")
->>> echo table
-{ bar: 16 }
-</code></pre></div>
+        <pre>delete.hm</pre>
         <h4><a name="echo">echo value</a></h4>
         <p>Prints to standard out with a new line. Note that converting a table to a string will always sort the keys.</p>
-        <div class="code"><pre><code>>>> let table = { c: 4, b: 2, a: 8 }
->>> echo table
-{ a: 8, b: 2, c: 4 }
-</code></pre></div>
+        <pre>echo.hm</pre>
         <h4><a name="exists">exists(table, value)</a></h4>
         <p>Returns true if a given key exists in a table.</p>
-        <div class="code"><pre><code>>>> let table = { foo: none }
->>> echo exists(table, "foo")
-True
->>> echo exists(table, "bar")
-False
-</code></pre></div>
+        <pre>exists.hm</pre>
         <h4><a name="float">float(value)</a></h4>
         <p>Casts a value to a float.</p>
-        <div class="code"><pre><code>>>> let x = 256
->>> echo float(x)
-256.0
-</code></pre></div>
+        <pre>float.hm</pre>
         <h4><a name="index">index(object, value)</a></h4>
         <p>Returns the index number or table key for the given value.</p>
-        <div class="code"><pre><code>>>> let array = [2, 4, 8]
->>> echo index(array, 8)
-2
->>> let table = { foo: 2, bar: 4 }
->>> echo index(table, 4)
-bar
-</code></pre></div>
+        <pre>index.hm</pre>
         <h4><a name="insert">insert(array, index, value)</a></h4>
         <p>Inserts a value into an array at a given index.</p>
-        <div class="code"><pre><code>>>> let array = [2, 4]
->>> insert(array, 1, 8)
->>> echo array
-[2, 8, 4]
-</code></pre></div>
+        <pre>insert.hm</pre>
         <h4><a name="int">int(value)</a></h4>
         <p>Casts a value to an integer.</p>
-        <div class="code"><pre><code>>>> let x = 256.1
->>> echo int(x)
-256
-</code></pre></div>
+        <pre>int.hm</pre>
         <h4><a name="keys">keys(table)</a></h4>
         <p>Returns a sorted array of keys for a table.</p>
-        <div class="code"><pre><code>>>> let table = { foo: 2, bar: 4 }
->>> echo keys(table)
-["bar", "foo"]
-</code></pre></div>
+        <pre>keys.hm</pre>
         <h4><a name="len">len(object)</a></h4>
         <p>Returns the length of an array or string, or size of a table.</p>
-        <div class="code"><pre><code>>>> let array = [2, 4, 8]
->>> echo len(array)
-3
->>> let table = { "foo": 2, "bar": 4 }
->>> echo len(table)
-2
->>> echo len("abc")
-3
-</code></pre></div>
+        <pre>len.hm</pre>
         <h4><a name="print">print(boolean, value)</a></h4>
         <p>
           Prints to standard out or standard error without a new line. The 1st argument is evaluated as a boolean, where true means writing to standard error, and false means
           writing to standard out. The second value is evaluated to a string and printed.
         </p>
-        <div class="code"><pre><code>>>> print(0, "This ")
->>> print(0, "is ")
->>> print(0, "ok")
-This is ok
->>> print(1, "Error")
-Error
-</code></pre></div>
+        <pre>print.hm</pre>
         <h4><a name="push">push(array, value)</a></h4>
         <p>Adds a value to the end of an array.</p>
-        <div class="code"><pre><code>>>> let array = [2, 4]
->>> push(array, 8)
->>> echo array
-[2, 4, 8]
-</code></pre></div>
+        <pre>push.hm</pre>
         <h4><a name="string">string(value)</a></h4>
         <p>Casts a value to a string.</p>
-        <div class="code"><pre><code>>>> let x = 256
->>> let s = string(x)
->>> echo type(s)
-String
-</code></pre></div>
+        <pre>string.hm</pre>
         <h4><a name="type">type(value)</a></h4>
         <p>Returns the value type as a string.</p>
-        <div class="code"><pre><code>>>> echo type(256)
-Integer
->>> echo type(256.0)
-Float
->>> echo type("256")
-String
-</code></pre></div>
+        <pre>type.hm</pre>
         <hr class="padding" />
         <p>
           <a class="link" href="/syntax">Back to Syntax</a>
@@ -217,11 +134,6 @@ String
         </p>
       </section>
     </main>
-    <footer>
-     <p>
-       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
-       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
-     </p>
-    </footer>
+    <footer></footer>
   </body>
 </html>
