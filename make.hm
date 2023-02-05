@@ -10,12 +10,12 @@ use "dark"
 let header = io.readlines('template/header.html')
 let footer = io.readlines('template/footer.html')
 
-function whitespace(a) {
+func whitespace(a) {
   let count = len(a) - len(text.leftstrip(a))
   return a[0:count]
 }
 
-function search_and_replace(path, dark_mode) {
+func search-and-replace(path, dark-mode) {
   let content = io.readlines(path)
 
   let out = []
@@ -39,18 +39,21 @@ function search_and_replace(path, dark_mode) {
     } elif text.starts(short, '<pre>') {
       let space = whitespace(line)
       let source = text.replace(text.replace(text.trim(line), '<pre>', ''), '</pre>', '')
-      source = code_highlight(source)
+      source = code-highlight(source)
       push(out, space + '<div class="code"><pre><code>' + source + '</code></pre></div>')
     } else {
       push(out, line)
     }
   }
 
-  content = text.join(out, "\n")
-  content = text.replace(content, '(This)', text.replace(path, '\\', '/'))
+  let this = text.replace(path, '\\', '/')
+  if text.starts(this, './') { this = this[2:] }
 
-  if dark_mode {
-    content = dark_search_and_replace(content)
+  content = text.join(out, '\n')
+  content = text.replace(content, '(This)', this)
+
+  if dark-mode {
+    content = dark-search-and-replace(content)
   }
 
   io.write(path, content)
@@ -58,12 +61,12 @@ function search_and_replace(path, dark_mode) {
 
 for file in path.list() {
   if text.ends(file, '.html') {
-    search_and_replace(file, false)
+    search-and-replace(file, false)
   }
 }
 
 for file in path.list('dark') {
   if text.ends(file, '.html') {
-    search_and_replace(file, true)
+    search-and-replace(file, true)
   }
 }

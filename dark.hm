@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-function dark_search_and_replace(content) {
+func dark-search-and-replace(content) {
   content = text.replace(content, '>Dark<', '>Light<')
   content = text.replace(content, 'href="/', 'href="/dark/')
   content = text.replace(content, 'href="/dark/dark/dark', 'href="')

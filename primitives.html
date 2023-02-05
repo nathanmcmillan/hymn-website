@@ -7,7 +7,19 @@
   </head>
 
   <body>
-    <header></header>
+    <header>
+     <div class="header">
+       <div class="header-left">Hymn Script</div>
+       <div>
+         <a href="/index.html">Home</a>
+         <a href="/learn.html">Learn</a>
+         <a href="/play.html">Play</a>
+         <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+         <a href="/dark/primitives.html">Dark</a>
+       </div>
+     </div>
+    </header>
     <main id="index">
       <h1 class="centered-header">Primitives</h1>
       <hr class="section-line" />
@@ -23,16 +35,25 @@
         </ul>
         <h2>None</h2>
         <p>Also known as "null" or "nil" in many programming languages. The none type is used to express the absence of a value.</p>
-        <pre>none.hm</pre>
+        <div class="code"><pre><code>none</code></pre></div>
         <h2>Booleans</h2>
         <p>A boolean value is always either true or false.</p>
-        <pre>booleans.hm</pre>
+        <div class="code"><pre><code>true
+false</code></pre></div>
         <h2>Integers</h2>
         <p>An integer is a 64 bit signed discrete number.</p>
-        <pre>integers.hm</pre>
+        <div class="code"><pre><code>0
+1
+<keyword>-</keyword>1
+12
+<keyword>-</keyword>24</code></pre></div>
         <h2>Floats</h2>
         <p>A float is a 64 bit signed floating point number.</p>
-        <pre>floats.hm</pre>
+        <div class="code"><pre><code>0.0
+0.1
+1.0
+<keyword>-</keyword>12.48
+12.48</code></pre></div>
         <hr class="padding" />
         <p>
           <a class="link" href="/built-in">Back to Built-ins</a>
@@ -40,6 +61,11 @@
         </p>
       </section>
     </main>
-    <footer></footer>
+    <footer>
+     <p>
+       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+     </p>
+    </footer>
   </body>
 </html>

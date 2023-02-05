@@ -2,11 +2,106 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-let directory = 'code/'
-let syntax_directory = 'code/syntax/'
+# ["#.*$", ["comment"]],
+# ["\\b(copy|delete|float|index|int|insert|keys|pop|echo|print|push|int|string|exists|type)\\b", [null, "constant"]],
+# ["\\b(use|let|if|elif|else|for|while|return|break|continue|in|try|except)\\b", [null, "keyword"]],
+# ["\\b(func) (\\w+)", [null, "keyword", "entity"]],
+# ["(=|>=|<=|!=|<|>|==)", [null, "keyword"]],
+# ["(\\+|-|\\*|\\/|%|&|\\||\\^|~|<<|>>)", [null, "keyword"]],
+# ["\\b(true|false|none)\\b", [null, "constant"]],
+# ["\\b([0-9]+(?:\\.[0-9]+)?)\\b", [null, "constant"]],
+# ["\".*?\"", ["string"]],
+# ["'.*?'", ["string"]]
 
-function code_highlight(path) {
-  let source = io.read(directory + path)
-  let data = json.parse(source)
-  return source
+let directory = 'code/'
+
+let rules = [
+  { pattern: "#.*$", capture: ["comment"] },
+  { pattern: "%s(let)%s([%a-]+)%s", capture: [none, "keyword", "entity"] },
+  { pattern: "%s(copy)%s", capture: [none, "constant"] },
+  { pattern: "%s(delete)%s", capture: [none, "constant"] },
+  { pattern: "%s(float)%s", capture: [none, "constant"] },
+  { pattern: "%s(index)%s", capture: [none, "constant"] },
+  { pattern: "%s(int)%s", capture: [none, "constant"] },
+  { pattern: "%s(insert)%s", capture: [none, "constant"] },
+  { pattern: "%s(inspect)%s", capture: [none, "constant"] },
+  { pattern: "%s(keys)%s", capture: [none, "constant"] },
+  { pattern: "%s(pop)%s", capture: [none, "constant"] },
+  { pattern: "%s(push)%s", capture: [none, "constant"] },
+  { pattern: "%s(echo)%s", capture: [none, "constant"] },
+  { pattern: "%s(print)%s", capture: [none, "constant"] },
+  { pattern: "%s(str)%s", capture: [none, "constant"] },
+  { pattern: "%s(exists)%s", capture: [none, "constant"] },
+  { pattern: "%s(type)%s", capture: [none, "constant"] },
+  { pattern: "%s(use)%s", capture: [none, "keyword"] },
+  { pattern: "%s(let)%s", capture: [none, "keyword"] },
+  { pattern: "%s(if)%s", capture: [none, "keyword"] },
+  { pattern: "%s(elif)%s", capture: [none, "keyword"] },
+  { pattern: "%s(else)%s", capture: [none, "keyword"] },
+  { pattern: "%s(for)%s", capture: [none, "keyword"] },
+  { pattern: "%s(while)%s", capture: [none, "keyword"] },
+  { pattern: "%s(return)%s", capture: [none, "keyword"] },
+  { pattern: "%s(break)%s", capture: [none, "keyword"] },
+  { pattern: "%s(continue)%s", capture: [none, "keyword"] },
+  { pattern: "%s(in)%s", capture: [none, "keyword"] },
+  { pattern: "%s(try)%s", capture: [none, "keyword"] },
+  { pattern: "%s(except)%s", capture: [none, "keyword"] },
+  { pattern: "%s(func)%s([%a-]+)%s", capture: [none, "keyword", "entity"] },
+  { pattern: "<<", capture: ["keyword"] },
+  { pattern: ">>", capture: ["keyword"] },
+  { pattern: "[=><+-*/&^~\\]", capture: ["keyword"] },
+  { pattern: "%s(true)%s", capture: [none, "constant"] },
+  { pattern: "%s(false)%s", capture: [none, "constant"] },
+  { pattern: "%s(none)%s", capture: [none, "constant"] },
+  { pattern: "%s(%d+\\.%d+)%s", capture: [none, "constant"] },
+  { pattern: "%s(%d+)%s", capture: [none, "constant"] },
+  { pattern: '".-"', capture: ["string"] },
+  { pattern: "'.-'", capture: ["string"] }
+]
+
+func escape(input) {
+  input = text.replace(input, "<", "&lt;")
+  input = text.replace(input, ">", "&gt;")
+  return input
+}
+
+func code-highlight(path) {
+  let source = io.readlines(directory + path)
+  out = []
+  for line in source {
+    if line == "" { push(out, "") continue }
+    html = ""
+    while true {
+      let any = false
+      for rule in rules {
+        let match = pattern.find(line, rule.pattern)
+        if match == none { continue }
+        if match {
+          let capture = rule.capture
+          let count = len(capture)
+          if match[0] > len(line) { html += escape(line[:match[0]]) }
+          if count == 1 {
+            html += "<" + capture[0] + ">" + escape(line[match[0]:match[1]]) + "</" + capture[0] + ">"
+          } else {
+            for i = 1, i < count {
+              let group = i * 2
+              if group >= len(match) { throw "missing capture group: ${match} / ${capture} (${rule.pattern})" }
+              if i != 1 {
+                html += escape(line[match[group - 1]:match[group]])
+              }
+              html += "<" + capture[i] + ">" + escape(line[match[group]:match[group + 1]]) + "</" + capture[i] + ">"
+            }
+          }
+          if match[1] >= len(line) { break }
+          line = line[match[1]:]
+          any = true
+          break
+        }
+      }
+      if !any { break }
+    }
+    html += escape(line)
+    push(out, html)
+  }
+  return text.join(out, '\n')
 }

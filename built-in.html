@@ -7,7 +7,19 @@
   </head>
 
   <body>
-    <header></header>
+    <header>
+     <div class="header">
+       <div class="header-left">Hymn Script</div>
+       <div>
+         <a href="/index.html">Home</a>
+         <a href="/learn.html">Learn</a>
+         <a href="/play.html">Play</a>
+         <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+         <a href="/dark/built-in.html">Dark</a>
+       </div>
+     </div>
+    </header>
     <main id="index">
       <h1 class="centered-header">Built-in Functions</h1>
       <hr class="section-line" />
@@ -81,52 +93,108 @@
         </table>
         <h4><a name="clear">clear(object)</a></h4>
         <p>Removes all elements inside arrays and tables. Strings become blank.</p>
-        <pre>clear.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>array</entity><keyword>=</keyword><keyword>]</keyword> [2, 4]
+<keyword>&gt;></keyword><keyword>&gt;</keyword> clear(array)
+<constant>echo</constant>array
+<keyword>]</keyword>[]</code></pre></div>
         <h4><a name="copy">copy(object)</a></h4>
         <p>Copies all elements in an array or table and returns a new one.</p>
-        <pre>copy.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>foo</entity><keyword>=</keyword><keyword>]</keyword> [2, 4]
+<keyword>let</keyword> <entity>bar</entity><keyword>=</keyword> copy(array)
+<constant>echo</constant>bar
+<keyword>]</keyword>[2, 4]</code></pre></div>
         <h4><a name="delete">delete(object, index)</a></h4>
         <p>Deletes element at index in an array or table.</p>
-        <pre>delete.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>array</entity><keyword>=</keyword><keyword>]</keyword> [2, 4]
+<keyword>&gt;></keyword><keyword>&gt;</keyword> delete(array, 0)
+<constant>echo</constant>array
+<keyword>]</keyword>[4]
+<keyword>let</keyword> <entity>table</entity><keyword>=</keyword><constant>16</constant>}
+<keyword>&gt;></keyword><keyword>&gt;</keyword><string>"foo"</string>)
+<constant>echo</constant>table
+<constant>16</constant>}</code></pre></div>
         <h4><a name="echo">echo value</a></h4>
         <p>Prints to standard out with a new line. Note that converting a table to a string will always sort the keys.</p>
-        <pre>echo.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>table</entity><keyword>=</keyword><constant>8</constant>}
+<constant>echo</constant>table
+<constant>4</constant>}</code></pre></div>
         <h4><a name="exists">exists(table, value)</a></h4>
         <p>Returns true if a given key exists in a table.</p>
-        <pre>exists.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>table</entity><keyword>=</keyword><constant>none</constant>}
+<constant>echo</constant><string>"foo"</string>)
+True
+<constant>echo</constant><string>"bar"</string>)
+False</code></pre></div>
         <h4><a name="float">float(value)</a></h4>
         <p>Casts a value to a float.</p>
-        <pre>float.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity><keyword>=</keyword> 256
+<constant>echo</constant>float(x)
+256.0</code></pre></div>
         <h4><a name="index">index(object, value)</a></h4>
         <p>Returns the index number or table key for the given value.</p>
-        <pre>index.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>array</entity><keyword>=</keyword><keyword>]</keyword> [2, 4, 8]
+<constant>echo</constant>index(array, 8)
+2
+<keyword>let</keyword> <entity>table</entity><keyword>=</keyword><constant>4</constant>}
+<constant>echo</constant>index(table, 4)
+bar</code></pre></div>
         <h4><a name="insert">insert(array, index, value)</a></h4>
         <p>Inserts a value into an array at a given index.</p>
-        <pre>insert.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>array</entity><keyword>=</keyword><keyword>]</keyword> [2, 4]
+<keyword>&gt;></keyword><keyword>&gt;</keyword> insert(array, 1, 8)
+<constant>echo</constant>array
+<keyword>]</keyword>[2, 8, 4]</code></pre></div>
         <h4><a name="int">int(value)</a></h4>
         <p>Casts a value to an integer.</p>
-        <pre>int.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity><keyword>=</keyword> 256.1
+<constant>echo</constant>int(x)
+256</code></pre></div>
         <h4><a name="keys">keys(table)</a></h4>
         <p>Returns a sorted array of keys for a table.</p>
-        <pre>keys.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>table</entity><keyword>=</keyword><constant>4</constant>}
+<constant>echo</constant>keys(table)
+<keyword>]</keyword>["bar", "foo"]</code></pre></div>
         <h4><a name="len">len(object)</a></h4>
         <p>Returns the length of an array or string, or size of a table.</p>
-        <pre>len.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>array</entity><keyword>=</keyword><keyword>]</keyword> [2, 4, 8]
+<constant>echo</constant>len(array)
+3
+<keyword>let</keyword> <entity>table</entity><keyword>=</keyword><constant>4</constant>}
+<constant>echo</constant>len(table)
+2
+<constant>echo</constant><string>"abc"</string>)
+3</code></pre></div>
         <h4><a name="print">print(boolean, value)</a></h4>
         <p>
           Prints to standard out or standard error without a new line. The 1st argument is evaluated as a boolean, where true means writing to standard error, and false means
           writing to standard out. The second value is evaluated to a string and printed.
         </p>
-        <pre>print.hm</pre>
+        <div class="code"><pre><code><keyword>&gt;></keyword><keyword>&gt;</keyword><string>"This "</string>)
+<keyword>&gt;></keyword><keyword>&gt;</keyword><string>"is "</string>)
+<keyword>&gt;></keyword><keyword>&gt;</keyword><string>"ok"</string>)
+This is ok
+<keyword>&gt;></keyword><keyword>&gt;</keyword><string>"Error"</string>)
+Error</code></pre></div>
         <h4><a name="push">push(array, value)</a></h4>
         <p>Adds a value to the end of an array.</p>
-        <pre>push.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>array</entity><keyword>=</keyword><keyword>]</keyword> [2, 4]
+<keyword>&gt;></keyword><keyword>&gt;</keyword> push(array, 8)
+<constant>echo</constant>array
+<keyword>]</keyword>[2, 4, 8]</code></pre></div>
         <h4><a name="string">string(value)</a></h4>
         <p>Casts a value to a string.</p>
-        <pre>string.hm</pre>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity><keyword>=</keyword> 256
+<keyword>let</keyword> <entity>s</entity><keyword>=</keyword> string(x)
+<constant>echo</constant>type(s)
+String</code></pre></div>
         <h4><a name="type">type(value)</a></h4>
         <p>Returns the value type as a string.</p>
-        <pre>type.hm</pre>
+        <div class="code"><pre><code><constant>echo</constant>type(256)
+Integer
+<constant>echo</constant>type(256.0)
+Float
+<constant>echo</constant><string>"256"</string>)
+String</code></pre></div>
         <hr class="padding" />
         <p>
           <a class="link" href="/syntax">Back to Syntax</a>
@@ -134,6 +202,11 @@
         </p>
       </section>
     </main>
-    <footer></footer>
+    <footer>
+     <p>
+       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+     </p>
+    </footer>
   </body>
 </html>

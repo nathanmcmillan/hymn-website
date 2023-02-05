@@ -1,0 +1,130 @@
+/* Any copyright is dedicated to the Public Domain.
+ * https://creativecommons.org/publicdomain/zero/1.0/ */
+
+:root {
+  --top: rgb(174, 129, 225);
+  --run-color: rgb(39, 40, 34);
+  --run-background: rgb(255, 0, 77);
+  --run-hover: rgb(240, 146, 146);
+  --examples: rgb(39, 40, 34);
+  --source-color: rgb(156, 220, 254);
+  --source-background: black;
+  --out-color: rgb(156, 220, 254);
+  --out-background: rgb(39, 40, 34);
+}
+:root {
+  --select-offset: 0.2rem;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/Roboto.ttf');
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', Verdana, Arial, sans-serif;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#top {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  background-color: var(--top);
+}
+
+#run {
+  flex: 1;
+}
+
+#run button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin: 0.7rem;
+  color: var(--run-color);
+  min-width: 6rem;
+  outline: none;
+  border: 2px solid var(--run-color);
+  background-color: transparent;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 1.2rem;
+  font-family: Verdana, sans-serif;
+}
+
+#run button:hover {
+  cursor: pointer;
+  color: var(--top);
+  background-color: var(--run-color);
+}
+
+#examples {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin: 0.7rem;
+  color: var(--examples);
+  outline: none;
+  border-color: transparent;
+  border-radius: 2px;
+  box-sizing: border-box;
+  font-size: 1.2rem;
+}
+
+#examples:hover {
+  cursor: pointer;
+}
+
+#play {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+#code {
+  width: 100%;
+  min-height: 10rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+}
+
+#source {
+  box-sizing: border-box;
+  height: 100%;
+  margin: 0;
+  padding: 1rem;
+  font-family: monospace;
+  color: var(--source-color);
+  background-color: var(--source-background);
+  border: none;
+  outline: none;
+  resize: none;
+}
+
+#out {
+  height: 10rem;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 1rem;
+  font-family: monospace;
+  color: var(--out-color);
+  background-color: var(--out-background);
+  border-top: 1px solid black;
+  white-space: pre;
+}
