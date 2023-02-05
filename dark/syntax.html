@@ -8,17 +8,17 @@
 
   <body>
     <header>
-     <div class="header">
-       <div class="header-left">Hymn Script</div>
-       <div>
-         <a href="/dark/index.html">Home</a>
-         <a href="/dark/learn.html">Learn</a>
-         <a href="/dark/play.html">Play</a>
-         <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-         <a href="/syntax.html">Light</a>
-       </div>
-     </div>
+      <div class="header">
+        <div class="header-left">Hymn Script</div>
+        <div>
+          <a href="/dark/index.html">Home</a>
+          <a href="/dark/learn.html">Learn</a>
+          <a href="/dark/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+          <a href="/syntax.html">Light</a>
+        </div>
+      </div>
     </header>
     <main id="index">
       <h1 class="centered-header">Syntax</h1>
@@ -29,11 +29,11 @@
         <div class="code"><pre><code><comment># I am a comment</comment># I am a comment</code></pre></div>
         <h2>Scope</h2>
         <p>Variable scope uses curly brackets `{` and `}`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
-        <div class="code"><pre><code><keyword>=</keyword> 0
+        <div class="code"><pre><code>let x = 0
 {
-<keyword>let</keyword> <entity>x</entity><keyword>=</keyword> 1
+  <keyword>let</keyword> <entity>x</entity> = 1
   {
-<keyword>let</keyword> <entity>x</entity><keyword>=</keyword> 2
+    <keyword>let</keyword> <entity>x</entity> = 2
   }
 }</code></pre></div>
         <h2>Special Variables</h2>
@@ -142,10 +142,10 @@
       </section>
     </main>
     <footer>
-     <p>
-       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
-       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
-     </p>
+      <p>
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+      </p>
     </footer>
   </body>
 </html>

@@ -8,17 +8,17 @@
 
   <body>
     <header>
-     <div class="header">
-       <div class="header-left">Hymn Script</div>
-       <div>
-         <a href="/index.html">Home</a>
-         <a href="/learn.html">Learn</a>
-         <a href="/play.html">Play</a>
-         <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-         <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-         <a href="/dark/loops.html">Dark</a>
-       </div>
-     </div>
+      <div class="header">
+        <div class="header-left">Hymn Script</div>
+        <div>
+          <a href="/index.html">Home</a>
+          <a href="/learn.html">Learn</a>
+          <a href="/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+          <a href="/dark/loops.html">Dark</a>
+        </div>
+      </div>
     </header>
     <main id="index">
       <h1 class="centered-header">Loops</h1>
@@ -26,27 +26,27 @@
       <section>
         <hr class="padding" />
         <p>Loops are used to run the same code many times.</p>
-        <div class="code"><pre><code><keyword>=</keyword><keyword>&lt;</keyword><keyword>+</keyword><keyword>=</keyword><constant>1</constant>{
-<string>"i: {i}"</string>)
+        <div class="code"><pre><code>for i = 0, i &lt; 12, i += <constant>1</constant> {
+  print(<string>"i: {i}"</string>)
 }</code></pre></div>
-        <div class="code"><pre><code><keyword>=</keyword> 0
-<keyword>&lt;</keyword><constant>12</constant>{
-<string>"Hi!"</string>)
-<keyword>+</keyword><keyword>=</keyword> 2
+        <div class="code"><pre><code>let i = 0
+while i &lt; <constant>12</constant> {
+  print(<string>"Hi!"</string>)
+  i += 2
 }</code></pre></div>
-        <div class="code"><pre><code><keyword>in</keyword><keyword>]</keyword> {
+        <div class="code"><pre><code>for value <keyword>in</keyword> [2, 4, 6] {
   print(value)
 }
 
-<keyword>in</keyword><keyword>]</keyword> {
-<string>"{id}: {value}"</string>)
+for id, value <keyword>in</keyword> [2, 4, 6] {
+  print(<string>"{id}: {value}"</string>)
 }</code></pre></div>
-        <div class="code"><pre><code><keyword>in</keyword><constant>6</constant>} {
+        <div class="code"><pre><code>for value <keyword>in</keyword> { a: 2, b: 4, c: <constant>6</constant> } {
   print(value)
 }
 
-<keyword>in</keyword><constant>6</constant>} {
-<string>"{id}: {value}"</string>)
+for id, value <keyword>in</keyword> { a: 2, b: 4, c: <constant>6</constant> } {
+  print(<string>"{id}: {value}"</string>)
 }</code></pre></div>
         <hr class="padding" />
         <p>
@@ -56,10 +56,10 @@
       </section>
     </main>
     <footer>
-     <p>
-       Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
-       <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
-     </p>
+      <p>
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+      </p>
     </footer>
   </body>
 </html>

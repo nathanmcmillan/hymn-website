@@ -7,16 +7,16 @@
 use "code"
 use "dark"
 
-let header = io.readlines('template/header.html')
-let footer = io.readlines('template/footer.html')
+let header = io.read-lines('template/header.html')
+let footer = io.read-lines('template/footer.html')
 
 func whitespace(a) {
-  let count = len(a) - len(text.leftstrip(a))
+  let count = len(a) - len(text.left-strip(a))
   return a[0:count]
 }
 
 func search-and-replace(path, dark-mode) {
-  let content = io.readlines(path)
+  let content = io.read-lines(path)
 
   let out = []
 
@@ -26,14 +26,14 @@ func search-and-replace(path, dark-mode) {
       let space = whitespace(line)
       push(out, space + '<header>')
       for h in header {
-        push(out, space + ' ' + h)
+        push(out, space + '  ' + h)
       }
       push(out, space + '</header>')
     } elif text.starts(short, '<footer></footer>') {
       let space = whitespace(line)
       push(out, space + '<footer>')
       for f in footer {
-        push(out, space + ' ' + f)
+        push(out, space + '  ' + f)
       }
       push(out, space + '</footer>')
     } elif text.starts(short, '<pre>') {
