@@ -26,27 +26,27 @@
       <section>
         <hr class="padding" />
         <p>Loops are used to run the same code many times.</p>
-        <div class="code"><pre><code>for i = 0, i &lt; 12, i += <constant>1</constant> {
-  print(<string>"i: {i}"</string>)
+        <div class="code"><pre><code>for i = <constant>0</constant>, i &lt; <constant>12</constant>, i += <constant>1</constant> {
+  <constant>print</constant>(<string>"i: {i}"</string>)
 }</code></pre></div>
         <div class="code"><pre><code>let i = 0
 while i &lt; <constant>12</constant> {
-  print(<string>"Hi!"</string>)
+  <constant>print</constant>(<string>"Hi!"</string>)
   i += 2
 }</code></pre></div>
-        <div class="code"><pre><code>for value <keyword>in</keyword> [2, 4, 6] {
-  print(value)
+        <div class="code"><pre><code>for value <keyword>in</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>6</constant>] {
+  <constant>print</constant>(value)
 }
 
-for id, value <keyword>in</keyword> [2, 4, 6] {
-  print(<string>"{id}: {value}"</string>)
+for id, value <keyword>in</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>6</constant>] {
+  <constant>print</constant>(<string>"{id}: {value}"</string>)
 }</code></pre></div>
-        <div class="code"><pre><code>for value <keyword>in</keyword> { a: 2, b: 4, c: <constant>6</constant> } {
-  print(value)
+        <div class="code"><pre><code>for value <keyword>in</keyword> { a: <constant>2</constant>, b: <constant>4</constant>, c: <constant>6</constant> } {
+  <constant>print</constant>(value)
 }
 
-for id, value <keyword>in</keyword> { a: 2, b: 4, c: <constant>6</constant> } {
-  print(<string>"{id}: {value}"</string>)
+for id, value <keyword>in</keyword> { a: <constant>2</constant>, b: <constant>4</constant>, c: <constant>6</constant> } {
+  <constant>print</constant>(<string>"{id}: {value}"</string>)
 }</code></pre></div>
         <hr class="padding" />
         <p>

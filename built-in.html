@@ -93,73 +93,73 @@
         </table>
         <h4><a name="clear">clear(object)</a></h4>
         <p>Removes all elements inside arrays and tables. Strings become blank.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [2, 4]
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [<constant>2</constant>, <constant>4</constant>]
 <keyword>&gt;&gt;&gt;</keyword> clear(array)
 &gt;&gt;&gt; <constant>echo</constant> array
 []</code></pre></div>
         <h4><a name="copy">copy(object)</a></h4>
         <p>Copies all elements in an array or table and returns a new one.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>foo</entity> = [2, 4]
-&gt;&gt;&gt; <keyword>let</keyword> <entity>bar</entity> = copy(array)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>foo</entity> = [<constant>2</constant>, <constant>4</constant>]
+&gt;&gt;&gt; <keyword>let</keyword> <entity>bar</entity> = <constant>copy</constant>(array)
 &gt;&gt;&gt; <constant>echo</constant> bar
-[2, 4]</code></pre></div>
+[<constant>2</constant>, <constant>4</constant>]</code></pre></div>
         <h4><a name="delete">delete(object, index)</a></h4>
         <p>Deletes element at index in an array or table.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [2, 4]
-<keyword>&gt;&gt;&gt;</keyword> delete(array, 0)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [<constant>2</constant>, <constant>4</constant>]
+&gt;&gt;&gt; <constant>delete</constant>(array, <constant>0</constant>)
 &gt;&gt;&gt; <constant>echo</constant> array
-[4]
-&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: 8, bar: <constant>16</constant> }
-<keyword>&gt;&gt;&gt;</keyword> delete(table, <string>"foo"</string>)
+[<constant>4</constant>]
+&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: <constant>8</constant>, bar: <constant>16</constant> }
+&gt;&gt;&gt; <constant>delete</constant>(table, <string>"foo"</string>)
 &gt;&gt;&gt; <constant>echo</constant> table
 { bar: <constant>16</constant> }</code></pre></div>
         <h4><a name="echo">echo value</a></h4>
         <p>Prints to standard out with a new line. Note that converting a table to a string will always sort the keys.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { c: 4, b: 2, a: <constant>8</constant> }
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { c: <constant>4</constant>, b: <constant>2</constant>, a: <constant>8</constant> }
 &gt;&gt;&gt; <constant>echo</constant> table
-{ a: 8, b: 2, c: <constant>4</constant> }</code></pre></div>
+{ a: <constant>8</constant>, b: <constant>2</constant>, c: <constant>4</constant> }</code></pre></div>
         <h4><a name="exists">exists(table, value)</a></h4>
         <p>Returns true if a given key exists in a table.</p>
         <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: <constant>none</constant> }
-&gt;&gt;&gt; <constant>echo</constant> exists(table, <string>"foo"</string>)
+&gt;&gt;&gt; <constant>echo</constant> <constant>exists</constant>(table, <string>"foo"</string>)
 True
-&gt;&gt;&gt; <constant>echo</constant> exists(table, <string>"bar"</string>)
+&gt;&gt;&gt; <constant>echo</constant> <constant>exists</constant>(table, <string>"bar"</string>)
 False</code></pre></div>
         <h4><a name="float">float(value)</a></h4>
         <p>Casts a value to a float.</p>
         <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>x</entity> = 256
-&gt;&gt;&gt; <constant>echo</constant> float(x)
+&gt;&gt;&gt; echo <constant>float</constant>(x)
 256.0</code></pre></div>
         <h4><a name="index">index(object, value)</a></h4>
         <p>Returns the index number or table key for the given value.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [2, 4, 8]
-&gt;&gt;&gt; <constant>echo</constant> index(array, 8)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]
+&gt;&gt;&gt; echo <constant>index</constant>(array, <constant>8</constant>)
 2
-&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: 2, bar: <constant>4</constant> }
-&gt;&gt;&gt; <constant>echo</constant> index(table, 4)
+&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: <constant>2</constant>, bar: <constant>4</constant> }
+&gt;&gt;&gt; echo <constant>index</constant>(table, <constant>4</constant>)
 bar</code></pre></div>
         <h4><a name="insert">insert(array, index, value)</a></h4>
         <p>Inserts a value into an array at a given index.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [2, 4]
-<keyword>&gt;&gt;&gt;</keyword> insert(array, 1, 8)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [<constant>2</constant>, <constant>4</constant>]
+&gt;&gt;&gt; <constant>insert</constant>(array, <constant>1</constant>, <constant>8</constant>)
 &gt;&gt;&gt; <constant>echo</constant> array
-[2, 8, 4]</code></pre></div>
+[<constant>2</constant>, <constant>8</constant>, <constant>4</constant>]</code></pre></div>
         <h4><a name="int">int(value)</a></h4>
         <p>Casts a value to an integer.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>x</entity> = 256.1
-&gt;&gt;&gt; <constant>echo</constant> int(x)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>x</entity> = <constant>256</constant>.1
+&gt;&gt;&gt; echo <constant>int</constant>(x)
 256</code></pre></div>
         <h4><a name="keys">keys(table)</a></h4>
         <p>Returns a sorted array of keys for a table.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: 2, bar: <constant>4</constant> }
-&gt;&gt;&gt; <constant>echo</constant> keys(table)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { foo: <constant>2</constant>, bar: <constant>4</constant> }
+&gt;&gt;&gt; echo <constant>keys</constant>(table)
 [<string>"bar"</string>, <string>"foo"</string>]</code></pre></div>
         <h4><a name="len">len(object)</a></h4>
         <p>Returns the length of an array or string, or size of a table.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [2, 4, 8]
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]
 &gt;&gt;&gt; <constant>echo</constant> len(array)
 3
-&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { "foo": 2, "bar": <constant>4</constant> }
+&gt;&gt;&gt; <keyword>let</keyword> <entity>table</entity> = { "foo": <constant>2</constant>, "bar": <constant>4</constant> }
 &gt;&gt;&gt; <constant>echo</constant> len(table)
 2
 &gt;&gt;&gt; <constant>echo</constant> len(<string>"abc"</string>)
@@ -169,31 +169,31 @@ bar</code></pre></div>
           Prints to standard out or standard error without a new line. The 1st argument is evaluated as a boolean, where true means writing to standard error, and false means
           writing to standard out. The second value is evaluated to a string and printed.
         </p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> print(0, <string>"This "</string>)
-<keyword>&gt;&gt;&gt;</keyword> print(0, <string>"is "</string>)
-<keyword>&gt;&gt;&gt;</keyword> print(0, <string>"ok"</string>)
+        <div class="code"><pre><code>&gt;&gt;&gt; <constant>print</constant>(<constant>0</constant>, <string>"This "</string>)
+&gt;&gt;&gt; <constant>print</constant>(<constant>0</constant>, <string>"is "</string>)
+&gt;&gt;&gt; <constant>print</constant>(<constant>0</constant>, <string>"ok"</string>)
 This is ok
-<keyword>&gt;&gt;&gt;</keyword> print(1, <string>"Error"</string>)
+&gt;&gt;&gt; <constant>print</constant>(<constant>1</constant>, <string>"Error"</string>)
 Error</code></pre></div>
         <h4><a name="push">push(array, value)</a></h4>
         <p>Adds a value to the end of an array.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [2, 4]
-<keyword>&gt;&gt;&gt;</keyword> push(array, 8)
+        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>array</entity> = [<constant>2</constant>, <constant>4</constant>]
+&gt;&gt;&gt; <constant>push</constant>(array, <constant>8</constant>)
 &gt;&gt;&gt; <constant>echo</constant> array
-[2, 4, 8]</code></pre></div>
+[<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]</code></pre></div>
         <h4><a name="string">string(value)</a></h4>
         <p>Casts a value to a string.</p>
         <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>x</entity> = 256
 &gt;&gt;&gt; <keyword>let</keyword> <entity>s</entity> = string(x)
-&gt;&gt;&gt; <constant>echo</constant> type(s)
+&gt;&gt;&gt; <constant>echo</constant> <constant>type</constant>(s)
 String</code></pre></div>
         <h4><a name="type">type(value)</a></h4>
         <p>Returns the value type as a string.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <constant>echo</constant> type(256)
+        <div class="code"><pre><code>&gt;&gt;&gt; <constant>echo</constant> <constant>type</constant>(<constant>256</constant>)
 Integer
-&gt;&gt;&gt; <constant>echo</constant> type(256.0)
+&gt;&gt;&gt; <constant>echo</constant> <constant>type</constant>(<constant>256</constant>.<constant>0</constant>)
 Float
-&gt;&gt;&gt; <constant>echo</constant> type(<string>"256"</string>)
+&gt;&gt;&gt; <constant>echo</constant> <constant>type</constant>("<constant>256</constant>")
 String</code></pre></div>
         <hr class="padding" />
         <p>
