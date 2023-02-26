@@ -1,6 +1,6 @@
 examples.set('new', `let hello = "hello"
 
-function world() {
+func world() {
   return " world"
 }
 

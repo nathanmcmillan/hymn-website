@@ -26,28 +26,28 @@
       <section>
         <hr class="padding" />
         <p>A string is an array of characters used to represent text. Literal strings are surrounded in either single or doubles quotes.</p>
-        <div class="code"><pre><code><string>'hello hymn'</string>'hello hymn'
-<string>"hello hymn"</string>"hello hymn"</code></pre></div>
+        <div class="code"><pre><code><string>'hello hymn'</string>
+<string>&quot;hello hymn&quot;</string></code></pre></div>
         <p>Strings can be written across multiple lines. Spaces are preserved.</p>
-        <div class="code"><pre><code>"hello
+        <div class="code"><pre><code>&quot;hello
   across
   the
-world"</code></pre></div>
+world&quot;</code></pre></div>
         <p>Escape characters in strings using a backslash.</p>
-        <div class="code"><pre><code><string>"foo \"</string>quote\<string>" bar"</string>quote\" bar"
-<string>"foo \n new line bar"</string>"foo \n new line bar"</code></pre></div>
+        <div class="code"><pre><code><string>&quot;foo \&quot;</string>quote\<string>&quot; bar&quot;</string>
+<string>&quot;foo \n new line bar&quot;</string></code></pre></div>
         <p>Adjacent strings are automatically bunched together.</p>
-        <div class="code"><pre><code><string>"I"</string> <string>" am "</string> <string>"one"</string> <string>" string"</string> " string"</code></pre></div>
-        <p>Curly brackets are used to execute code and concatenate the result within a string.</p>
-        <div class="code"><pre><code>&gt;&gt;&gt; <keyword>let</keyword> <entity>x</entity> = 42
-&gt;&gt;&gt; <constant>echo</constant> <string>"The answer is {x}"</string> "The answer is {x}"
-The answer is 42
+        <div class="code"><pre><code><string>&quot;I&quot;</string> <string>&quot; am &quot;</string> <string>&quot;one&quot;</string> <string>&quot; string&quot;</string></code></pre></div>
+        <p>A dollar sign and curly brackets are used to execute code and concatenate an expression within a string.</p>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>42</constant>
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <string>&quot;The answer is ${x}&quot;</string>
+The answer is <constant>42</constant>
 
-&gt;&gt;&gt; <constant>echo</constant> "The answer doubled is {x * <constant>2</constant>}"
-The answer doubled is 84
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <string>&quot;The answer doubled is ${x * 2}&quot;</string>
+The answer doubled is <constant>84</constant>
 
-&gt;&gt;&gt; <constant>echo</constant> <string>"An escaped {{ curly"</string> "An escaped {{ curly"
-An escaped { curly</code></pre></div>
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <string>&quot;An escaped \${ string&quot;</string>
+An escaped ${ string</code></pre></div>
         <hr class="padding" />
         <p>
           <a class="link" href="/primitives">Back to Primitives</a>

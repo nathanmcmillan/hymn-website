@@ -1,9 +1,9 @@
 >>> let x = 42
->>> echo "The answer is {x}"
+>>> echo "The answer is ${x}"
 The answer is 42
 
->>> echo "The answer doubled is {x * 2}"
+>>> echo "The answer doubled is ${x * 2}"
 The answer doubled is 84
 
->>> echo "An escaped {{ curly"
-An escaped { curly
+>>> echo "An escaped \${ string"
+An escaped ${ string

@@ -15,9 +15,6 @@
         <h2>Built-in Functions</h2>
         <p>Hymn has a number of functions useful for common routines, always available in each script. The function names are reserved words and cannot be overridden.</p>
         <table>
-          <!-- <tr>
-            <th colspan="2">Function</th>
-          </tr> -->
           <tr>
             <td><a href="#clear">clear(object)</a></td>
             <td>Removes all elements inside arrays and tables. Strings become blank</td>
@@ -47,6 +44,10 @@
             <td>Returns the index number or table key for the given value</td>
           </tr>
           <tr>
+            <td><a href="#inspect">inspect(value)</a></td>
+            <td>Returns a function's source code</td>
+          </tr>
+          <tr>
             <td><a href="#insert">insert(object, index, value)</a></td>
             <td>Inserts a value into an array at a given index</td>
           </tr>
@@ -71,7 +72,7 @@
             <td>Adds a value to the end of an array</td>
           </tr>
           <tr>
-            <td><a href="#string">string(value)</a></td>
+            <td><a href="#str">str(value)</a></td>
             <td>Casts a value to a string</td>
           </tr>
           <tr>
@@ -100,6 +101,9 @@
         <h4><a name="index">index(object, value)</a></h4>
         <p>Returns the index number or table key for the given value.</p>
         <pre>index.hm</pre>
+        <h4><a name="inspect">inspect(value)</a></h4>
+        <p>Returns a function's source code.</p>
+        <pre>inspect.hm</pre>
         <h4><a name="insert">insert(array, index, value)</a></h4>
         <p>Inserts a value into an array at a given index.</p>
         <pre>insert.hm</pre>
@@ -121,7 +125,7 @@
         <h4><a name="push">push(array, value)</a></h4>
         <p>Adds a value to the end of an array.</p>
         <pre>push.hm</pre>
-        <h4><a name="string">string(value)</a></h4>
+        <h4><a name="str">str(value)</a></h4>
         <p>Casts a value to a string.</p>
         <pre>string.hm</pre>
         <h4><a name="type">type(value)</a></h4>
@@ -130,7 +134,7 @@
         <hr class="padding" />
         <p>
           <a class="link" href="/syntax">Back to Syntax</a>
-          <a class="link right" href="/primitives">Learn Primitives</a>
+          <a class="link right" href="/libraries">Learn Libraries</a>
         </p>
       </section>
     </main>

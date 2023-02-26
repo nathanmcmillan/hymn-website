@@ -1,0 +1,6 @@
+# my-file.hm
+let HELLO = "Hello "
+func world() {
+  return "world!"
+}
+echo "I was imported!"

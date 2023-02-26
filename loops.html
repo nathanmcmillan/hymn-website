@@ -25,28 +25,31 @@
       <hr class="section-line" />
       <section>
         <hr class="padding" />
-        <p>Loops are used to run the same code many times.</p>
-        <div class="code"><pre><code>for i = <constant>0</constant>, i &lt; <constant>12</constant>, i += <constant>1</constant> {
-  <constant>print</constant>(<string>"i: {i}"</string>)
+        <p>Loops are used to run the same code multiple times.</p>
+        <div class="code"><pre><code><keyword>for</keyword> i <keyword>=</keyword> <constant>0</constant>, i <keyword>&lt;</keyword> <constant>12</constant> {
+  <constant>echo</constant> <string>&quot;i: ${i}&quot;</string>
 }</code></pre></div>
-        <div class="code"><pre><code>let i = 0
-while i &lt; <constant>12</constant> {
-  <constant>print</constant>(<string>"Hi!"</string>)
-  i += 2
+        <div class="code"><pre><code><keyword>for</keyword> i <keyword>=</keyword> <constant>12</constant>, i <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>, i <keyword>-</keyword><keyword>=</keyword> <constant>1</constant> {
+  <constant>echo</constant> <string>&quot;i: ${i}&quot;</string>
 }</code></pre></div>
-        <div class="code"><pre><code>for value <keyword>in</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>6</constant>] {
-  <constant>print</constant>(value)
+        <div class="code"><pre><code><keyword>let</keyword> <entity>i</entity> <keyword>=</keyword> <constant>0</constant>
+<keyword>while</keyword> i <keyword>&lt;</keyword> <constant>12</constant> {
+  <constant>echo</constant> <string>&quot;Hi!&quot;</string>
+  i <keyword>+</keyword><keyword>=</keyword> <constant>2</constant>
+}</code></pre></div>
+        <div class="code"><pre><code><keyword>for</keyword> value <keyword>in</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>6</constant>] {
+  <constant>echo</constant> value
 }
 
-for id, value <keyword>in</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>6</constant>] {
-  <constant>print</constant>(<string>"{id}: {value}"</string>)
+<keyword>for</keyword> id, value <keyword>in</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>6</constant>] {
+  <constant>echo</constant> <string>&quot;${id}: ${value}&quot;</string>
 }</code></pre></div>
-        <div class="code"><pre><code>for value <keyword>in</keyword> { a: <constant>2</constant>, b: <constant>4</constant>, c: <constant>6</constant> } {
-  <constant>print</constant>(value)
+        <div class="code"><pre><code><keyword>for</keyword> value <keyword>in</keyword> { a: <constant>2</constant>, b: <constant>4</constant>, c: <constant>6</constant> } {
+  <constant>echo</constant> value
 }
 
-for id, value <keyword>in</keyword> { a: <constant>2</constant>, b: <constant>4</constant>, c: <constant>6</constant> } {
-  <constant>print</constant>(<string>"{id}: {value}"</string>)
+<keyword>for</keyword> id, value <keyword>in</keyword> { a: <constant>2</constant>, b: <constant>4</constant>, c: <constant>6</constant> } {
+  <constant>echo</constant> <string>&quot;${id}: ${value}&quot;</string>
 }</code></pre></div>
         <hr class="padding" />
         <p>

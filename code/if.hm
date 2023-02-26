@@ -1,17 +1,17 @@
 if 1 < 2 {
-  print("Yes!")
+  echo "True!"
 }
 
 if 1 < 2 {
-  print("Yes!")
+  echo "Foo"
 } elif 2 < 4 {
-  print("Yes!")
+  echo "Bar"
 }
 
 if 1 < 2 {
-  print("Yes!")
+  echo "Yes!"
 } elif 2 < 4 {
-  print("Yes!")
+  echo "..."
 } else {
-  print("No!")
+  echo "No!"
 }

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Standard Library</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header">
+        <div class="header-left">Hymn Script</div>
+        <div>
+          <a href="/dark/index.html">Home</a>
+          <a href="/dark/learn.html">Learn</a>
+          <a href="/dark/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+          <a href="/libraries.html">Light</a>
+        </div>
+      </div>
+    </header>
+    <main id="index">
+      <h1 class="centered-header">Standard Library</h1>
+      <hr class="section-line" />
+      <section>
+        <h2>Standard Library</h2>
+        <p>Hymn comes with a set of standard libraries for typical operations.</p>
+        <table>
+          <tr>
+            <td><a href="#glob">glob</a></td>
+            <td>Wildcard text matching</td>
+          </tr>
+          <tr>
+            <td><a href="#io">io</a></td>
+            <td>Input/output</td>
+          </tr>
+          <tr>
+            <td><a href="#json">json</a></td>
+            <td>Parse and save JSON</td>
+          </tr>
+          <tr>
+            <td><a href="#math">math</a></td>
+            <td>Math operations</td>
+          </tr>
+          <tr>
+            <td><a href="#os">os</a></td>
+            <td>Operating system interface</td>
+          </tr>
+          <tr>
+            <td><a href="#path">path</a></td>
+            <td>File path handling</td>
+          </tr>
+          <tr>
+            <td><a href="#pattern">pattern</a></td>
+            <td>Text pattern matching</td>
+          </tr>
+          <tr>
+            <td><a href="#text">text</a></td>
+            <td>String manipulation</td>
+          </tr>
+        </table>
+        <h4><a name="glob">glob</a></h4>
+        <table>
+          <tr>
+            <td>glob(pattern, text)</td>
+            <td>Returns true or false if the pattern matches text. Accepts * and ? special symbols.</td>
+          </tr>
+        </table>
+        <h4><a name="io">io</a></h4>
+        <table>
+          <tr>
+            <td>io.size(path)</td>
+            <td>Returns a file's size in bytes.</td>
+          </tr>
+          <tr>
+            <td>io.read(path)</td>
+            <td>Reads a file's contents into a string.</td>
+          </tr>
+          <tr>
+            <td>io.read-lines(path)</td>
+            <td>Reads a file's contents into an array of strings, separated by lines.</td>
+          </tr>
+          <tr>
+            <td>io.write(path, value)</td>
+            <td>Writes a string into a file, truncating if it exists.</td>
+          </tr>
+          <tr>
+            <td>io.append(path, value)</td>
+            <td>Appends a string into a file.</td>
+          </tr>
+          <tr>
+            <td>io.exists(path)</td>
+            <td>Returns true or false if a file exists.</td>
+          </tr>
+          <tr>
+            <td>io.stats(path)</td>
+            <td>Returns a table of information for a file.</td>
+          </tr>
+          <tr>
+            <td>io.input()</td>
+            <td>Reads user input into a string.</td>
+          </tr>
+          <tr>
+            <td>io.move(source, destination)</td>
+            <td>Renames a source file path to a destination file path. Returns true or false whether the operation was a success.</td>
+          </tr>
+          <tr>
+            <td>io.remove(path)</td>
+            <td>Removes a file. Returns true or false whether the operation was a success.</td>
+          </tr>
+        </table>
+        <h4><a name="json">json</a></h4>
+        <table>
+          <tr>
+            <td>json.save(value)</td>
+            <td>Converts a hymn value to a JSON string.</td>
+          </tr>
+          <tr>
+            <td>json.parse(string)</td>
+            <td>Converts a JSON string to a hymn value.</td>
+          </tr>
+        </table>
+        <h4><a name="math">math</a></h4>
+        <table>
+          <tr>
+            <td>PI</td>
+            <td>Not a tasty pie.</td>
+          </tr>
+          <tr>
+            <td>math.abs(number)</td>
+            <td>Returns the absolute value.</td>
+          </tr>
+          <tr>
+            <td>math.min(number, number)</td>
+            <td>Returns the smaller of the given two numbers.</td>
+          </tr>
+          <tr>
+            <td>math.max(number, number)</td>
+            <td>Returns the larger of the given two numbers.</td>
+          </tr>
+          <tr>
+            <td>math.floor(number)</td>
+            <td>Returns the number rounded down.</td>
+          </tr>
+          <tr>
+            <td>math.ceil(number)</td>
+            <td>Returns the number rounded up.</td>
+          </tr>
+          <tr>
+            <td>math.sin(number)</td>
+            <td>Sine.</td>
+          </tr>
+          <tr>
+            <td>math.cos(number)</td>
+            <td>Cosine.</td>
+          </tr>
+          <tr>
+            <td>math.tan(number)</td>
+            <td>Tangent.</td>
+          </tr>
+          <tr>
+            <td>math.asin(number)</td>
+            <td>Arc sine.</td>
+          </tr>
+          <tr>
+            <td>math.acos(number)</td>
+            <td>Arc cosine.</td>
+          </tr>
+          <tr>
+            <td>math.sinh(number)</td>
+            <td>Hyperbolic sine.</td>
+          </tr>
+          <tr>
+            <td>math.cosh(number)</td>
+            <td>Hyperbolic cosine.</td>
+          </tr>
+          <tr>
+            <td>math.atan(number)</td>
+            <td>Arc tangent.</td>
+          </tr>
+          <tr>
+            <td>math.atan2(number, number)</td>
+            <td>Arc tangent of Y and X.</td>
+          </tr>
+          <tr>
+            <td>math.sqrt(number)</td>
+            <td>Square root.</td>
+          </tr>
+          <tr>
+            <td>math.pow(number, number)</td>
+            <td>Base and power.</td>
+          </tr>
+          <tr>
+            <td>math.log(number)</td>
+            <td>Natural logarithm.</td>
+          </tr>
+          <tr>
+            <td>math.log2(number)</td>
+            <td>Base 2 logarithm.</td>
+          </tr>
+          <tr>
+            <td>math.log10(number)</td>
+            <td>Base 10 logarithm.</td>
+          </tr>
+        </table>
+        <h4><a name="os">os</a></h4>
+        <table>
+          <tr>
+            <td>stdout</td>
+            <td>Convencience variable for use with print statements. Equal to 0.</td>
+          </tr>
+          <tr>
+            <td>stderr</td>
+            <td>Convencience variable for use with print statements. Equal to 1.</td>
+          </tr>
+          <tr>
+            <td>system(string)</td>
+            <td>Runs a system command and returns the resulting output text.</td>
+          </tr>
+          <tr>
+            <td>os.clock()</td>
+            <td>Returns a float of the system clock divided by CLOCKS_PER_SEC.</td>
+          </tr>
+          <tr>
+            <td>os.env(string)</td>
+            <td>Returns a system environment variable, or none.</td>
+          </tr>
+          <tr>
+            <td>os.popen(string, string)</td>
+            <td>Calls popen with file and mode. Returns a pointer.</td>
+          </tr>
+          <tr>
+            <td>os.pclose(pointer)</td>
+            <td>Closes a popen pointer.</td>
+          </tr>
+          <tr>
+            <td>os.fopen(string, string)</td>
+            <td>Calls fopen with path and mode. Returns a pointer.</td>
+          </tr>
+          <tr>
+            <td>os.fclose(pointer)</td>
+            <td>Closes a fopen pointer.</td>
+          </tr>
+          <tr>
+            <td>os.fget(pointer)</td>
+            <td>Calls fgetc until EOF is reached on a given pointer. Returns the resulting string.</td>
+          </tr>
+          <tr>
+            <td>os.exec(string)</td>
+            <td>Runs a system command and returns the resulting integer code.</td>
+          </tr>
+        </table>
+        <h4><a name="path">path</a></h4>
+        <table>
+          <tr>
+            <td>path.working()</td>
+            <td>Returns the current working directory as a string.</td>
+          </tr>
+          <tr>
+            <td>path.convert(path)</td>
+            <td>Converts non-system path separator characters to the current system path separator.</td>
+          </tr>
+          <tr>
+            <td>path.normalize(path)</td>
+            <td>Normalizes a path, removing extraneous dots.</td>
+          </tr>
+          <tr>
+            <td>path.parent(path)</td>
+            <td>Returns the parent directory of a given path.</td>
+          </tr>
+          <tr>
+            <td>path.cat(paths...)</td>
+            <td>Concatenates multiple paths into a single path using the current system path character.</td>
+          </tr>
+          <tr>
+            <td>path.absolute(path)</td>
+            <td>Converts a relative path into an absolute path.</td>
+          </tr>
+          <tr>
+            <td>path.list(path)</td>
+            <td>Returns an array of files and directories for a given path.</td>
+          </tr>
+          <tr>
+            <td>path.walk(path)</td>
+            <td>Recursively descends into a path and returns an array of all files and directories.</td>
+          </tr>
+          <tr>
+            <td>path.base(path)</td>
+            <td>Returns the base file name of the path.</td>
+          </tr>
+          <tr>
+            <td>path.extension(path)</td>
+            <td>Returns the extension name of a file.</td>
+          </tr>
+          <tr>
+            <td>path.symbol()</td>
+            <td>Returns the current system path separator character as a string.</td>
+          </tr>
+        </table>
+        <h4><a name="pattern">pattern</a></h4>
+        <table>
+          <tr>
+            <td class="no-wrap">pattern.get(string, pattern, start)</td>
+            <td>Returns an array of strings or none. The first string is the whole matching substring. Additional strings are for any groups.</td>
+          </tr>
+          <tr>
+            <td class="no-wrap">pattern.find(string, pattern, start)</td>
+            <td>
+              Returns an array of integers or none if no match is found. The first two integers are the start and end positions of the matching string. Each additional two integers
+              are for groups.
+            </td>
+          </tr>
+          <tr>
+            <td class="no-wrap">pattern.match(string, pattern, start)</td>
+            <td>Returns true or false whether the whole string matches the pattern.</td>
+          </tr>
+          <tr>
+            <td class="no-wrap">pattern.replace(string, pattern, replace)</td>
+            <td>Replaces all instances of pattern in string with the replacement string, and returns the updated string.</td>
+          </tr>
+        </table>
+        <h4><a name="text">text</a></h4>
+        <table>
+          <tr>
+            <td>text.contains(string, contains)</td>
+            <td>Returns true or false if string contains the given string.</td>
+          </tr>
+          <tr>
+            <td>text.starts(string, starts)</td>
+            <td>Returns true or false if string starts with the given string.</td>
+          </tr>
+          <tr>
+            <td>text.ends(string, ends)</td>
+            <td>Returns true or false if string ends with the given string.</td>
+          </tr>
+          <tr>
+            <td class="no-wrap">text.replace(string, find, replace)</td>
+            <td>Replaces all instances of find in string with the replacement string, and returns the updated string.</td>
+          </tr>
+          <tr>
+            <td>text.trim(string)</td>
+            <td>Removes leading and trailing space characters from the string.</td>
+          </tr>
+          <tr>
+            <td>text.left-strip(string)</td>
+            <td>Removes leading space characters from the string.</td>
+          </tr>
+          <tr>
+            <td>text.right-strip(string)</td>
+            <td>Removes trailing space characters from the string.</td>
+          </tr>
+          <tr>
+            <td>text.join(array, string)</td>
+            <td>Converts an array to a string, with an optional string delimiter.</td>
+          </tr>
+        </table>
+        <hr class="padding" />
+        <p>
+          <a class="link" href="/dark/built-in">Back to Built-ins</a>
+          <a class="link right" href="/dark/primitives">Learn Primitives</a>
+        </p>
+      </section>
+    </main>
+    <footer>
+      <p>
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+      </p>
+    </footer>
+  </body>
+</html>

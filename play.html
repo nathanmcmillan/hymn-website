@@ -11,9 +11,8 @@
   <body>
     <script src="/hymn.js"></script>
     <section id="top">
-      <div id="run">
-        <button onclick="run()">Run</button>
-      </div>
+      <div id="hymn"><a href="/index.html">Hymn Script</a></div>
+      <div id="run"><button onclick="run()">Run</button></div>
       <select id="examples" onchange="example()">
         <option>Hello World</option>
         <option>Primes</option>
@@ -73,6 +72,10 @@
           }
           document.getElementsByTagName('body')[0].appendChild(script)
         }
+      }
+      window.onbeforeunload = function () {
+        const source = document.getElementById('source').value
+        localStorage.setItem('source', source)
       }
     </script>
   </body>

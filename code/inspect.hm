@@ -1,0 +1,7 @@
+>>> func foo(x) {
+>>>   return x
+>>> }
+>>> echo inspect(foo)
+func foo(x) {
+  return x
+}

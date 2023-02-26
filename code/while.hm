@@ -1,5 +1,5 @@
 let i = 0
 while i < 12 {
-  print("Hi!")
+  echo "Hi!"
   i += 2
 }

@@ -26,14 +26,14 @@
       <section>
         <h2>Comments</h2>
         <p>Code comments start with a pound sign `#` and end at the next new line.</p>
-        <div class="code"><pre><code><comment># I am a comment</comment># I am a comment</code></pre></div>
+        <div class="code"><pre><code><comment># I am a comment</comment></code></pre></div>
         <h2>Scope</h2>
         <p>Variable scope uses curly brackets `{` and `}`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
-        <div class="code"><pre><code>let x = 0
+        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>0</constant>
 {
-  <keyword>let</keyword> <entity>x</entity> = 1
+  <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
   {
-    <keyword>let</keyword> <entity>x</entity> = 2
+    <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>2</constant>
   }
 }</code></pre></div>
         <h2>Special Variables</h2>

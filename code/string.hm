@@ -1,4 +1,4 @@
 >>> let x = 256
 >>> let s = string(x)
 >>> echo type(s)
-String
+string

@@ -1,12 +1,12 @@
 examples.set('new', `let f = "Fizz"
 let b = "Buzz"
 
-function fizzbuzz(n) {
+func fizz-buzz(n) {
   if n == 0 {
     return
   }
 
-  fizzbuzz(n - 1)
+  fizz-buzz(n - 1)
 
   if n % 15 == 0 {
     echo f + b
@@ -19,5 +19,5 @@ function fizzbuzz(n) {
   }
 }
 
-fizzbuzz(20)
+fizz-buzz(20)
 `)

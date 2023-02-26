@@ -26,18 +26,18 @@
       <section>
         <hr class="padding" />
         <p>Exceptions are used to communicate something went wrong.</p>
-        <div class="code"><pre><code>try {
-  throw <string>"Oh no!"</string>  throw "Oh no!"
+        <div class="code"><pre><code><keyword>try</keyword> {
+  <keyword>throw</keyword> <string>&quot;Oh no!&quot;</string>
 } <keyword>except</keyword> error {
   <constant>echo</constant> error
 }
-echo <string>"So anyways..."</string>echo "So anyways..."</code></pre></div>
+<constant>echo</constant> <string>&quot;So anyways...&quot;</string></code></pre></div>
         <p>Catching an exception always provides a string value.</p>
         <p>Exceptions always stop the current execution and jump to the closest catch block on the stack. If there is no catch block, then the program ends.</p>
         <hr class="padding" />
         <p>
           <a class="link" href="/dark/loops">Back to Loops</a>
-          <a class="link right" href="/dark/learn">Back to Table of Contents</a>
+          <a class="link right" href="/dark/imports">Learn Imports</a>
         </p>
       </section>
     </main>
