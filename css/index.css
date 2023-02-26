@@ -327,6 +327,10 @@ table td a:hover {
   text-decoration: underline;
 }
 
+.no-wrap {
+  white-space: nowrap;
+}
+
 #not-found {
   width: 100%;
   max-width: var(--content);

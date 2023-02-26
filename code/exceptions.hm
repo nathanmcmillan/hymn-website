@@ -1,6 +1,6 @@
-try
+try {
   throw "Oh no!"
-except error
+} except error {
   echo error
-end
+}
 echo "So anyways..."

@@ -31,9 +31,9 @@
       </section>
       <section id="release">
         <div class="section-top">
-          <h3>Latest Release <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.6.2">0.6.2</a></h3>
+          <h3>Latest Release <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.8.0">0.8.0</a></h3>
         </div>
-        <p>May 7, 2022 · <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/blob/master/RELEASE.md">Release notes</a></p>
+        <p>February 19, 2023 · <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/blob/master/RELEASE.md">Release notes</a></p>
       </section>
       <hr />
       <section>
@@ -41,30 +41,29 @@
           <h3>Syntax</h3>
         </div>
         <p>Hymn syntax uses only a handful of easy to read keywords. <a class="link" href="/dark/play">Try it online</a>!</p>
-        <div class="code"><pre><code><comment>-- import scripts with the `use` statement.</comment>
+        <div class="code"><pre><code><comment># import scripts with the `use` statement.</comment>
 <keyword>use</keyword> <string>&quot;math&quot;</string>
 
-<comment>-- tables hold key and value pairs</comment>
-<keyword>function</keyword> <entity>new_node</entity>(value)
+<comment># tables hold key and value pairs</comment>
+<keyword>func</keyword> <entity>new-node</entity>(value) {
   <keyword>return</keyword> { value: value, next: <constant>none</constant> }
-<keyword>end</keyword>
+}
 
-<keyword>function</keyword> <entity>node_add</entity>(list, value)
-  <keyword>let</keyword> node <keyword>=</keyword> list
-  <keyword>while</keyword> <constant>true</constant>
-    <keyword>if</keyword> node.next <keyword>=</keyword><keyword>=</keyword> <constant>none</constant> <keyword>break</keyword> <keyword>end</keyword>
+<keyword>func</keyword> <entity>node-add</entity>(list, value) {
+  <keyword>let</keyword> <entity>node</entity> <keyword>=</keyword> list
+  <keyword>while</keyword> <constant>true</constant> {
+    <keyword>if</keyword> node.next <keyword>==</keyword> <constant>none</constant> { <keyword>break</keyword> }
     node <keyword>=</keyword> node.next
-  <keyword>end</keyword>
-  node.next <keyword>=</keyword> new_node(value)
-<keyword>end</keyword>
+  }
+  node.next <keyword>=</keyword> new-node(value)
+}
 
-<comment>-- objects are passed by reference</comment>
-<keyword>let</keyword> list <keyword>=</keyword> new_node(<string>&quot;hello&quot;</string>)
-node_add(list, <string>&quot;world&quot;</string>)
+<comment># objects are passed by reference</comment>
+<keyword>let</keyword> <entity>list</entity> <keyword>=</keyword> new-node(<string>&quot;hello&quot;</string>)
+node-add(list, <string>&quot;world&quot;</string>)
 
-<comment>-- echo statements will show all nested values in an object</comment>
-<constant>echo</constant> list
-</code></pre></div>
+<comment># echo statements will show all nested values in an object</comment>
+<constant>echo</constant> list</code></pre></div>
       </section>
       <section>
         <div class="section-top">
@@ -91,6 +90,22 @@ node_add(list, <string>&quot;world&quot;</string>)
         <p>
           Hymn is licensed under the <a class="link" href="https://mozilla.org/MPL/2.0/">Mozilla Public License Version 2.0</a>. The
           <a class="link" href="https://github.com/nathanmcmillan/hymn-lang">source code</a> is free to view, distribute, and modify.
+        </p>
+      </section>
+      <section>
+        <div class="section-top">
+          <h3>Releases</h3>
+        </div>
+        <p>
+          <table>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.8.0">Hymn · 0.8.0</a></td><td>February 19, 2023</td></tr>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.7.0">Hymn · 0.7.0</a></td><td>February 5, 2023</td></tr>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.6.2">Hymn · 0.6.2</a></td><td>May 7, 2022</td></tr>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.5.1">Hymn · 0.5.1</a></td><td>May 1, 2022</td></tr>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.4">Hymn · 0.4.0</a></td><td>January 23, 2022</td></tr>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.3">Hymn · 0.3.0</a></td><td>January 10, 2022</td></tr>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.1">Hymn · 0.1.0</a></td><td>October 18, 2021</td></tr>
+          </table>
         </p>
       </section>
     </main>

@@ -1,8 +1,8 @@
-examples.set(
-  'new',
-  `let hello = "hello"
-function world()
+examples.set('new', `let hello = "hello"
+
+func world() {
   return " world"
-end
-echo hello + world()`
-)
+}
+
+echo hello + world()
+`)

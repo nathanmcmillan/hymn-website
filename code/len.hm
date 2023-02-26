@@ -1,7 +1,7 @@
 >>> let array = [2, 4, 8]
 >>> echo len(array)
 3
->>> let table = { foo: 2, bar: 4 }
+>>> let table = { "foo": 2, "bar": 4 }
 >>> echo len(table)
 2
 >>> echo len("abc")

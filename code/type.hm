@@ -1,6 +1,6 @@
 >>> echo type(256)
-Integer
+integer
 >>> echo type(256.0)
-Float
+float
 >>> echo type("256")
-String
+string

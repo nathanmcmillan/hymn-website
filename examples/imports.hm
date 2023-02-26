@@ -1,0 +1,3 @@
+use "math"
+
+echo abs(-1)

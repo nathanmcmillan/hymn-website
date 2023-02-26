@@ -1,0 +1,72 @@
+#!/usr/bin/env hymn
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+use "code"
+use "dark"
+
+let header = io.read-lines('template/header.html')
+let footer = io.read-lines('template/footer.html')
+
+func whitespace(a) {
+  let count = len(a) - len(text.left-strip(a))
+  return a[0:count]
+}
+
+func search-and-replace(path, dark-mode) {
+  let content = io.read-lines(path)
+
+  let out = []
+
+  for line in content {
+    let short = text.trim(line)
+    if text.starts(short, '<header></header>') {
+      let space = whitespace(line)
+      push(out, space + '<header>')
+      for h in header {
+        push(out, space + '  ' + h)
+      }
+      push(out, space + '</header>')
+    } elif text.starts(short, '<footer></footer>') {
+      let space = whitespace(line)
+      push(out, space + '<footer>')
+      for f in footer {
+        push(out, space + '  ' + f)
+      }
+      push(out, space + '</footer>')
+    } elif text.starts(short, '<pre>') {
+      let space = whitespace(line)
+      let source = text.replace(text.replace(text.trim(line), '<pre>', ''), '</pre>', '')
+      source = code-highlight(source)
+      push(out, space + '<div class="code"><pre><code>' + source + '</code></pre></div>')
+    } else {
+      push(out, line)
+    }
+  }
+
+  let this = text.replace(path, '\\', '/')
+  if text.starts(this, './') { this = this[2:] }
+
+  content = text.join(out, '\n')
+  content = text.replace(content, '(This)', this)
+
+  if dark-mode {
+    content = dark-search-and-replace(content)
+  }
+
+  io.write(path, content)
+}
+
+for file in path.list() {
+  if text.ends(file, '.html') {
+    search-and-replace(file, false)
+  }
+}
+
+for file in path.list('dark') {
+  if text.ends(file, '.html') {
+    search-and-replace(file, true)
+  }
+}

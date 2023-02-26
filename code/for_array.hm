@@ -1,7 +1,7 @@
-for value in [2, 4, 6]
-  print(value)
-end
+for value in [2, 4, 6] {
+  echo value
+}
 
-for id, value in [2, 4, 6]
-  print("{id}: {value}")
-end
+for id, value in [2, 4, 6] {
+  echo "${id}: ${value}"
+}

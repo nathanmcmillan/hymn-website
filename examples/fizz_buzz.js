@@ -1,26 +1,23 @@
-examples.set(
-  'new',
-  `let f = "Fizz"
+examples.set('new', `let f = "Fizz"
 let b = "Buzz"
 
-function fizzbuzz(n)
-
-  if n == 0
+func fizz-buzz(n) {
+  if n == 0 {
     return
-  end
+  }
 
-  fizzbuzz(n - 1)
+  fizz-buzz(n - 1)
 
-  if n % 15 == 0
+  if n % 15 == 0 {
     echo f + b
-  elif n % 5 == 0
+  } elif n % 5 == 0 {
     echo b
-  elif n % 3 == 0
+  } elif n % 3 == 0 {
     echo f
-  else
+  } else {
     echo n
-  end
-end
+  }
+}
 
-fizzbuzz(20)`
-)
+fizz-buzz(20)
+`)

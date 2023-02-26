@@ -25,21 +25,37 @@
       <hr class="section-line" />
       <section>
         <h2>Comments</h2>
-        <p>Code comments start with two dashes `--` and end at the next new line.</p>
+        <p>Code comments start with a pound sign `#` and end at the next new line.</p>
+        <div class="code"><pre><code><comment># I am a comment</comment></code></pre></div>
         <h2>Scope</h2>
-        <p>Variable scope uses `begin` and `end`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
+        <p>Variable scope uses curly brackets `{` and `}`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
+        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>0</constant>
+{
+  <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
+  {
+    <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>2</constant>
+  }
+}</code></pre></div>
+        <h2>Special Variables</h2>
+        <table>
+          <tr>
+            <td>GLOBALS</td>
+            <td>Table of all global variables</td>
+          </tr>
+          <tr>
+            <td>PATHS</td>
+            <td>List of possible paths to find scripts</td>
+          </tr>
+          <tr>
+            <td>IMPORTS</td>
+            <td>Table of absolute paths for imported scripts</td>
+          </tr>
+        </table>
         <h2>Reserved Words</h2>
         <table>
-          <!-- <tr>
-            <th colspan="2">Keyword</th>
-          </tr> -->
           <tr>
             <td>and</td>
             <td>Logical operator where two conditionals must be true</td>
-          </tr>
-          <tr>
-            <td>begin</td>
-            <td>Starts a new scope</td>
           </tr>
           <tr>
             <td>break</td>
@@ -58,10 +74,6 @@
             <td>Non-matching condition as part of an if statement</td>
           </tr>
           <tr>
-            <td>end</td>
-            <td>Ends the current scope</td>
-          </tr>
-          <tr>
             <td>except</td>
             <td>Used at the end of a try block to capture an exception</td>
           </tr>
@@ -74,7 +86,7 @@
             <td>Creates a loop to iterate over a value or sequence</td>
           </tr>
           <tr>
-            <td>function</td>
+            <td>func</td>
             <td>Defines a new function</td>
           </tr>
           <tr>

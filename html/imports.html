@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Imports</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
+  </head>
+
+  <body>
+    <header></header>
+    <main id="index">
+      <h1 class="centered-header">Imports</h1>
+      <hr class="section-line" />
+      <section>
+        <h2>Imports</h2>
+        <p>Imports are used to execute additional hymn files.</p>
+        <pre>learn_imports_using.hm</pre>
+        <pre>learn_imports.hm</pre>
+        <p>External scripts are executed immediately when a `use` statement is called.</p>
+        <p>There are no separate namespaces. All global variables defined in an external script are accessible in the same global scope.</p>
+        <p>The global `PATHS` variable controls where script files are searched for. It can be modified at runtime to change script loading behaviour.</p>
+        <p>
+          Scripts are saved to the global `IMPORTS` variable. Scripts present in `IMPORTS` will not be executed again. However, `IMPORTS` can be modified and entries removed such
+          that a script can be imported twice.
+        </p>
+        <hr class="padding" />
+        <p>
+          <a class="link" href="/exceptions">Back to Exceptions</a>
+          <a class="link right" href="/learn">Back to Table of Contents</a>
+        </p>
+      </section>
+    </main>
+    <footer></footer>
+  </body>
+</html>

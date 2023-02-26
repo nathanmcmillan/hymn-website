@@ -1,5 +1,5 @@
 >>> let table = { foo: none }
 >>> echo exists(table, "foo")
-True
+true
 >>> echo exists(table, "bar")
-False
+false

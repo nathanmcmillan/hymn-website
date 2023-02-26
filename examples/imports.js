@@ -1,6 +1,4 @@
-examples.set(
-  'new',
-  `use "math"
+examples.set('new', `use "math"
 
-echo abs(-1)`
-)
+echo abs(-1)
+`)

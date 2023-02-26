@@ -26,24 +26,23 @@
       <section>
         <hr class="padding" />
         <p>Conditionals are used to control the flow of a program.</p>
-        <div class="code"><pre><code><keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>end</keyword>
+        <div class="code"><pre><code><keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant> {
+  <constant>echo</constant> <string>&quot;True!&quot;</string>
+}
 
-<keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>elif</keyword> <constant>2</constant> <keyword>&lt;</keyword> <constant>4</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>end</keyword>
+<keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant> {
+  <constant>echo</constant> <string>&quot;Foo&quot;</string>
+} <keyword>elif</keyword> <constant>2</constant> <keyword>&lt;</keyword> <constant>4</constant> {
+  <constant>echo</constant> <string>&quot;Bar&quot;</string>
+}
 
-<keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>elif</keyword> <constant>2</constant> <keyword>&lt;</keyword> <constant>4</constant>
-  <constant>print</constant>(<string>&quot;Yes!&quot;</string>)
-<keyword>else</keyword>
-  <constant>print</constant>(<string>&quot;No!&quot;</string>)
-<keyword>end</keyword>
-</code></pre></div>
+<keyword>if</keyword> <constant>1</constant> <keyword>&lt;</keyword> <constant>2</constant> {
+  <constant>echo</constant> <string>&quot;Yes!&quot;</string>
+} <keyword>elif</keyword> <constant>2</constant> <keyword>&lt;</keyword> <constant>4</constant> {
+  <constant>echo</constant> <string>&quot;...&quot;</string>
+} <keyword>else</keyword> {
+  <constant>echo</constant> <string>&quot;No!&quot;</string>
+}</code></pre></div>
         <hr class="padding" />
         <p>
           <a class="link" href="/tables">Back to Tables</a>

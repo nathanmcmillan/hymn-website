@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Imports</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header">
+        <div class="header-left">Hymn Script</div>
+        <div>
+          <a href="/dark/index.html">Home</a>
+          <a href="/dark/learn.html">Learn</a>
+          <a href="/dark/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
+          <a href="/imports.html">Light</a>
+        </div>
+      </div>
+    </header>
+    <main id="index">
+      <h1 class="centered-header">Imports</h1>
+      <hr class="section-line" />
+      <section>
+        <h2>Imports</h2>
+        <p>Imports are used to execute additional hymn files.</p>
+        <div class="code"><pre><code><comment># my-file.hm</comment>
+<keyword>let</keyword> <entity>HELLO</entity> <keyword>=</keyword> <string>&quot;Hello &quot;</string>
+<keyword>func</keyword> <entity>world</entity>() {
+  <keyword>return</keyword> <string>&quot;world!&quot;</string>
+}
+<constant>echo</constant> <string>&quot;I was imported!&quot;</string></code></pre></div>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> PATHS
+[<string>&quot;&lt;parent&gt;/&lt;path&gt;.hm&quot;</string>, <string>&quot;./&lt;path&gt;.hm&quot;</string>, <string>&quot;./libs/&lt;path&gt;.hm&quot;</string>]
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> IMPORTS
+{}
+<keyword>&gt;&gt;&gt;</keyword> <keyword>use</keyword> <string>&quot;my-file&quot;</string>
+I was imported!
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> IMPORTS
+{ <string>&quot;/absolute/path/to/my-file.hm&quot;</string>: <constant>true</constant> }
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> HELLO <keyword>+</keyword> world()
+Hello world!</code></pre></div>
+        <p>External scripts are executed immediately when a `use` statement is called.</p>
+        <p>There are no separate namespaces. All global variables defined in an external script are accessible in the same global scope.</p>
+        <p>The global `PATHS` variable controls where script files are searched for. It can be modified at runtime to change script loading behaviour.</p>
+        <p>
+          Scripts are saved to the global `IMPORTS` variable. Scripts present in `IMPORTS` will not be executed again. However, `IMPORTS` can be modified and entries removed such
+          that a script can be imported twice.
+        </p>
+        <hr class="padding" />
+        <p>
+          <a class="link" href="/dark/exceptions">Back to Exceptions</a>
+          <a class="link right" href="/dark/learn">Back to Table of Contents</a>
+        </p>
+      </section>
+    </main>
+    <footer>
+      <p>
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+      </p>
+    </footer>
+  </body>
+</html>
