@@ -61,12 +61,44 @@ func search-and-replace(path, dark-mode) {
 
 for file in path.list() {
   if text.ends(file, '.html') {
+    io.remove(file)
+  }
+}
+
+func recursive-remove(file) {
+  if !io.exists(file) { return }
+  if (io.stats(file).directory) {
+    for child in file.list() {
+      recursive-remove(child)
+    }
+  }
+  io.remove(file)
+}
+
+recursive-remove('dark')
+
+io.mkdir('dark')
+io.mkdir('dark/css')
+
+for file in path.list('html') {
+  io.write(io.read(file), path.cat('dark', path.base(file)))
+}
+
+for file in path.list('html') {
+  io.write(io.read(file), path.base(file))
+}
+
+for file in path.list() {
+  echo file
+  if text.ends(file, '.html') {
     search-and-replace(file, false)
   }
 }
 
-for file in path.list('dark') {
+for file in path.walk('dark') {
   if text.ends(file, '.html') {
     search-and-replace(file, true)
   }
 }
+
+system('./css-make.sh')

@@ -3,39 +3,21 @@
   <head>
     <title>Syntax</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
+    <link rel="stylesheet" type="text/css" href="/css/index.css" />
   </head>
 
   <body>
-    <header>
-      <div class="header">
-        <div class="header-left">Hymn Script</div>
-        <div>
-          <a href="/dark/index.html">Home</a>
-          <a href="/dark/learn.html">Learn</a>
-          <a href="/dark/play.html">Play</a>
-          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
-          <a href="https://github.com/nathanmcmillan/hymn-lang">Source</a>
-          <a href="/syntax.html">Light</a>
-        </div>
-      </div>
-    </header>
+    <header></header>
     <main id="index">
       <h1 class="centered-header">Syntax</h1>
       <hr class="section-line" />
       <section>
         <h2>Comments</h2>
         <p>Code comments start with a pound sign `#` and end at the next new line.</p>
-        <div class="code"><pre><code><comment># I am a comment</comment></code></pre></div>
+        <pre>comments.hm</pre>
         <h2>Scope</h2>
         <p>Variable scope uses curly brackets `{` and `}`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
-        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>0</constant>
-{
-  <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
-  {
-    <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>2</constant>
-  }
-}</code></pre></div>
+        <pre>scope.hm</pre>
         <h2>Special Variables</h2>
         <table>
           <tr>
@@ -136,16 +118,11 @@
         </table>
         <hr class="padding" />
         <p>
-          <a class="link" href="/dark/learn">Back to Table of Contents</a>
-          <a class="link right" href="/dark/built-in">Learn Built-ins</a>
+          <a class="link" href="/learn">Back to Table of Contents</a>
+          <a class="link right" href="/built-in">Learn Built-ins</a>
         </p>
       </section>
     </main>
-    <footer>
-      <p>
-        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
-        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
-      </p>
-    </footer>
+    <footer></footer>
   </body>
 </html>
