@@ -63,12 +63,11 @@ func escape(input) {
 }
 
 func code-highlight(path) {
-  echo path
-  let source = io.read-lines(directory + path)
   if !text.ends(path, '.hm') {
-    echo "ok!"
+    let source = io.read(directory + path)
     return escape(source)
   }
+  let source = io.read-lines(directory + path)
   out = []
   for line in source {
     if line == "" { push(out, "") continue }

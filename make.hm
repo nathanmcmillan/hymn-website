@@ -5,7 +5,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use "code"
-use "dark"
 
 let header = io.read-lines('template/header.html')
 let footer = io.read-lines('template/footer.html')
@@ -15,9 +14,14 @@ func whitespace(a) {
   return a[0:count]
 }
 
-func search-and-replace(path, dark-mode) {
-  let content = io.read-lines(path)
+func dark-search-and-replace(content) {
+  content = text.replace(content, '>Dark<', '>Light<')
+  content = text.replace(content, 'href="/', 'href="/dark/')
+  content = text.replace(content, 'href="/dark/dark/dark', 'href="')
+  return content
+}
 
+func search-and-replace(path, content, dark-mode) {
   let out = []
 
   for line in content {
@@ -56,7 +60,7 @@ func search-and-replace(path, dark-mode) {
     content = dark-search-and-replace(content)
   }
 
-  io.write(path, content)
+  return content
 }
 
 for file in path.list() {
@@ -68,7 +72,7 @@ for file in path.list() {
 func recursive-remove(file) {
   if !io.exists(file) { return }
   if (io.stats(file).directory) {
-    for child in file.list() {
+    for child in path.list(file) {
       recursive-remove(child)
     }
   }
@@ -80,25 +84,32 @@ recursive-remove('dark')
 io.mkdir('dark')
 io.mkdir('dark/css')
 
-for file in path.list('html') {
-  io.write(io.read(file), path.cat('dark', path.base(file)))
-}
-
-for file in path.list('html') {
-  io.write(io.read(file), path.base(file))
-}
-
-for file in path.list() {
-  echo file
-  if text.ends(file, '.html') {
-    search-and-replace(file, false)
+func recursive-make(parent) {
+  let symbol = index(parent, path.symbol)
+  let directory = none
+  if symbol > 0 {
+    directory = parent[symbol + 1:]
+  }
+  for file in path.list(parent) {
+    if io.stats(file).directory {
+      recursive-make(file)
+      continue
+    }
+    let name = path.base(file)
+    if directory != none {
+      io.mkdir(directory)
+      io.mkdir(path.cat('dark', directory))
+      name = path.cat(directory, name)
+    }
+    let darken = path.cat('dark', name)
+    let contents = io.read-lines(file)
+    let light = search-and-replace(name, contents, false)
+    let dark = search-and-replace(darken, contents, true)
+    io.write(name, light)
+    io.write(darken, dark)
   }
 }
 
-for file in path.walk('dark') {
-  if text.ends(file, '.html') {
-    search-and-replace(file, true)
-  }
-}
+recursive-make('html')
 
 system('./css-make.sh')
