@@ -21,7 +21,7 @@ func dark-search-and-replace(content) {
   return content
 }
 
-func search-and-replace(path, content, dark-mode) {
+func search-and-replace(path, dark, content) {
   let out = []
 
   for line in content {
@@ -56,11 +56,8 @@ func search-and-replace(path, content, dark-mode) {
   content = text.join(out, '\n')
   content = text.replace(content, '(This)', this)
 
-  if dark-mode {
-    content = dark-search-and-replace(content)
-  }
-
-  return content
+  io.write(path, content)
+  io.write(dark, dark-search-and-replace(content))
 }
 
 for file in path.list() {
@@ -101,12 +98,9 @@ func recursive-make(parent) {
       io.mkdir(path.cat('dark', directory))
       name = path.cat(directory, name)
     }
-    let darken = path.cat('dark', name)
+    let dark = path.cat('dark', name)
     let contents = io.read-lines(file)
-    let light = search-and-replace(name, contents, false)
-    let dark = search-and-replace(darken, contents, true)
-    io.write(name, light)
-    io.write(darken, dark)
+    search-and-replace(name, dark, contents)
   }
 }
 

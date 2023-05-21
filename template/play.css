@@ -33,7 +33,7 @@ body {
   background-color: var(--top);
 }
 
-#hymn{
+#hymn {
   flex: 1;
 }
 
@@ -47,7 +47,7 @@ body {
   text-decoration: none;
 }
 
-#hymn a:hover{
+#hymn a:hover {
   text-decoration: underline;
 }
 
@@ -95,37 +95,43 @@ body {
 }
 
 #code {
-  width: 100%;
-  min-height: 10rem;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  margin: 0;
+  flex: 0;
+  margin: 1rem;
+  margin-bottom: 0;
   padding: 0;
 }
 
 #source {
   box-sizing: border-box;
+  width: 100%;
   height: 100%;
-  margin: 0;
+  min-height: 50vh;
   padding: 1rem;
   font-family: monospace;
   color: var(--source-color);
   background-color: var(--source-background);
-  border: none;
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
   outline: none;
   resize: none;
+  box-shadow: 1px 1px 0px 1px var(--code-border);
 }
 
 #out {
-  height: 10rem;
   display: flex;
   flex-direction: column;
-  margin: 0;
+  flex: 1;
+  min-height: 10rem;
+  margin: 1rem;
+  margin-top: 0;
   padding: 1rem;
+  background-color: var(--out-background);
+  border: 1px solid var(--code-border);
+  border-radius: 5px;
+  box-shadow: 1px 1px 0px 1px var(--code-border);
   font-family: monospace;
   color: var(--out-color);
-  background-color: var(--out-background);
-  border-top: 1px solid black;
   white-space: pre;
 }

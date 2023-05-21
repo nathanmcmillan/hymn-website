@@ -55,6 +55,61 @@ let rules = [
   { pattern: "%d+", capture: ["constant"] }
 ]
 
+let c-rules = [
+  { pattern: '".-"', capture: ["string"] },
+  { pattern: "'.-'", capture: ["string"] },
+  { pattern: "^%s*//.*$", capture: ["comment"] },
+  { pattern: "^%s*/?* .*$", capture: ["comment"] },
+  { pattern: "(printf)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(fprintf)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(free)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(memcpy)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(void)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(NULL)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(bool)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(char)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(int)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(uint8_t)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(true)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(false)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(float)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(double)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(size_t)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(#define)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(#undef)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(#ifdef)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(#ifndef)[%s%p]", capture: [none, "constant"] },
+  { pattern: "#else", capture: ["constant"] },
+  { pattern: "#endif", capture: ["constant"] },
+  { pattern: "(#include)[%s%p](<.->)", capture: [none, "constant", "string"] },
+  { pattern: "(#include)[%s%p]", capture: [none, "constant"] },
+  { pattern: "(if)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(else)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(switch)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(case)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(default)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(for)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(while)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(return)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(break)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(continue)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(goto)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(struct)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(typedef)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(enum)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(static)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(const)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(unsigned)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "->", capture: ["keyword"] },
+  { pattern: "<<", capture: ["keyword"] },
+  { pattern: ">>", capture: ["keyword"] },
+  { pattern: "==", capture: ["keyword"] },
+  { pattern: "!=", capture: ["keyword"] },
+  { pattern: "[!=><&~/+-*^]", capture: ["keyword"] },
+  { pattern: "%d+%.%d+", capture: ["constant"] },
+  { pattern: "%d+", capture: ["constant"] }
+]
+
 func escape(input) {
   input = text.replace(input, "<", "&lt;")
   input = text.replace(input, ">", "&gt;")
@@ -63,10 +118,13 @@ func escape(input) {
 }
 
 func code-highlight(path) {
-  if !text.ends(path, '.hm') {
-    let source = io.read(directory + path)
-    return escape(source)
+  if text.ends(path, '.hm') {
+    return code-span(path, rules)
   }
+  return code-span(path, c-rules)
+}
+
+func code-span(path, rules) {
   let source = io.read-lines(directory + path)
   out = []
   for line in source {
