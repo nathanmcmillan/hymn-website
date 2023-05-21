@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>hymn.h</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header">
+        <div class="header-left">Hymn Script</div>
+        <div>
+          <a href="/dark/index.html">Home</a>
+          <a href="/dark/learn.html">Learn</a>
+          <a href="/dark/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="/dark/source">Source</a>
+          <a href="/source/hymn-h.html">Light</a>
+        </div>
+      </div>
+    </header>
+    <main id="index">
+      <h1 class="centered-header">hymn.h</h1>
+      <section>
+        <hr class="padding" />
+        <div class="code"><pre><code><comment>/* This Source Code Form is subject to the terms of the Mozilla Public</comment>
+<comment> * License, v. 2.0. If a copy of the MPL was not distributed with this</comment>
+<comment> * file, You can obtain one at https://mozilla.org/MPL/2.0/. */</comment>
+
+<constant>#ifndef</constant> HYMN_H
+<constant>#define</constant> HYMN_H
+
+<constant>#include</constant> <string>&lt;assert.h&gt;</string>
+<constant>#include</constant> <string>&lt;errno.h&gt;</string>
+<constant>#include</constant> <string>&lt;inttypes.h&gt;</string>
+<constant>#include</constant> <string>&lt;math.h&gt;</string>
+<constant>#include</constant> <string>&lt;stdarg.h&gt;</string>
+<constant>#include</constant> <string>&lt;stdbool.h&gt;</string>
+<constant>#include</constant> <string>&lt;stddef.h&gt;</string>
+<constant>#include</constant> <string>&lt;stdint.h&gt;</string>
+<constant>#include</constant> <string>&lt;stdio.h&gt;</string>
+<constant>#include</constant> <string>&lt;stdlib.h&gt;</string>
+<constant>#include</constant> <string>&lt;string.h&gt;</string>
+<constant>#include</constant> <string>&lt;sys/stat.h&gt;</string>
+<constant>#include</constant> <string>&lt;sys/types.h&gt;</string>
+<constant>#include</constant> <string>&lt;time.h&gt;</string>
+
+<constant>#define</constant> HYMN_VERSION <string>&quot;0.9.0&quot;</string>
+
+<comment>// #define HYMN_DEBUG_STACK</comment>
+<comment>// #define HYMN_DEBUG_TRACE</comment>
+<comment>// #define HYMN_DEBUG_MEMORY</comment>
+
+<comment>// #define HYMN_NO_REPL</comment>
+<constant>#define</constant> HYMN_NO_DYNAMIC_LIBS
+<comment>// #define HYMN_NO_OPTIMIZE</comment>
+<comment>// #define HYMN_NO_MEMORY_MANAGE</comment>
+
+<constant>#ifdef</constant> _MSC_VER
+<constant>#include</constant> <string>&lt;Windows.h&gt;</string>
+<constant>#include</constant> <string>&lt;direct.h&gt;</string>
+<constant>#define</constant> getcwd _getcwd
+<constant>#define</constant> PATH_MAX FILENAME_MAX
+<constant>#define</constant> PATH_SEP <string>'\\'</string>
+<constant>#define</constant> PATH_SEP_STRING <string>&quot;\\&quot;</string>
+<constant>#define</constant> PATH_SEP_OTHER <string>'/'</string>
+<constant>#define</constant> PATH_SEP_OTHER_STRING <string>&quot;/&quot;</string>
+<constant>#define</constant> HYMN_DLIB_EXTENSION <string>&quot;.dll&quot;</string>
+<constant>#define</constant> UNREACHABLE() __assume(<constant>0</constant>)
+<constant>#define</constant> PACK(expr) __pragma(pack(push, <constant>1</constant>)) expr __pragma(pack(pop))
+<constant>#ifdef</constant> HYMN_NO_DYNAMIC_LIBS
+<constant>#define</constant> export
+<constant>#else</constant>
+<constant>#define</constant> export __declspec(dllexport)
+<constant>#endif</constant>
+<constant>#else</constant>
+<constant>#include</constant> <string>&lt;dirent.h&gt;</string>
+<constant>#ifdef</constant> __APPLE__
+<constant>#include</constant> <string>&lt;limits.h&gt;</string>
+<constant>#else</constant>
+<constant>#include</constant> <string>&lt;linux/limits.h&gt;</string>
+<constant>#endif</constant>
+<constant>#include</constant> <string>&lt;unistd.h&gt;</string>
+<constant>#define</constant> PATH_SEP <string>'/'</string>
+<constant>#define</constant> PATH_SEP_STRING <string>&quot;/&quot;</string>
+<constant>#define</constant> PATH_SEP_OTHER <string>'\\'</string>
+<constant>#define</constant> PATH_SEP_OTHER_STRING <string>&quot;\\&quot;</string>
+<constant>#define</constant> HYMN_DLIB_EXTENSION <string>&quot;.so&quot;</string>
+<constant>#define</constant> UNREACHABLE() __builtin_unreachable()
+<constant>#define</constant> PACK(expr) expr __attribute__((__packed__))
+<constant>#define</constant> export
+<constant>#endif</constant>
+
+<constant>#define</constant> HYMN_UINT8_COUNT (UINT8_MAX <keyword>+</keyword> <constant>1</constant>)
+
+<constant>#define</constant> HYMN_FRAMES_MAX <constant>64</constant>
+<constant>#define</constant> HYMN_STACK_MAX (HYMN_FRAMES_MAX <keyword>*</keyword> HYMN_UINT8_COUNT)
+
+<constant>#define</constant> hymn_string_head(string) ((HymnStringHead <keyword>*</keyword>)((<constant>char</constant> <keyword>*</keyword>)string <keyword>-</keyword> sizeof(HymnStringHead)))
+<constant>#define</constant> hymn_string_len(string) (hymn_string_head(string)<keyword>-&gt;</keyword>length)
+<constant>#define</constant> hymn_string_equal(a, b) (strcmp(a, b) <keyword>==</keyword> <constant>0</constant>)
+
+<keyword>typedef</keyword> long long HymnInt;
+<keyword>typedef</keyword> <constant>double</constant> HymnFloat;
+
+<keyword>enum</keyword> HymnValueType {
+    HYMN_VALUE_UNDEFINED,
+    HYMN_VALUE_NONE,
+    HYMN_VALUE_BOOL,
+    HYMN_VALUE_INTEGER,
+    HYMN_VALUE_FLOAT,
+    HYMN_VALUE_STRING,
+    HYMN_VALUE_ARRAY,
+    HYMN_VALUE_TABLE,
+    HYMN_VALUE_FUNC,
+    HYMN_VALUE_FUNC_NATIVE,
+    HYMN_VALUE_POINTER,
+};
+
+<keyword>typedef</keyword> <constant>char</constant> HymnString;
+
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnStringHead HymnStringHead;
+
+PACK(<keyword>struct</keyword> HymnStringHead {
+    <constant>size_t</constant> length;
+    <constant>size_t</constant> capacity;
+    <constant>char</constant> <keyword>*</keyword><keyword>*</keyword>chars;
+});
+
+<constant>#undef</constant> PACK
+
+<constant>void</constant> <keyword>*</keyword>hymn_malloc(<constant>size_t</constant> size);
+<constant>void</constant> <keyword>*</keyword>hymn_calloc(<constant>size_t</constant> count, <constant>size_t</constant> size);
+<constant>void</constant> <keyword>*</keyword>hymn_realloc(<constant>void</constant> <keyword>*</keyword>mem, <constant>size_t</constant> size);
+
+<constant>void</constant> <keyword>*</keyword>hymn_malloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
+<constant>void</constant> <keyword>*</keyword>hymn_calloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
+<constant>void</constant> <keyword>*</keyword>hymn_realloc_<constant>int</constant>(<constant>void</constant> <keyword>*</keyword>mem, <constant>int</constant> count, <constant>size_t</constant> size);
+
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnValue HymnValue;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnObjectString HymnObjectString;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnArray HymnArray;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnTable HymnTable;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnTableItem HymnTableItem;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnSet HymnSet;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnSetItem HymnSetItem;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnExceptList HymnExceptList;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnFunction HymnFunction;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnNativeFunction HymnNativeFunction;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnFrame HymnFrame;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnValuePool HymnValuePool;
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnByteCode HymnByteCode;
+<keyword>typedef</keyword> <keyword>struct</keyword> Hymn Hymn;
+
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnValue (<keyword>*</keyword>HymnNativeCall)(Hymn <keyword>*</keyword>this, <constant>int</constant> count, HymnValue <keyword>*</keyword>arguments);
+
+<keyword>struct</keyword> HymnValue {
+    union {
+        <constant>bool</constant> b;
+        HymnInt i;
+        HymnFloat f;
+        <constant>void</constant> <keyword>*</keyword>o;
+        <constant>void</constant> <keyword>*</keyword>p;
+    } as;
+    <keyword>enum</keyword> HymnValueType is;
+    <constant>char</constant> padding[<constant>4</constant>];
+};
+
+<keyword>struct</keyword> HymnObjectString {
+    <constant>int</constant> count;
+    <keyword>unsigned</keyword> <constant>int</constant> hash;
+    HymnString <keyword>*</keyword>string;
+};
+
+<keyword>struct</keyword> HymnArray {
+    <constant>int</constant> count;
+    <constant>char</constant> padding[<constant>4</constant>];
+    HymnValue <keyword>*</keyword>items;
+    HymnInt length;
+    HymnInt capacity;
+};
+
+<keyword>struct</keyword> HymnTableItem {
+    HymnObjectString <keyword>*</keyword>key;
+    HymnValue value;
+    HymnTableItem <keyword>*</keyword>next;
+};
+
+<keyword>struct</keyword> HymnTable {
+    <constant>int</constant> count;
+    <constant>int</constant> size;
+    <keyword>unsigned</keyword> <constant>int</constant> bins;
+    <constant>char</constant> padding[<constant>4</constant>];
+    HymnTableItem <keyword>*</keyword><keyword>*</keyword>items;
+};
+
+<keyword>struct</keyword> HymnSetItem {
+    HymnObjectString <keyword>*</keyword>string;
+    HymnSetItem <keyword>*</keyword>next;
+};
+
+<keyword>struct</keyword> HymnSet {
+    <constant>int</constant> size;
+    <keyword>unsigned</keyword> <constant>int</constant> bins;
+    HymnSetItem <keyword>*</keyword><keyword>*</keyword>items;
+};
+
+<keyword>struct</keyword> HymnNativeFunction {
+    <constant>int</constant> count;
+    <constant>char</constant> padding[<constant>4</constant>];
+    HymnObjectString <keyword>*</keyword>name;
+    HymnNativeCall func;
+};
+
+<keyword>struct</keyword> HymnValuePool {
+    <constant>int</constant> count;
+    <constant>int</constant> capacity;
+    HymnValue <keyword>*</keyword>values;
+};
+
+<keyword>struct</keyword> HymnByteCode {
+    <constant>int</constant> count;
+    <constant>int</constant> capacity;
+    <constant>uint8_t</constant> <keyword>*</keyword>instructions;
+    <constant>int</constant> <keyword>*</keyword>lines;
+    HymnValuePool constants;
+};
+
+<keyword>struct</keyword> HymnExceptList {
+    <constant>int</constant> start;
+    <constant>int</constant> end;
+    <constant>int</constant> locals;
+    <constant>char</constant> padding[<constant>4</constant>];
+    <keyword>struct</keyword> HymnExceptList <keyword>*</keyword>next;
+};
+
+<keyword>struct</keyword> HymnFunction {
+    <constant>int</constant> count;
+    <constant>int</constant> arity;
+    HymnString <keyword>*</keyword>name;
+    HymnString <keyword>*</keyword>script;
+    HymnString <keyword>*</keyword>source;
+    HymnExceptList <keyword>*</keyword>except;
+    HymnByteCode code;
+};
+
+<keyword>struct</keyword> HymnFrame {
+    HymnFunction <keyword>*</keyword>func;
+    <constant>uint8_t</constant> <keyword>*</keyword>ip;
+    HymnValue <keyword>*</keyword>stack;
+};
+
+<constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
+<keyword>typedef</keyword> <keyword>struct</keyword> HymnLibList HymnLibList;
+
+<keyword>struct</keyword> HymnLibList {
+    <constant>void</constant> <keyword>*</keyword>lib;
+    HymnLibList <keyword>*</keyword>next;
+};
+<constant>#endif</constant>
+
+<keyword>struct</keyword> Hymn {
+    HymnValue stack[HYMN_STACK_MAX];
+    HymnValue <keyword>*</keyword>stack_top;
+    HymnFrame frames[HYMN_FRAMES_MAX];
+    <constant>int</constant> frame_count;
+    <constant>char</constant> padding[<constant>4</constant>];
+    HymnSet strings;
+    HymnTable globals;
+    HymnArray <keyword>*</keyword>paths;
+    HymnTable <keyword>*</keyword>imports;
+    HymnString <keyword>*</keyword>error;
+    HymnString <keyword>*</keyword>exception;
+<constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
+    HymnLibList <keyword>*</keyword>libraries;
+<constant>#endif</constant>
+    <constant>void</constant> (<keyword>*</keyword>print)(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>format, ...);
+    <constant>void</constant> (<keyword>*</keyword>print_error)(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>format, ...);
+};
+
+HymnString <keyword>*</keyword>hymn_working_directory(<constant>void</constant>);
+HymnString <keyword>*</keyword>hymn_path_convert(HymnString <keyword>*</keyword>path);
+HymnString <keyword>*</keyword>hymn_path_normalize(HymnString <keyword>*</keyword>path);
+HymnString <keyword>*</keyword>hymn_path_parent(HymnString <keyword>*</keyword>path);
+HymnString <keyword>*</keyword>hymn_path_absolute(HymnString <keyword>*</keyword>path);
+
+<constant>size_t</constant> hymn_file_size(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
+HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
+<constant>bool</constant> hymn_file_exists(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
+
+HymnString <keyword>*</keyword>hymn_new_string_with_capacity(<constant>size_t</constant> capacity);
+HymnString <keyword>*</keyword>hymn_new_string_with_length(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init, <constant>size_t</constant> length);
+HymnString <keyword>*</keyword>hymn_new_empty_string(<constant>size_t</constant> length);
+HymnString <keyword>*</keyword>hymn_new_string(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init);
+HymnObjectString <keyword>*</keyword>hymn_intern_string(Hymn <keyword>*</keyword>H, HymnString <keyword>*</keyword>string);
+HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>value);
+
+HymnString <keyword>*</keyword>hymn_string_copy(HymnString <keyword>*</keyword>string);
+<constant>void</constant> hymn_string_delete(HymnString <keyword>*</keyword>this);
+<constant>void</constant> hymn_string_zero(HymnString <keyword>*</keyword>this);
+HymnString <keyword>*</keyword>hymn_string_append_<constant>char</constant>(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> b);
+HymnString <keyword>*</keyword>hymn_string_append_substring(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>b, <constant>size_t</constant> start, <constant>size_t</constant> end);
+<constant>bool</constant> hymn_string_starts_with(HymnString <keyword>*</keyword>s, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>using);
+HymnString <keyword>*</keyword>hymn_string_replace(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>find, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>replace);
+HymnString <keyword>*</keyword>hymn_string_append(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>b);
+HymnString <keyword>*</keyword>hymn_string_format(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>format, ...);
+HymnString <keyword>*</keyword>hymn_substring(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init, <constant>size_t</constant> start, <constant>size_t</constant> end);
+<constant>void</constant> hymn_string_trim(HymnString <keyword>*</keyword>string);
+HymnString <keyword>*</keyword>hymn_quote_string(HymnString <keyword>*</keyword>string);
+
+HymnString <keyword>*</keyword>hymn_<constant>int</constant>_to_string(HymnInt number);
+HymnString <keyword>*</keyword>hymn_<constant>float</constant>_to_string(HymnFloat number);
+
+HymnArray <keyword>*</keyword>hymn_new_array(HymnInt length);
+
+<constant>void</constant> hymn_array_push(HymnArray <keyword>*</keyword>this, HymnValue value);
+<constant>void</constant> hymn_array_insert(HymnArray <keyword>*</keyword>this, HymnInt index, HymnValue value);
+HymnValue hymn_array_get(HymnArray <keyword>*</keyword>this, HymnInt index);
+HymnInt hymn_array_index_of(HymnArray <keyword>*</keyword>this, HymnValue match);
+HymnValue hymn_array_pop(HymnArray <keyword>*</keyword>this);
+HymnValue hymn_array_remove_index(HymnArray <keyword>*</keyword>this, HymnInt index);
+<constant>void</constant> hymn_array_clear(Hymn <keyword>*</keyword>H, HymnArray <keyword>*</keyword>this);
+<constant>void</constant> hymn_array_delete(Hymn <keyword>*</keyword>H, HymnArray <keyword>*</keyword>this);
+
+export HymnTable <keyword>*</keyword>hymn_new_table(<constant>void</constant>);
+
+HymnValue hymn_table_get(HymnTable <keyword>*</keyword>this, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>key);
+
+HymnValue hymn_new_undefined(<constant>void</constant>);
+HymnValue hymn_new_none(<constant>void</constant>);
+HymnValue hymn_new_<constant>bool</constant>(<constant>bool</constant> v);
+export HymnValue hymn_new_<constant>int</constant>(HymnInt v);
+HymnValue hymn_new_<constant>float</constant>(HymnFloat v);
+HymnValue hymn_new_native(HymnNativeFunction <keyword>*</keyword>v);
+HymnValue hymn_new_pointer(<constant>void</constant> <keyword>*</keyword>v);
+HymnValue hymn_new_string_value(HymnObjectString <keyword>*</keyword>v);
+HymnValue hymn_new_array_value(HymnArray <keyword>*</keyword>v);
+HymnValue hymn_new_table_value(HymnTable <keyword>*</keyword>v);
+HymnValue hymn_new_func_value(HymnFunction <keyword>*</keyword>v);
+
+HymnObjectString <keyword>*</keyword>hymn_new_string_object(HymnString <keyword>*</keyword>string);
+
+HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value);
+
+<constant>bool</constant> hymn_as_<constant>bool</constant>(HymnValue v);
+HymnInt hymn_as_<constant>int</constant>(HymnValue v);
+HymnFloat hymn_as_<constant>float</constant>(HymnValue v);
+HymnNativeFunction <keyword>*</keyword>hymn_as_native(HymnValue v);
+<constant>void</constant> <keyword>*</keyword>hymn_as_pointer(HymnValue v);
+<constant>void</constant> <keyword>*</keyword>hymn_as_object(HymnValue v);
+HymnObjectString <keyword>*</keyword>hymn_as_hymn_string(HymnValue v);
+HymnString <keyword>*</keyword>hymn_as_string(HymnValue v);
+HymnArray <keyword>*</keyword>hymn_as_array(HymnValue v);
+HymnTable <keyword>*</keyword>hymn_as_table(HymnValue v);
+HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v);
+
+<constant>bool</constant> hymn_is_undefined(HymnValue v);
+<constant>bool</constant> hymn_is_none(HymnValue v);
+<constant>bool</constant> hymn_is_<constant>bool</constant>(HymnValue v);
+<constant>bool</constant> hymn_is_<constant>int</constant>(HymnValue v);
+<constant>bool</constant> hymn_is_<constant>float</constant>(HymnValue v);
+<constant>bool</constant> hymn_is_native(HymnValue v);
+<constant>bool</constant> hymn_is_pointer(HymnValue v);
+<constant>bool</constant> hymn_is_string(HymnValue v);
+<constant>bool</constant> hymn_is_array(HymnValue v);
+<constant>bool</constant> hymn_is_table(HymnValue v);
+<constant>bool</constant> hymn_is_func(HymnValue v);
+
+<constant>bool</constant> hymn_value_<constant>false</constant>(HymnValue value);
+<constant>bool</constant> hymn_values_equal(HymnValue a, HymnValue b);
+<constant>bool</constant> hymn_match_values(HymnValue a, HymnValue b);
+
+<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>hymn_value_type(<keyword>enum</keyword> HymnValueType type);
+
+<constant>void</constant> hymn_reference_string(HymnObjectString <keyword>*</keyword>string);
+<constant>void</constant> hymn_reference(HymnValue value);
+<constant>void</constant> hymn_dereference_string(Hymn <keyword>*</keyword>H, HymnObjectString <keyword>*</keyword>string);
+<constant>void</constant> hymn_dereference(Hymn <keyword>*</keyword>H, HymnValue value);
+
+<constant>void</constant> hymn_set_property(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, HymnObjectString <keyword>*</keyword>name, HymnValue value);
+<constant>void</constant> hymn_set_property_<keyword>const</keyword>(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnValue value);
+
+HymnValue hymn_new_exception(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>error);
+HymnValue hymn_arity_exception(Hymn <keyword>*</keyword>H, <constant>int</constant> expected, <constant>int</constant> actual);
+HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword> HymnValueType expected, <keyword>enum</keyword> HymnValueType actual);
+
+Hymn <keyword>*</keyword>new_hymn(<constant>void</constant>);
+
+<constant>char</constant> <keyword>*</keyword>hymn_call(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <constant>int</constant> arguments);
+<constant>char</constant> <keyword>*</keyword>hymn_debug(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+<constant>char</constant> <keyword>*</keyword>hymn_run(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+<constant>char</constant> <keyword>*</keyword>hymn_do(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+<constant>char</constant> <keyword>*</keyword>hymn_script(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script);
+
+HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name);
+
+<constant>void</constant> hymn_add(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnValue value);
+<constant>void</constant> hymn_add_string(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>string);
+export <constant>void</constant> hymn_add_table(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnTable <keyword>*</keyword>table);
+<constant>void</constant> hymn_add_pointer(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <constant>void</constant> <keyword>*</keyword>pointer);
+<constant>void</constant> hymn_add_string_to_table(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>string);
+export <constant>void</constant> hymn_add_function_to_table(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnNativeCall func);
+<constant>void</constant> hymn_add_function(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnNativeCall func);
+
+<constant>void</constant> hymn_delete(Hymn <keyword>*</keyword>H);
+
+<constant>#ifndef</constant> HYMN_NO_REPL
+<constant>void</constant> hymn_repl(Hymn <keyword>*</keyword>H);
+<constant>#endif</constant>
+
+<constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
+<constant>void</constant> hymn_add_dlib(Hymn <keyword>*</keyword>H, <constant>void</constant> <keyword>*</keyword>library);
+<constant>void</constant> hymn_close_dlib(<constant>void</constant> <keyword>*</keyword>library);
+HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>hymn, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>func);
+<constant>#endif</constant>
+
+<constant>#endif</constant></code></pre></div>
+      </section>
+    </main>
+    <footer>
+      <p>
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+      </p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>hymn_pattern.c</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header">
+        <div class="header-left">Hymn Script</div>
+        <div>
+          <a href="/dark/index.html">Home</a>
+          <a href="/dark/learn.html">Learn</a>
+          <a href="/dark/play.html">Play</a>
+          <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
+          <a href="/dark/source">Source</a>
+          <a href="/source/hymn-pattern-c.html">Light</a>
+        </div>
+      </div>
+    </header>
+    <main id="index">
+      <h1 class="centered-header">hymn_pattern.c</h1>
+      <section>
+        <hr class="padding" />
+        <div class="code"><pre><code><comment>/* This Source Code Form is subject to the terms of the Mozilla Public</comment>
+<comment> * License, v. 2.0. If a copy of the MPL was not distributed with this</comment>
+<comment> * file, You can obtain one at https://mozilla.org/MPL/2.0/. */</comment>
+
+<constant>#include</constant> <string>&lt;ctype.h&gt;</string>
+
+<constant>#include</constant> <string>&quot;hymn_pattern.h&quot;</string>
+
+<constant>#define</constant> MAX_CAPTURES <constant>16</constant>
+
+<keyword>typedef</keyword> <keyword>struct</keyword> Capture Capture;
+<keyword>typedef</keyword> <keyword>struct</keyword> Match Match;
+
+<keyword>struct</keyword> Capture {
+    <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>begin;
+    <constant>size_t</constant> size;
+};
+
+<keyword>struct</keyword> Match {
+    <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>error;
+    <constant>int</constant> count;
+    <constant>char</constant> padding[<constant>4</constant>];
+    Capture capture[MAX_CAPTURES];
+};
+
+<keyword>static</keyword> <constant>bool</constant> class(<constant>int</constant> type, <constant>int</constant> c) {
+    <keyword>if</keyword> (type <keyword>==</keyword> <string>'\0'</string>) <keyword>return</keyword> <constant>false</constant>;
+    <constant>int</constant> result;
+    <keyword>switch</keyword> (tolower(type)) {
+    <keyword>case</keyword> <string>'a'</string>: result <keyword>=</keyword> isalpha(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'c'</string>: result <keyword>=</keyword> iscntrl(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'d'</string>: result <keyword>=</keyword> isdigit(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'l'</string>: result <keyword>=</keyword> islower(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'p'</string>: result <keyword>=</keyword> ispunct(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'s'</string>: result <keyword>=</keyword> isspace(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'u'</string>: result <keyword>=</keyword> isupper(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'w'</string>: result <keyword>=</keyword> isalnum(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'x'</string>: result <keyword>=</keyword> isxdigit(c); <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'z'</string>: result <keyword>=</keyword> (c <keyword>==</keyword> <constant>0</constant>); <keyword>break</keyword>;
+    <keyword>default</keyword>: <keyword>return</keyword> (c <keyword>==</keyword> type);
+    }
+    <keyword>return</keyword> islower(type) ? result : <keyword>!</keyword>result;
+}
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>possible(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern) {
+    <constant>char</constant> c <keyword>=</keyword> pattern[<constant>0</constant>];
+    pattern++;
+    <keyword>switch</keyword> (c) {
+    <keyword>case</keyword> <string>'%'</string>: {
+        <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+            group-&gt;error = <string>&quot;malformed end of class&quot;</string>;
+        }
+        <keyword>return</keyword> pattern <keyword>+</keyword> <constant>1</constant>;
+    }
+    <keyword>case</keyword> <string>'['</string>: {
+        <keyword>while</keyword> (<constant>true</constant>) {
+            c <keyword>=</keyword> pattern[<constant>0</constant>];
+            <keyword>if</keyword> (c <keyword>==</keyword> <string>'\0'</string>) {
+                group-&gt;error = <string>&quot;malformed end of class&quot;</string>;
+                <keyword>return</keyword> pattern;
+            } <keyword>else</keyword> <keyword>if</keyword> (c <keyword>==</keyword> <string>']'</string>) {
+                <keyword>return</keyword> pattern <keyword>+</keyword> <constant>1</constant>;
+            } <keyword>else</keyword> <keyword>if</keyword> (c <keyword>==</keyword> <string>'%'</string>) {
+                pattern++;
+                <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+                    group-&gt;error = <string>&quot;malformed end of class&quot;</string>;
+                    <keyword>return</keyword> pattern;
+                }
+            }
+            pattern++;
+        }
+    }
+    <keyword>default</keyword>: <keyword>return</keyword> pattern;
+    }
+}
+
+<keyword>static</keyword> <constant>bool</constant> any(<constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>end, <constant>int</constant> c) {
+    <keyword>while</keyword> (<constant>true</constant>) {
+        pattern++;
+        <keyword>if</keyword> (pattern <keyword>==</keyword> end) {
+            <keyword>return</keyword> <constant>false</constant>;
+        } <keyword>else</keyword> <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'%'</string>) {
+            pattern++;
+            <keyword>if</keyword> (class(pattern[<constant>0</constant>], c)) {
+                <keyword>return</keyword> <constant>true</constant>;
+            }
+        } <keyword>else</keyword> <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> c) {
+            <keyword>return</keyword> <constant>true</constant>;
+        }
+    }
+}
+
+<keyword>static</keyword> <constant>bool</constant> check(<constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>end, <constant>int</constant> c) {
+    <keyword>if</keyword> (c <keyword>==</keyword> <string>'\0'</string>) {
+        <keyword>return</keyword> <constant>false</constant>;
+    }
+    <keyword>switch</keyword> (pattern[<constant>0</constant>]) {
+    <keyword>case</keyword> <string>'.'</string>: <keyword>return</keyword> <constant>true</constant>;
+    <keyword>case</keyword> <string>'%'</string>: <keyword>return</keyword> class(pattern[<constant>1</constant>], c);
+    <keyword>case</keyword> <string>'['</string>: <keyword>return</keyword> any(pattern, end <keyword>-</keyword> <constant>1</constant>, c);
+    <keyword>default</keyword>: <keyword>return</keyword> pattern[<constant>0</constant>] <keyword>==</keyword> c;
+    }
+}
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>match(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>text);
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>greedy(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>end, <constant>char</constant> <keyword>*</keyword>text) {
+    <constant>int</constant> count <keyword>=</keyword> <constant>0</constant>;
+    <keyword>while</keyword> (check(pattern, end, text[count])) {
+        count++;
+    }
+    <keyword>while</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>) {
+        <constant>char</constant> <keyword>*</keyword>stop <keyword>=</keyword> match(group, end <keyword>+</keyword> <constant>1</constant>, text <keyword>+</keyword> count);
+        <keyword>if</keyword> (stop <keyword>!=</keyword> <constant>NULL</constant>) {
+            <keyword>return</keyword> stop;
+        }
+        count--;
+    }
+    <keyword>return</keyword> <constant>NULL</constant>;
+}
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>minimal(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>end, <constant>char</constant> <keyword>*</keyword>text) {
+    <keyword>while</keyword> (<constant>true</constant>) {
+        <constant>char</constant> <keyword>*</keyword>stop <keyword>=</keyword> match(group, end <keyword>+</keyword> <constant>1</constant>, text);
+        <keyword>if</keyword> (stop <keyword>!=</keyword> <constant>NULL</constant>) {
+            <keyword>return</keyword> stop;
+        } <keyword>else</keyword> <keyword>if</keyword> (check(pattern, end, text[<constant>0</constant>])) {
+            text++;
+        } <keyword>else</keyword> {
+            <keyword>return</keyword> <constant>NULL</constant>;
+        }
+    }
+}
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>capturing(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>text) {
+    <constant>int</constant> count <keyword>=</keyword> group-&gt;count;
+    <keyword>if</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> MAX_CAPTURES) {
+        group-&gt;error = <string>&quot;too many capture groups&quot;</string>;
+        <keyword>return</keyword> <constant>false</constant>;
+    }
+    group-&gt;capture[count].begin = text;
+    group-&gt;capture[count].size = SIZE_MAX;
+    group-&gt;count = count + <constant>1</constant>;
+    <constant>char</constant> <keyword>*</keyword>stop <keyword>=</keyword> match(group, pattern, text);
+    <keyword>if</keyword> (stop <keyword>==</keyword> <constant>NULL</constant>) {
+        group-&gt;count--;
+    }
+    <keyword>return</keyword> stop;
+}
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>captured(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>text) {
+    <constant>int</constant> count <keyword>=</keyword> group-&gt;count;
+    <keyword>if</keyword> (count <keyword>&gt;</keyword> <constant>0</constant>) {
+        <keyword>while</keyword> (<keyword>-</keyword><keyword>-</keyword>count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>) {
+            Capture <keyword>*</keyword>capture <keyword>=</keyword> <keyword>&</keyword>group-&gt;capture[count];
+            <keyword>if</keyword> (capture-&gt;size <keyword>==</keyword> SIZE_MAX) {
+                capture-&gt;size = (<constant>size_t</constant>)(text <keyword>-</keyword> capture-&gt;begin);
+                <constant>char</constant> <keyword>*</keyword>stop <keyword>=</keyword> match(group, pattern, text);
+                <keyword>if</keyword> (stop <keyword>==</keyword> <constant>NULL</constant>) {
+                    capture-&gt;size = SIZE_MAX;
+                }
+                <keyword>return</keyword> stop;
+            }
+        }
+    }
+    group-&gt;error = <string>&quot;missing start of capture group&quot;</string>;
+    <keyword>return</keyword> <constant>NULL</constant>;
+}
+
+<keyword>static</keyword> <constant>char</constant> <keyword>*</keyword>match(Match <keyword>*</keyword>group, <constant>char</constant> <keyword>*</keyword>pattern, <constant>char</constant> <keyword>*</keyword>text) {
+init:
+    <keyword>switch</keyword> (pattern[<constant>0</constant>]) {
+    <keyword>case</keyword> <string>'\0'</string>:
+        <keyword>return</keyword> text;
+    <keyword>case</keyword> <string>'('</string>:
+        <keyword>return</keyword> capturing(group, pattern <keyword>+</keyword> <constant>1</constant>, text);
+    <keyword>case</keyword> <string>')'</string>:
+        <keyword>return</keyword> captured(group, pattern <keyword>+</keyword> <constant>1</constant>, text);
+    <keyword>case</keyword> <string>'$'</string>: {
+        <keyword>if</keyword> (pattern[<constant>1</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+            <keyword>return</keyword> text[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string> ? text : <constant>NULL</constant>;
+        }
+        <keyword>break</keyword>;
+    }
+    <keyword>default</keyword>:
+        <keyword>break</keyword>;
+    }
+    <constant>char</constant> <keyword>*</keyword>end <keyword>=</keyword> possible(group, pattern);
+    <keyword>if</keyword> (group-&gt;error <keyword>!=</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> <constant>NULL</constant>;
+    }
+    <constant>bool</constant> matching <keyword>=</keyword> check(pattern, end, text[<constant>0</constant>]);
+    <keyword>switch</keyword> (end[<constant>0</constant>]) {
+    <keyword>case</keyword> <string>'-'</string>: <keyword>return</keyword> minimal(group, pattern, end, text);
+    <keyword>case</keyword> <string>'*'</string>: <keyword>return</keyword> greedy(group, pattern, end, text);
+    <keyword>case</keyword> <string>'+'</string>: <keyword>return</keyword> matching ? greedy(group, pattern, end, text <keyword>+</keyword> <constant>1</constant>) : <constant>NULL</constant>;
+    <keyword>case</keyword> <string>'?'</string>: {
+        <keyword>if</keyword> (matching) {
+            <constant>char</constant> <keyword>*</keyword>stop <keyword>=</keyword> match(group, end <keyword>+</keyword> <constant>1</constant>, text <keyword>+</keyword> <constant>1</constant>);
+            <keyword>if</keyword> (stop <keyword>!=</keyword> <constant>NULL</constant>) {
+                <keyword>return</keyword> stop;
+            }
+        }
+        <keyword>if</keyword> (group-&gt;error <keyword>!=</keyword> <constant>NULL</constant>) {
+            <keyword>return</keyword> <constant>NULL</constant>;
+        }
+        pattern <keyword>=</keyword> end <keyword>+</keyword> <constant>1</constant>;
+        <keyword>goto</keyword> init;
+    }
+    <keyword>default</keyword>:
+        <keyword>if</keyword> (matching) {
+            pattern <keyword>=</keyword> end;
+            text++;
+            <keyword>goto</keyword> init;
+        }
+        <keyword>return</keyword> <constant>NULL</constant>;
+    }
+}
+
+<keyword>static</keyword> HymnValue get(Hymn <keyword>*</keyword>H, <constant>int</constant> count, HymnValue <keyword>*</keyword>arguments) {
+    <keyword>if</keyword> (count <keyword>&lt;</keyword> <constant>2</constant>) {
+        <keyword>return</keyword> hymn_arity_exception(H, <constant>2</constant>, count);
+    }
+    HymnValue source <keyword>=</keyword> arguments[<constant>0</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(source)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, source.is);
+    }
+    HymnValue expression <keyword>=</keyword> arguments[<constant>1</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(expression)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, expression.is);
+    }
+    HymnString <keyword>*</keyword>text <keyword>=</keyword> hymn_as_string(source);
+    <keyword>if</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> <constant>3</constant>) {
+        HymnValue number <keyword>=</keyword> arguments[<constant>2</constant>];
+        <keyword>if</keyword> (<keyword>!</keyword>hymn_is_<constant>int</constant>(number)) {
+            <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_INTEGER, number.is);
+        }
+        HymnInt start <keyword>=</keyword> hymn_as_<constant>int</constant>(number);
+        <keyword>if</keyword> (start <keyword>&lt;</keyword> <constant>0</constant>) {
+            start <keyword>=</keyword> <constant>0</constant>;
+        } <keyword>else</keyword> <keyword>if</keyword> (start <keyword>&gt;</keyword><keyword>=</keyword> (HymnInt)hymn_string_len(text)) {
+            <keyword>return</keyword> hymn_new_none();
+        }
+        text <keyword>+</keyword><keyword>=</keyword> start;
+    }
+    HymnString <keyword>*</keyword>pattern <keyword>=</keyword> hymn_as_string(expression);
+    <constant>char</constant> <keyword>*</keyword>begin <keyword>=</keyword> <constant>NULL</constant>;
+    <constant>char</constant> <keyword>*</keyword>end <keyword>=</keyword> <constant>NULL</constant>;
+    Match group <keyword>=</keyword> {<constant>0</constant>};
+    <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'^'</string>) {
+        end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern <keyword>+</keyword> <constant>1</constant>, text);
+        <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+            begin <keyword>=</keyword> text;
+        }
+    } <keyword>else</keyword> {
+        <keyword>while</keyword> (<constant>true</constant>) {
+            end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern, text);
+            <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+                begin <keyword>=</keyword> text;
+                <keyword>break</keyword>;
+            } <keyword>else</keyword> <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant> || text[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+                <keyword>break</keyword>;
+            }
+            text++;
+        }
+    }
+    <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> hymn_new_exception(H, group.error);
+    } <keyword>else</keyword> <keyword>if</keyword> (begin <keyword>==</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> hymn_new_none();
+    }
+    HymnArray <keyword>*</keyword>array <keyword>=</keyword> hymn_new_array(<constant>0</constant>);
+    HymnString <keyword>*</keyword>whole <keyword>=</keyword> hymn_string_format(<string>&quot;%.*s&quot;</string>, end <keyword>-</keyword> begin, begin);
+    HymnObjectString <keyword>*</keyword>have <keyword>=</keyword> hymn_intern_string(H, whole);
+    hymn_reference_string(have);
+    hymn_array_push(array, hymn_new_string_value(have));
+    <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> group.count; i++) {
+        HymnString <keyword>*</keyword>sub <keyword>=</keyword> hymn_string_format(<string>&quot;%.*s&quot;</string>, group.capture[i].size, group.capture[i].begin);
+        HymnObjectString <keyword>*</keyword>object <keyword>=</keyword> hymn_intern_string(H, sub);
+        hymn_reference_string(object);
+        hymn_array_push(array, hymn_new_string_value(object));
+    }
+    <keyword>return</keyword> hymn_new_array_value(array);
+}
+
+<keyword>static</keyword> HymnValue find(Hymn <keyword>*</keyword>H, <constant>int</constant> count, HymnValue <keyword>*</keyword>arguments) {
+    <keyword>if</keyword> (count <keyword>&lt;</keyword> <constant>2</constant>) {
+        <keyword>return</keyword> hymn_arity_exception(H, <constant>2</constant>, count);
+    }
+    HymnValue source <keyword>=</keyword> arguments[<constant>0</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(source)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, source.is);
+    }
+    HymnValue expression <keyword>=</keyword> arguments[<constant>1</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(expression)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, expression.is);
+    }
+    HymnString <keyword>*</keyword>original <keyword>=</keyword> hymn_as_string(source);
+    HymnString <keyword>*</keyword>text <keyword>=</keyword> original;
+    <keyword>if</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> <constant>3</constant>) {
+        HymnValue number <keyword>=</keyword> arguments[<constant>2</constant>];
+        <keyword>if</keyword> (<keyword>!</keyword>hymn_is_<constant>int</constant>(number)) {
+            <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_INTEGER, number.is);
+        }
+        HymnInt start <keyword>=</keyword> hymn_as_<constant>int</constant>(number);
+        <keyword>if</keyword> (start <keyword>&lt;</keyword> <constant>0</constant>) {
+            start <keyword>=</keyword> <constant>0</constant>;
+        } <keyword>else</keyword> <keyword>if</keyword> (start <keyword>&gt;</keyword><keyword>=</keyword> (HymnInt)hymn_string_len(text)) {
+            <keyword>return</keyword> hymn_new_none();
+        }
+        text <keyword>+</keyword><keyword>=</keyword> start;
+    }
+    HymnString <keyword>*</keyword>pattern <keyword>=</keyword> hymn_as_string(expression);
+    <constant>char</constant> <keyword>*</keyword>begin <keyword>=</keyword> <constant>NULL</constant>;
+    <constant>char</constant> <keyword>*</keyword>end <keyword>=</keyword> <constant>NULL</constant>;
+    Match group <keyword>=</keyword> {<constant>0</constant>};
+    <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'^'</string>) {
+        end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern <keyword>+</keyword> <constant>1</constant>, text);
+        <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+            begin <keyword>=</keyword> text;
+        }
+    } <keyword>else</keyword> {
+        <keyword>while</keyword> (<constant>true</constant>) {
+            end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern, text);
+            <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+                begin <keyword>=</keyword> text;
+                <keyword>break</keyword>;
+            } <keyword>else</keyword> <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant> || text[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+                <keyword>break</keyword>;
+            }
+            text++;
+        }
+    }
+    <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> hymn_new_exception(H, group.error);
+    } <keyword>else</keyword> <keyword>if</keyword> (begin <keyword>==</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> hymn_new_none();
+    }
+    HymnArray <keyword>*</keyword>array <keyword>=</keyword> hymn_new_array(<constant>0</constant>);
+    hymn_array_push(array, hymn_new_<constant>int</constant>((HymnInt)(begin <keyword>-</keyword> original)));
+    hymn_array_push(array, hymn_new_<constant>int</constant>((HymnInt)(end <keyword>-</keyword> original)));
+    <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> group.count; i++) {
+        HymnInt start <keyword>=</keyword> (HymnInt)(group.capture[i].begin <keyword>-</keyword> original);
+        hymn_array_push(array, hymn_new_<constant>int</constant>(start));
+        hymn_array_push(array, hymn_new_<constant>int</constant>(start <keyword>+</keyword> (HymnInt)group.capture[i].size));
+    }
+    <keyword>return</keyword> hymn_new_array_value(array);
+}
+
+<keyword>static</keyword> HymnValue is_match(Hymn <keyword>*</keyword>H, <constant>int</constant> count, HymnValue <keyword>*</keyword>arguments) {
+    <keyword>if</keyword> (count <keyword>&lt;</keyword> <constant>2</constant>) {
+        <keyword>return</keyword> hymn_arity_exception(H, <constant>2</constant>, count);
+    }
+    HymnValue source <keyword>=</keyword> arguments[<constant>0</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(source)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, source.is);
+    }
+    HymnValue expression <keyword>=</keyword> arguments[<constant>1</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(expression)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, expression.is);
+    }
+    HymnString <keyword>*</keyword>original <keyword>=</keyword> hymn_as_string(source);
+    <keyword>if</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> <constant>3</constant>) {
+        HymnValue number <keyword>=</keyword> arguments[<constant>2</constant>];
+        <keyword>if</keyword> (<keyword>!</keyword>hymn_is_<constant>int</constant>(number)) {
+            <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_INTEGER, number.is);
+        }
+        HymnInt start <keyword>=</keyword> hymn_as_<constant>int</constant>(number);
+        <keyword>if</keyword> (start <keyword>&lt;</keyword> <constant>0</constant>) {
+            start <keyword>=</keyword> <constant>0</constant>;
+        } <keyword>else</keyword> <keyword>if</keyword> (start <keyword>&gt;</keyword><keyword>=</keyword> (HymnInt)hymn_string_len(original)) {
+            <keyword>return</keyword> hymn_new_<constant>bool</constant>(<constant>false</constant>);
+        }
+        original <keyword>+</keyword><keyword>=</keyword> start;
+    }
+    HymnString <keyword>*</keyword>text <keyword>=</keyword> original;
+    HymnString <keyword>*</keyword>pattern <keyword>=</keyword> hymn_as_string(expression);
+    <constant>char</constant> <keyword>*</keyword>begin <keyword>=</keyword> <constant>NULL</constant>;
+    <constant>char</constant> <keyword>*</keyword>end <keyword>=</keyword> <constant>NULL</constant>;
+    Match group <keyword>=</keyword> {<constant>0</constant>};
+    <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'^'</string>) {
+        end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern <keyword>+</keyword> <constant>1</constant>, text);
+        <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+            begin <keyword>=</keyword> text;
+        }
+    } <keyword>else</keyword> {
+        <keyword>while</keyword> (<constant>true</constant>) {
+            end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern, text);
+            <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+                begin <keyword>=</keyword> text;
+                <keyword>break</keyword>;
+            } <keyword>else</keyword> <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant> || text[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+                <keyword>break</keyword>;
+            }
+            text++;
+        }
+    }
+    <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> hymn_new_exception(H, group.error);
+    }
+    <keyword>return</keyword> hymn_new_<constant>bool</constant>(begin <keyword>!=</keyword> <constant>NULL</constant> <keyword>&</keyword><keyword>&</keyword> begin <keyword>==</keyword> original <keyword>&</keyword><keyword>&</keyword> end[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>);
+}
+
+<keyword>static</keyword> HymnString <keyword>*</keyword>replacer(HymnString <keyword>*</keyword>updated, <constant>char</constant> <keyword>*</keyword>begin, <constant>char</constant> <keyword>*</keyword>end, Match <keyword>*</keyword>group, HymnString <keyword>*</keyword>replacement) {
+    <keyword>if</keyword> (updated <keyword>==</keyword> <constant>NULL</constant>) {
+        updated <keyword>=</keyword> hymn_new_string_with_capacity(hymn_string_len(replacement));
+    }
+    HymnString <keyword>*</keyword>text <keyword>=</keyword> replacement;
+    <keyword>while</keyword> (text[<constant>0</constant>] <keyword>!=</keyword> <string>'\0'</string>) {
+        <keyword>if</keyword> (text[<constant>0</constant>] <keyword>==</keyword> <string>'%'</string>) {
+            <constant>char</constant> c <keyword>=</keyword> text[<constant>1</constant>];
+            <keyword>if</keyword> (c <keyword>==</keyword> <string>'%'</string>) {
+                updated <keyword>=</keyword> hymn_string_append_<constant>char</constant>(updated, <string>'%'</string>);
+                text <keyword>+</keyword><keyword>=</keyword> <constant>2</constant>;
+                <keyword>continue</keyword>;
+            } <keyword>else</keyword> <keyword>if</keyword> (c <keyword>&gt;</keyword><keyword>=</keyword> <string>'0'</string> <keyword>&</keyword><keyword>&</keyword> c <keyword>&lt;</keyword><keyword>=</keyword> <string>'9'</string>) {
+                <constant>int</constant> i <keyword>=</keyword> c <keyword>-</keyword> <string>'0'</string>;
+                <keyword>if</keyword> (i <keyword>==</keyword> <constant>0</constant>) {
+                    updated <keyword>=</keyword> hymn_string_append_substring(updated, begin, <constant>0</constant>, (<constant>size_t</constant>)(end <keyword>-</keyword> begin));
+                    text <keyword>+</keyword><keyword>=</keyword> <constant>2</constant>;
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> {
+                    i--;
+                    <keyword>if</keyword> (i <keyword>&lt;</keyword> group-&gt;count) {
+                        updated <keyword>=</keyword> hymn_string_append_substring(updated, group-&gt;capture[i].begin, <constant>0</constant>, group-&gt;capture[i].size);
+                        text <keyword>+</keyword><keyword>=</keyword> <constant>2</constant>;
+                        <keyword>continue</keyword>;
+                    }
+                }
+            }
+        }
+        updated <keyword>=</keyword> hymn_string_append_<constant>char</constant>(updated, text[<constant>0</constant>]);
+        text++;
+    }
+    <keyword>return</keyword> updated;
+}
+
+<keyword>static</keyword> HymnValue replace(Hymn <keyword>*</keyword>H, <constant>int</constant> count, HymnValue <keyword>*</keyword>arguments) {
+    <keyword>if</keyword> (count <keyword>&lt;</keyword> <constant>3</constant>) {
+        <keyword>return</keyword> hymn_arity_exception(H, <constant>3</constant>, count);
+    }
+    HymnValue source <keyword>=</keyword> arguments[<constant>0</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(source)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, source.is);
+    }
+    HymnValue expression <keyword>=</keyword> arguments[<constant>1</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(expression)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, expression.is);
+    }
+    HymnValue substitute <keyword>=</keyword> arguments[<constant>2</constant>];
+    <keyword>if</keyword> (<keyword>!</keyword>hymn_is_string(substitute)) {
+        <keyword>return</keyword> hymn_type_exception(H, HYMN_VALUE_STRING, substitute.is);
+    }
+    HymnString <keyword>*</keyword>original <keyword>=</keyword> hymn_as_string(source);
+    HymnString <keyword>*</keyword>text <keyword>=</keyword> original;
+    HymnString <keyword>*</keyword>pattern <keyword>=</keyword> hymn_as_string(expression);
+    HymnString <keyword>*</keyword>replacement <keyword>=</keyword> hymn_as_string(substitute);
+    HymnString <keyword>*</keyword>updated <keyword>=</keyword> <constant>NULL</constant>;
+    <constant>char</constant> <keyword>*</keyword>last <keyword>=</keyword> <constant>NULL</constant>;
+    Match group <keyword>=</keyword> {<constant>0</constant>};
+    <keyword>if</keyword> (pattern[<constant>0</constant>] <keyword>==</keyword> <string>'^'</string>) {
+        <constant>char</constant> <keyword>*</keyword>end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern <keyword>+</keyword> <constant>1</constant>, text);
+        <keyword>if</keyword> (group.error <keyword>==</keyword> <constant>NULL</constant> <keyword>&</keyword><keyword>&</keyword> end <keyword>!=</keyword> <constant>NULL</constant>) {
+            updated <keyword>=</keyword> hymn_string_copy(replacement);
+            last <keyword>=</keyword> end;
+        }
+    } <keyword>else</keyword> {
+        <keyword>while</keyword> (<constant>true</constant>) {
+            <constant>char</constant> <keyword>*</keyword>end <keyword>=</keyword> match(<keyword>&</keyword>group, pattern, text);
+            <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant>) {
+                <keyword>break</keyword>;
+            } <keyword>else</keyword> <keyword>if</keyword> (end <keyword>!=</keyword> <constant>NULL</constant>) {
+                <keyword>if</keyword> (updated <keyword>==</keyword> <constant>NULL</constant>) {
+                    <keyword>if</keyword> (text <keyword>==</keyword> original) {
+                        updated <keyword>=</keyword> replacer(updated, text, end, <keyword>&</keyword>group, replacement);
+                    } <keyword>else</keyword> {
+                        updated <keyword>=</keyword> hymn_string_format(<string>&quot;%.*s&quot;</string>, text <keyword>-</keyword> original, original);
+                        updated <keyword>=</keyword> replacer(updated, text, end, <keyword>&</keyword>group, replacement);
+                    }
+                } <keyword>else</keyword> {
+                    <keyword>if</keyword> (last <keyword>!=</keyword> text) {
+                        HymnString <keyword>*</keyword>behind <keyword>=</keyword> hymn_string_format(<string>&quot;%.*s&quot;</string>, text <keyword>-</keyword> last, last);
+                        updated <keyword>=</keyword> hymn_string_append(updated, behind);
+                        hymn_string_delete(behind);
+                    }
+                    updated <keyword>=</keyword> replacer(updated, text, end, <keyword>&</keyword>group, replacement);
+                }
+                last <keyword>=</keyword> end;
+                <keyword>if</keyword> (end[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+                    <keyword>break</keyword>;
+                }
+                text <keyword>=</keyword> end;
+            } <keyword>else</keyword> {
+                text++;
+                <keyword>if</keyword> (text[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
+                    <keyword>break</keyword>;
+                }
+            }
+        }
+    }
+    <keyword>if</keyword> (group.error <keyword>!=</keyword> <constant>NULL</constant>) {
+        <keyword>if</keyword> (updated <keyword>!=</keyword> <constant>NULL</constant>) {
+            hymn_string_delete(updated);
+        }
+        <keyword>return</keyword> hymn_new_exception(H, group.error);
+    }
+    <keyword>if</keyword> (updated <keyword>==</keyword> <constant>NULL</constant>) {
+        <keyword>return</keyword> source;
+    } <keyword>else</keyword> <keyword>if</keyword> (last <keyword>!=</keyword> <constant>NULL</constant>) {
+        updated <keyword>=</keyword> hymn_string_append(updated, last);
+    }
+    <keyword>return</keyword> hymn_new_string_value(hymn_intern_string(H, updated));
+}
+
+<constant>void</constant> hymn_use_pattern(Hymn <keyword>*</keyword>H) {
+    HymnTable <keyword>*</keyword>pattern <keyword>=</keyword> hymn_new_table();
+    hymn_add_function_to_table(H, pattern, <string>&quot;get&quot;</string>, get);
+    hymn_add_function_to_table(H, pattern, <string>&quot;find&quot;</string>, find);
+    hymn_add_function_to_table(H, pattern, <string>&quot;match&quot;</string>, is_match);
+    hymn_add_function_to_table(H, pattern, <string>&quot;replace&quot;</string>, replace);
+    hymn_add_table(H, <string>&quot;pattern&quot;</string>, pattern);
+}</code></pre></div>
+      </section>
+    </main>
+    <footer>
+      <p>
+        Made with ❤ by <a href="https://nathanmcmillan.github.io/">Nathan McMillan</a>. You can find the website source code
+        <a href="https://github.com/nathanmcmillan/hymn-website">here</a>.
+      </p>
+    </footer>
+  </body>
+</html>

@@ -30,6 +30,7 @@ keyword {
 string {
   color: rgb(164, 214, 255);
 }
+
 :root {
   --content: 72rem;
   --main: 54rem;
