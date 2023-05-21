@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-let directory = 'code/'
-
 let rules = [
   { pattern: '".-"', capture: ["string"] },
   { pattern: "'.-'", capture: ["string"] },
@@ -124,8 +122,14 @@ func code-highlight(path) {
   return code-span(path, c-rules)
 }
 
-func code-span(path, rules) {
-  let source = io.read-lines(directory + path)
+func code-span(file, rules) {
+  let source = none
+  let location = path.cat('code', file)
+  if io.exists(location) {
+    source = io.read-lines(location)
+  } else {
+    source = io.read-lines(file)
+  }
   out = []
   for line in source {
     if line == "" { push(out, "") continue }

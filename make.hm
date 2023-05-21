@@ -17,6 +17,7 @@ func whitespace(a) {
 func dark-search-and-replace(content) {
   content = text.replace(content, '>Dark<', '>Light<')
   content = text.replace(content, 'href="/', 'href="/dark/')
+  content = text.replace(content, 'href="/dark/dark', 'href="')
   content = text.replace(content, 'href="/dark/dark/dark', 'href="')
   return content
 }
@@ -66,6 +67,12 @@ for file in path.list() {
   }
 }
 
+for file in path.list('source') {
+  if text.ends(file, '.html') {
+    io.remove(file)
+  }
+}
+
 func recursive-remove(file) {
   if !io.exists(file) { return }
   if (io.stats(file).directory) {
@@ -79,7 +86,6 @@ func recursive-remove(file) {
 recursive-remove('dark')
 
 io.mkdir('dark')
-io.mkdir('dark/css')
 
 func recursive-make(parent) {
   let symbol = index(parent, path.symbol)
@@ -106,4 +112,5 @@ func recursive-make(parent) {
 
 recursive-make('html')
 
-system('./css-make.sh')
+use "css-make"
+css-make()

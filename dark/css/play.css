@@ -4,15 +4,13 @@
 :root {
   --top: rgb(174, 129, 225);
   --run-color: rgb(39, 40, 34);
-  --run-background: rgb(255, 0, 77);
-  --run-hover: rgb(240, 146, 146);
   --examples: rgb(39, 40, 34);
   --source-color: rgb(156, 220, 254);
-  --source-background: black;
+  --source-background: rgb(39, 40, 34);
   --out-color: rgb(156, 220, 254);
-  --out-background: rgb(39, 40, 34);
   --code-border: white;
 }
+
 :root {
   --select-offset: 0.2rem;
 }
@@ -107,6 +105,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  background-color: var(--source-background);
 }
 
 #code {
@@ -142,7 +141,7 @@ body {
   margin: 1rem;
   margin-top: 0;
   padding: 1rem;
-  background-color: var(--out-background);
+  background-color: var(--source-background);
   border: 1px solid var(--code-border);
   border-radius: 5px;
   box-shadow: 1px 1px 0px 1px var(--code-border);

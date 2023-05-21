@@ -1,0 +1,37 @@
+#!/usr/bin/env hymn
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+func remove(file) {
+  if !io.exists(file) { return }
+  io.remove(file)
+}
+
+remove('css')
+remove(path.cat('dark', 'css'))
+
+io.mkdir('css')
+io.mkdir(path.cat('dark', 'css'))
+
+let style = io.read(path.cat('template', 'style.css'))
+let play = io.read(path.cat('template', 'play.css'))
+
+let light-min = io.read(path.cat('template', 'light.min.css'))
+let play-min = io.read(path.cat('template', 'play.light.min.css'))
+
+let dark-min = io.read(path.cat('template', 'dark.min.css'))
+let dark-play-min = io.read(path.cat('template', 'play.dark.min.css'))
+
+let main = light-min + '\n' + style
+let light-play = play-min + '\n' + play
+
+let dark-main = dark-min + '\n' + style
+let dark-play = dark-play-min + '\n' + play
+
+io.write(path.cat('css', 'index.css'), main)
+io.write(path.cat('css', 'play.css'), light-play)
+
+io.write(path.cat('dark', 'css', 'index.css'), dark-main)
+io.write(path.cat('dark', 'css', 'play.css'), dark-play)

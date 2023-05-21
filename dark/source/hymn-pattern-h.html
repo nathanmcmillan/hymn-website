@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Not Found</title>
+    <title>hymn_pattern.h</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="/dark/css/index.css" />
   </head>
@@ -16,13 +16,26 @@
           <a href="/dark/play.html">Play</a>
           <a href="https://github.com/nathanmcmillan/hymn-lang/tags">Download</a>
           <a href="/dark/source">Source</a>
-          <a href="/404.html">Light</a>
+          <a href="/source/hymn-pattern-h.html">Light</a>
         </div>
       </div>
     </header>
-    <main id="not-found">
+    <main id="index">
+      <h1 class="centered-header">hymn_pattern.h</h1>
       <section>
-        <p>Page not found</p>
+        <hr class="padding" />
+        <div class="code"><pre><code><comment>/* This Source Code Form is subject to the terms of the Mozilla Public</comment>
+<comment> * License, v. 2.0. If a copy of the MPL was not distributed with this</comment>
+<comment> * file, You can obtain one at https://mozilla.org/MPL/2.0/. */</comment>
+
+<constant>#ifndef</constant> HYMN_PATTERN_LIB_H
+<constant>#define</constant> HYMN_PATTERN_LIB_H
+
+<constant>#include</constant> <string>&quot;hymn.h&quot;</string>
+
+<constant>void</constant> hymn_use_pattern(Hymn <keyword>*</keyword>H);
+
+<constant>#endif</constant></code></pre></div>
       </section>
     </main>
     <footer>

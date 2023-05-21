@@ -4,12 +4,9 @@
 :root {
   --top: rgb(174, 129, 225);
   --run-color: rgb(39, 40, 34);
-  --run-background: rgb(255, 0, 77);
-  --run-hover: rgb(240, 146, 146);
   --examples: rgb(39, 40, 34);
   --source-color: rgb(156, 220, 254);
-  --source-background: black;
+  --source-background: rgb(39, 40, 34);
   --out-color: rgb(156, 220, 254);
-  --out-background: rgb(39, 40, 34);
   --code-border: white;
 }
