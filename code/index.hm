@@ -1,6 +1,6 @@
->>> let array = [2, 4, 8]
+>>> set array = [2, 4, 8]
 >>> echo index(array, 8)
 2
->>> let table = { foo: 2, bar: 4 }
+>>> set table = { foo: 2, bar: 4 }
 >>> echo index(table, 4)
 bar

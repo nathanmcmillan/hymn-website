@@ -28,8 +28,7 @@
 <comment> * License, v. 2.0. If a copy of the MPL was not distributed with this</comment>
 <comment> * file, You can obtain one at https://mozilla.org/MPL/2.0/. */</comment>
 
-<keyword>const</keyword> HYMN_DEBUG_TRACE <keyword>=</keyword> false
-<keyword>const</keyword> HYMN_DEBUG_STACK <keyword>=</keyword> false
+<keyword>const</keyword> HYMN_VERSION <keyword>=</keyword> <string>'0.10.0'</string>
 
 <keyword>const</keyword> UINT8_MAX <keyword>=</keyword> <constant>255</constant>
 <keyword>const</keyword> UINT16_MAX <keyword>=</keyword> <constant>65535</constant>
@@ -213,7 +212,7 @@ class Hymn {
 <keyword>const</keyword> TOKEN_IN <keyword>=</keyword> <constant>44</constant>
 <keyword>const</keyword> TOKEN_INDEX <keyword>=</keyword> <constant>45</constant>
 <keyword>const</keyword> TOKEN_INSERT <keyword>=</keyword> <constant>46</constant>
-<keyword>const</keyword> TOKEN_INSPECT <keyword>=</keyword> <constant>47</constant>
+<keyword>const</keyword> TOKEN_SRC <keyword>=</keyword> <constant>47</constant>
 <keyword>const</keyword> TOKEN_INTEGER <keyword>=</keyword> <constant>48</constant>
 <keyword>const</keyword> TOKEN_KEYS <keyword>=</keyword> <constant>49</constant>
 <keyword>const</keyword> TOKEN_LEFT_CURLY <keyword>=</keyword> <constant>50</constant>
@@ -222,7 +221,7 @@ class Hymn {
 <keyword>const</keyword> TOKEN_LEN <keyword>=</keyword> <constant>53</constant>
 <keyword>const</keyword> TOKEN_LESS <keyword>=</keyword> <constant>54</constant>
 <keyword>const</keyword> TOKEN_LESS_EQUAL <keyword>=</keyword> <constant>55</constant>
-<keyword>const</keyword> TOKEN_LET <keyword>=</keyword> <constant>56</constant>
+<keyword>const</keyword> TOKEN_SET <keyword>=</keyword> <constant>56</constant>
 <keyword>const</keyword> TOKEN_MODULO <keyword>=</keyword> <constant>57</constant>
 <keyword>const</keyword> TOKEN_MULTIPLY <keyword>=</keyword> <constant>58</constant>
 <keyword>const</keyword> TOKEN_NONE <keyword>=</keyword> <constant>59</constant>
@@ -250,7 +249,9 @@ class Hymn {
 <keyword>const</keyword> TOKEN_USE <keyword>=</keyword> <constant>81</constant>
 <keyword>const</keyword> TOKEN_VALUE <keyword>=</keyword> <constant>82</constant>
 <keyword>const</keyword> TOKEN_WHILE <keyword>=</keyword> <constant>83</constant>
-<keyword>const</keyword> TOKEN_DEBUG <keyword>=</keyword> <constant>84</constant>
+<keyword>const</keyword> TOKEN_OPCODES <keyword>=</keyword> <constant>84</constant>
+<keyword>const</keyword> TOKEN_STACK <keyword>=</keyword> <constant>85</constant>
+<keyword>const</keyword> TOKEN_REFERENCE <keyword>=</keyword> <constant>86</constant>
 
 <keyword>const</keyword> PRECEDENCE_NONE <keyword>=</keyword> <constant>0</constant>
 <keyword>const</keyword> PRECEDENCE_ASSIGN <keyword>=</keyword> <constant>1</constant>
@@ -303,7 +304,7 @@ class Hymn {
 <keyword>const</keyword> OP_GREATER_EQUAL <keyword>=</keyword> <constant>30</constant>
 <keyword>const</keyword> OP_INCREMENT_LOCAL_AND_SET <keyword>=</keyword> <constant>31</constant>
 <keyword>const</keyword> OP_INDEX <keyword>=</keyword> <constant>32</constant>
-<keyword>const</keyword> OP_INSPECT <keyword>=</keyword> <constant>33</constant>
+<keyword>const</keyword> OP_SOURCE <keyword>=</keyword> <constant>33</constant>
 <keyword>const</keyword> OP_INT <keyword>=</keyword> <constant>34</constant>
 <keyword>const</keyword> OP_JUMP <keyword>=</keyword> <constant>35</constant>
 <keyword>const</keyword> OP_JUMP_IF_FALSE <keyword>=</keyword> <constant>36</constant>
@@ -336,10 +337,13 @@ class Hymn {
 <keyword>const</keyword> OP_TRUE <keyword>=</keyword> <constant>63</constant>
 <keyword>const</keyword> OP_TYPE <keyword>=</keyword> <constant>64</constant>
 <keyword>const</keyword> OP_USE <keyword>=</keyword> <constant>65</constant>
-<keyword>const</keyword> OP_DEBUG <keyword>=</keyword> <constant>66</constant>
+<keyword>const</keyword> OP_CODES <keyword>=</keyword> <constant>66</constant>
+<keyword>const</keyword> OP_STACK <keyword>=</keyword> <constant>67</constant>
+<keyword>const</keyword> OP_REFERENCE <keyword>=</keyword> <constant>68</constant>
 
 <keyword>const</keyword> TYPE_FUNCTION <keyword>=</keyword> <constant>0</constant>
 <keyword>const</keyword> TYPE_SCRIPT <keyword>=</keyword> <constant>1</constant>
+<keyword>const</keyword> TYPE_DIRECT <keyword>=</keyword> <constant>2</constant>
 
 class Token {
   constructor() {
@@ -454,7 +458,9 @@ rules[TOKEN_COLON] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_COMMA] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_CONTINUE] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_COPY] <keyword>=</keyword> new Rule(copyExpression, null, PRECEDENCE_NONE)
-rules[TOKEN_DEBUG] <keyword>=</keyword> new Rule(debugExpression, null, PRECEDENCE_NONE)
+rules[TOKEN_OPCODES] <keyword>=</keyword> new Rule(opCodesExpression, null, PRECEDENCE_NONE)
+rules[TOKEN_STACK] <keyword>=</keyword> new Rule(stackExpression, null, PRECEDENCE_NONE)
+rules[TOKEN_REFERENCE] <keyword>=</keyword> new Rule(referenceExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_DELETE] <keyword>=</keyword> new Rule(deleteExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_DIVIDE] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_FACTOR)
 rules[TOKEN_DOT] <keyword>=</keyword> new Rule(null, compileDot, PRECEDENCE_CALL)
@@ -477,7 +483,7 @@ rules[TOKEN_IF] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_IN] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_INDEX] <keyword>=</keyword> new Rule(indexExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_INSERT] <keyword>=</keyword> new Rule(arrayInsertExpression, null, PRECEDENCE_NONE)
-rules[TOKEN_INSPECT] <keyword>=</keyword> new Rule(inspectExpression, null, PRECEDENCE_NONE)
+rules[TOKEN_SRC] <keyword>=</keyword> new Rule(sourceExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_INTEGER] <keyword>=</keyword> new Rule(compileInteger, null, PRECEDENCE_NONE)
 rules[TOKEN_KEYS] <keyword>=</keyword> new Rule(keysExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_LEFT_CURLY] <keyword>=</keyword> new Rule(compileTable, null, PRECEDENCE_NONE)
@@ -486,7 +492,7 @@ rules[TOKEN_LEFT_SQUARE] <keyword>=</keyword> new Rule(compileArray, compileSqua
 rules[TOKEN_LEN] <keyword>=</keyword> new Rule(lenExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_LESS] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_COMPARE)
 rules[TOKEN_LESS_EQUAL] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_COMPARE)
-rules[TOKEN_LET] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
+rules[TOKEN_SET] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
 rules[TOKEN_MODULO] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_FACTOR)
 rules[TOKEN_MULTIPLY] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_FACTOR)
 rules[TOKEN_NONE] <keyword>=</keyword> new Rule(compileNone, null, PRECEDENCE_NONE)
@@ -905,7 +911,7 @@ function compileError(C, token, format) {
     }
 
     <keyword>if</keyword> (begin <keyword>&lt;</keyword> end) {
-      error <keyword>+</keyword><keyword>=</keyword> <string>'\n  | '</string> <keyword>+</keyword> source.substring(begin, end) <keyword>+</keyword> <string>'\n    '</string>
+      error <keyword>+</keyword><keyword>=</keyword> <string>'\n  '</string> <keyword>+</keyword> source.substring(begin, end) <keyword>+</keyword> <string>'\n  '</string>
       <keyword>const</keyword> spaces <keyword>=</keyword> token.start <keyword>-</keyword> begin
       <keyword>if</keyword> (spaces <keyword>&gt;</keyword> <constant>0</constant>) <keyword>for</keyword> (let i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> spaces; i++) error += <string>' '</string>
       <keyword>for</keyword> (let i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> token.length; i++) error += <string>'^'</string>
@@ -1011,14 +1017,16 @@ function identKey(ident, size) {
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>5</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'reak'</string>, TOKEN_BREAK)
       break
     <keyword>case</keyword> <string>'d'</string>:
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>5</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'ebug'</string>, TOKEN_DEBUG)
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'elete'</string>, TOKEN_DELETE)
       break
     <keyword>case</keyword> <string>'r'</string>:
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'eturn'</string>, TOKEN_RETURN)
       break
     <keyword>case</keyword> <string>'s'</string>:
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'tr'</string>, TOKEN_TO_STRING)
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) {
+        <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'e'</string> <keyword>&</keyword><keyword>&</keyword> ident[<constant>2</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'t'</string>) <keyword>return</keyword> TOKEN_SET
+        <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'t'</string> <keyword>&</keyword><keyword>&</keyword> ident[<constant>2</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'r'</string>) <keyword>return</keyword> TOKEN_TO_STRING
+      }
       break
     <keyword>case</keyword> <string>'k'</string>:
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>4</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'eys'</string>, TOKEN_KEYS)
@@ -1029,10 +1037,7 @@ function identKey(ident, size) {
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>8</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'ontinue'</string>, TOKEN_CONTINUE)
       break
     <keyword>case</keyword> <string>'l'</string>:
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant> <keyword>&</keyword><keyword>&</keyword> ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'e'</string>) {
-        <keyword>if</keyword> (ident[<constant>2</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'t'</string>) <keyword>return</keyword> TOKEN_LET
-        <keyword>if</keyword> (ident[<constant>2</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'n'</string>) <keyword>return</keyword> TOKEN_LEN
-      }
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'en'</string>, TOKEN_LEN)
       break
     <keyword>case</keyword> <string>'t'</string>:
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'ry'</string>, TOKEN_TRY)
@@ -1046,7 +1051,6 @@ function identKey(ident, size) {
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'nt'</string>, TOKEN_TO_INTEGER)
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>5</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'ndex'</string>, TOKEN_INDEX)
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'nsert'</string>, TOKEN_INSERT)
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>7</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'nspect'</string>, TOKEN_INSPECT)
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>2</constant>) {
         <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'f'</string>) <keyword>return</keyword> TOKEN_IF
         <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'n'</string>) <keyword>return</keyword> TOKEN_IN
@@ -1084,6 +1088,12 @@ function identKey(ident, size) {
         <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'a'</string>) <keyword>return</keyword> identTrie(ident, <constant>2</constant>, <string>'lse'</string>, TOKEN_FALSE)
         <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'l'</string>) <keyword>return</keyword> identTrie(ident, <constant>2</constant>, <string>'oat'</string>, TOKEN_TO_FLOAT)
       }
+      break
+    <keyword>case</keyword> <string>'_'</string>:
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'stack'</string>, TOKEN_STACK)
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>7</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'source'</string>, TOKEN_SRC)
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>8</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'opcodes'</string>, TOKEN_OPCODES)
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>10</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'reference'</string>, TOKEN_REFERENCE)
       break
   }
   <keyword>return</keyword> TOKEN_UNDEFINED
@@ -1593,12 +1603,6 @@ function scopeInit(C, scope, type, begin) {
   <keyword>const</keyword> local <keyword>=</keyword> scopeGetLocal(scope, scope.localCount++)
   local.depth <keyword>=</keyword> <constant>0</constant>
   local.name <keyword>=</keyword> null
-}
-
-function newCompiler(script, source, H, scope) {
-  <keyword>const</keyword> C <keyword>=</keyword> new Compiler(script, source, H)
-  scopeInit(C, scope, TYPE_SCRIPT, <constant>0</constant>)
-  <keyword>return</keyword> C
 }
 
 function byteCodeNewConstant(C, value) {
@@ -2287,7 +2291,7 @@ function echoIfNone(C) {
 function endFunction(C) {
   <keyword>const</keyword> scope <keyword>=</keyword> C.scope
   <keyword>const</keyword> func <keyword>=</keyword> scope.func
-  <keyword>if</keyword> (scope.type <keyword>==</keyword><keyword>=</keyword> TYPE_SCRIPT) echoIfNone(C)
+  <keyword>if</keyword> (scope.type <keyword>==</keyword><keyword>=</keyword> TYPE_DIRECT) echoIfNone(C)
   emitShort(C, OP_NONE, OP_RETURN)
   <keyword>if</keyword> (scope.type <keyword>==</keyword><keyword>=</keyword> TYPE_FUNCTION) func.source <keyword>=</keyword> C.source.substring(scope.begin, C.previous.start <keyword>+</keyword> C.previous.length)
   C.scope <keyword>=</keyword> scope.enclosing
@@ -2342,7 +2346,7 @@ function declareFunction(C) {
 }
 
 function declaration(C) {
-  <keyword>if</keyword> (match(C, TOKEN_LET)) {
+  <keyword>if</keyword> (match(C, TOKEN_SET)) {
     defineNewVariable(C)
   } <keyword>else</keyword> <keyword>if</keyword> (match(C, TOKEN_FUNCTION)) {
     declareFunction(C)
@@ -2881,18 +2885,31 @@ function existsExpression(C) {
   emit(C, OP_EXISTS)
 }
 
-function inspectExpression(C) {
-  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'inspect'</string>`)
+function sourceExpression(C) {
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_source'</string>`)
   expression(C)
-  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'inspect'</string>`)
-  emit(C, OP_INSPECT)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_source'</string>`)
+  emit(C, OP_SOURCE)
 }
 
-function debugExpression(C) {
-  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'debug'</string>`)
+function opCodesExpression(C) {
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_opcodes'</string>`)
   expression(C)
-  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'debug'</string>`)
-  emit(C, OP_DEBUG)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_opcodes'</string>`)
+  emit(C, OP_CODES)
+}
+
+function stackExpression(C) {
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_stack'</string>`)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_stack'</string>`)
+  emit(C, OP_STACK)
+}
+
+function referenceExpression(C) {
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_reference'</string>`)
+  expression(C)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_reference'</string>`)
+  emit(C, OP_REFERENCE)
 }
 
 function expressionStatement(C) {
@@ -2916,9 +2933,10 @@ function currentFrame(H) {
   <keyword>return</keyword> H.frames[H.frameCount <keyword>-</keyword> <constant>1</constant>]
 }
 
-function compile(H, script, source) {
+function compile(H, script, source, type) {
   <keyword>const</keyword> scope <keyword>=</keyword> new Scope()
-  <keyword>const</keyword> C <keyword>=</keyword> newCompiler(script, source, H, scope)
+  <keyword>const</keyword> C <keyword>=</keyword> new Compiler(script, source, H)
+  scopeInit(C, scope, type, <constant>0</constant>)
 
   advance(C)
   <keyword>while</keyword> (<keyword>!</keyword>match(C, TOKEN_EOF)) {
@@ -3351,7 +3369,7 @@ async function hymnImport(H, file) {
     tablePut(imports, module, newBool(<constant>true</constant>))
   }
 
-  <keyword>const</keyword> result <keyword>=</keyword> compile(H, module, source)
+  <keyword>const</keyword> result <keyword>=</keyword> compile(H, module, source, TYPE_SCRIPT)
 
   <keyword>const</keyword> func <keyword>=</keyword> result.func
   let error <keyword>=</keyword> result.error
@@ -3549,10 +3567,14 @@ function disassembleInstruction(debug, code, index) {
       <keyword>return</keyword> debugInstruction(debug, <string>'OP_TYPE'</string>, index)
     <keyword>case</keyword> OP_USE:
       <keyword>return</keyword> debugInstruction(debug, <string>'OP_USE'</string>, index)
-    <keyword>case</keyword> OP_INSPECT:
-      <keyword>return</keyword> debugInstruction(debug, <string>'OP_INSPECT'</string>, index)
-    <keyword>case</keyword> OP_DEBUG:
-      <keyword>return</keyword> debugInstruction(debug, <string>'OP_DEBUG'</string>, index)
+    <keyword>case</keyword> OP_SOURCE:
+      <keyword>return</keyword> debugInstruction(debug, <string>'OP_SOURCE'</string>, index)
+    <keyword>case</keyword> OP_CODES:
+      <keyword>return</keyword> debugInstruction(debug, <string>'OP_CODES'</string>, index)
+    <keyword>case</keyword> OP_STACK:
+      <keyword>return</keyword> debugInstruction(debug, <string>'OP_STACK'</string>, index)
+    <keyword>case</keyword> OP_REFERENCE:
+      <keyword>return</keyword> debugInstruction(debug, <string>'OP_REFERENCE'</string>, index)
     <keyword>default</keyword>:
       <keyword>return</keyword> (debug[<constant>0</constant>] <keyword>+</keyword><keyword>=</keyword> <string>'UNKNOWN_OPCODE '</string> <keyword>+</keyword> instruction)
   }
@@ -3570,28 +3592,9 @@ function disassembleByteCode(code) {
   <keyword>return</keyword> debug[<constant>0</constant>]
 }
 
-function debugStack(H) {
-  <keyword>if</keyword> (H.stackTop <keyword>==</keyword><keyword>=</keyword> <constant>0</constant>) {
-    return
-  }
-  let debug <keyword>=</keyword> <string>'STACK   | '</string>
-  <keyword>for</keyword> (let i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> H.stackTop; i++) {
-    debug <keyword>+</keyword><keyword>=</keyword> <string>'['</string> <keyword>+</keyword> debugValueToString(H.stack[i]) <keyword>+</keyword> <string>'] '</string>
-  }
-  console.debug(debug)
-}
-
-function debugTrace(code, index) {
-  <keyword>const</keyword> debug <keyword>=</keyword> [<string>''</string>]
-  disassembleInstruction(debug, code, index)
-  console.debug(debug[<constant>0</constant>])
-}
-
 async function hymnRun(H) {
   let frame <keyword>=</keyword> currentFrame(H)
   <keyword>while</keyword> (<constant>true</constant>) {
-    <keyword>if</keyword> (HYMN_DEBUG_STACK) debugStack(H)
-    <keyword>if</keyword> (HYMN_DEBUG_TRACE) debugTrace(frame.func.code, frame.ip)
     <keyword>switch</keyword> (readByte(frame)) {
       <keyword>case</keyword> OP_RETURN: {
         <keyword>const</keyword> result <keyword>=</keyword> hymnPop(H)
@@ -4748,14 +4751,31 @@ async function hymnRun(H) {
         }
         break
       }
-      <keyword>case</keyword> OP_INSPECT: {
+      <keyword>case</keyword> OP_SOURCE: {
         <keyword>const</keyword> value <keyword>=</keyword> hymnPop(H)
         hymnPush(H, newString(valueToInspect(value)))
         break
       }
-      <keyword>case</keyword> OP_DEBUG: {
+      <keyword>case</keyword> OP_CODES: {
         <keyword>const</keyword> value <keyword>=</keyword> hymnPop(H)
         hymnPush(H, newString(valueToDebug(value)))
+        break
+      }
+      <keyword>case</keyword> OP_STACK: {
+        <keyword>if</keyword> (H.stackTop <keyword>!=</keyword><keyword>=</keyword> <constant>0</constant>) {
+          let debug <keyword>=</keyword> <string>''</string>
+          <keyword>for</keyword> (let i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> H.stackTop; i++) {
+            debug <keyword>+</keyword><keyword>=</keyword> <string>'['</string> <keyword>+</keyword> debugValueToString(H.stack[i]) <keyword>+</keyword> <string>']\n'</string>
+          }
+          hymnPush(H, newString(debug))
+        } <keyword>else</keyword> {
+          hymnPush(H, newString(<string>''</string>))
+        }
+        break
+      }
+      <keyword>case</keyword> OP_REFERENCE: {
+        hymnPop(H)
+        hymnPush(H, newInt(<constant>0</constant>))
         break
       }
       <keyword>case</keyword> OP_THROW: {
@@ -4797,7 +4817,7 @@ function addPointer(H, name, pointer) {
 }
 
 async function debugScript(H, script, source) {
-  <keyword>const</keyword> result <keyword>=</keyword> compile(H, script, source)
+  <keyword>const</keyword> result <keyword>=</keyword> compile(H, script, source, TYPE_SCRIPT)
 
   <keyword>const</keyword> func <keyword>=</keyword> result.func
   <keyword>if</keyword> (result.error <keyword>!=</keyword><keyword>=</keyword> null) {
@@ -4821,8 +4841,8 @@ async function debugScript(H, script, source) {
   <keyword>return</keyword> null
 }
 
-async function interpretScript(H, script, source) {
-  <keyword>const</keyword> result <keyword>=</keyword> compile(H, script, source)
+async function interpretScript(H, script, source, type) {
+  <keyword>const</keyword> result <keyword>=</keyword> compile(H, script, source, type)
 
   <keyword>const</keyword> func <keyword>=</keyword> result.func
   <keyword>if</keyword> (result.error <keyword>!=</keyword><keyword>=</keyword> null) {
@@ -4834,16 +4854,18 @@ async function interpretScript(H, script, source) {
   hymnCall(H, func, <constant>0</constant>)
 
   await hymnRun(H)
-  <keyword>if</keyword> (H.error <keyword>!=</keyword><keyword>=</keyword> null) {
-    <keyword>return</keyword> H.error
-  }
+  <keyword>if</keyword> (H.error <keyword>!=</keyword><keyword>=</keyword> null) <keyword>return</keyword> H.error
 
   hymnResetStack(H)
   <keyword>return</keyword> null
 }
 
 async function interpret(H, source) {
-  <keyword>return</keyword> interpretScript(H, null, source)
+  <keyword>return</keyword> interpretScript(H, null, source, TYPE_SCRIPT)
+}
+
+async function direct(H, source) {
+  <keyword>return</keyword> interpretScript(H, null, source, TYPE_DIRECT)
 }
 
 function newVM() {
@@ -4871,6 +4893,7 @@ function newVM() {
 
 <keyword>if</keyword> (node) {
   module.exports <keyword>=</keyword> {
+    version: HYMN_VERSION,
     isFloat: isFloat,
     isFuncNative: isFuncNative,
     isPointer: isPointer,
@@ -4882,9 +4905,10 @@ function newVM() {
     newNativeFunction: newNativeFunction,
     addFunction: addFunction,
     addPointer: addPointer,
-    newVM: newVM,
-    interpret: interpret,
     interpretScript: interpretScript,
+    interpret: interpret,
+    direct: direct,
+    newVM: newVM,
     debug: debugScript,
   }
 }</code></pre></div>

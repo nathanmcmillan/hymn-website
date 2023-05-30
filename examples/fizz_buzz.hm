@@ -1,5 +1,5 @@
-let f = "Fizz"
-let b = "Buzz"
+set f = "Fizz"
+set b = "Buzz"
 
 func fizz-buzz(n) {
   if n == 0 {

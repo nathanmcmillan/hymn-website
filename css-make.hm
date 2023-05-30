@@ -15,20 +15,20 @@ remove(path.cat('dark', 'css'))
 io.mkdir('css')
 io.mkdir(path.cat('dark', 'css'))
 
-let style = io.read(path.cat('template', 'style.css'))
-let play = io.read(path.cat('template', 'play.css'))
+set style = io.read(path.cat('template', 'style.css'))
+set play = io.read(path.cat('template', 'play.css'))
 
-let light-min = io.read(path.cat('template', 'light.min.css'))
-let play-min = io.read(path.cat('template', 'play.light.min.css'))
+set light-min = io.read(path.cat('template', 'light.min.css'))
+set play-min = io.read(path.cat('template', 'play.light.min.css'))
 
-let dark-min = io.read(path.cat('template', 'dark.min.css'))
-let dark-play-min = io.read(path.cat('template', 'play.dark.min.css'))
+set dark-min = io.read(path.cat('template', 'dark.min.css'))
+set dark-play-min = io.read(path.cat('template', 'play.dark.min.css'))
 
-let main = light-min + '\n' + style
-let light-play = play-min + '\n' + play
+set main = light-min + '\n' + style
+set light-play = play-min + '\n' + play
 
-let dark-main = dark-min + '\n' + style
-let dark-play = dark-play-min + '\n' + play
+set dark-main = dark-min + '\n' + style
+set dark-play = dark-play-min + '\n' + play
 
 io.write(path.cat('css', 'index.css'), main)
 io.write(path.cat('css', 'play.css'), light-play)

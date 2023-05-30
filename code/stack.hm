@@ -1,0 +1,6 @@
+>>> {
+>>>   set x = 1
+>>>   echo _stack()
+>>> }
+[function: script]
+[integer: 1]

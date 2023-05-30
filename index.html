@@ -31,9 +31,9 @@
       </section>
       <section id="release">
         <div class="section-top">
-          <h3>Latest Release <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.9.0">0.9.0</a></h3>
+          <h3>Latest Release <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.10.0">0.10.0</a></h3>
         </div>
-        <p>May 7, 2023 · <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/blob/master/RELEASE.md">Release notes</a></p>
+        <p>May 29, 2023 · <a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/blob/master/RELEASE.md">Release notes</a></p>
       </section>
       <hr />
       <section>
@@ -50,7 +50,7 @@
 }
 
 <keyword>func</keyword> <entity>node-add</entity>(list, value) {
-  <keyword>let</keyword> <entity>node</entity> <keyword>=</keyword> list
+  <keyword>set</keyword> <entity>node</entity> <keyword>=</keyword> list
   <keyword>while</keyword> <constant>true</constant> {
     <keyword>if</keyword> node.next <keyword>==</keyword> <constant>none</constant> { <keyword>break</keyword> }
     node <keyword>=</keyword> node.next
@@ -59,7 +59,7 @@
 }
 
 <comment># objects are passed by reference</comment>
-<keyword>let</keyword> <entity>list</entity> <keyword>=</keyword> new-node(<string>&quot;hello&quot;</string>)
+<keyword>set</keyword> <entity>list</entity> <keyword>=</keyword> new-node(<string>&quot;hello&quot;</string>)
 node-add(list, <string>&quot;world&quot;</string>)
 
 <comment># echo statements will show all nested values in an object</comment>
@@ -98,6 +98,7 @@ node-add(list, <string>&quot;world&quot;</string>)
         </div>
         <p>
           <table>
+            <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.10.0">Hymn · 0.10.0</a></td><td>May 29, 2023</td></tr>
             <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.9.0">Hymn · 0.9.0</a></td><td>May 7, 2023</td></tr>
             <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.8.0">Hymn · 0.8.0</a></td><td>February 19, 2023</td></tr>
             <tr><td><a class="hidden-link" href="https://github.com/nathanmcmillan/hymn-lang/releases/tag/v0.7.0">Hymn · 0.7.0</a></td><td>February 5, 2023</td></tr>

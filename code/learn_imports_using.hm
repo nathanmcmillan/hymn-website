@@ -1,5 +1,5 @@
 # my-file.hm
-let HELLO = "Hello "
+set HELLO = "Hello "
 func world() {
   return "world!"
 }

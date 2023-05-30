@@ -6,11 +6,11 @@
 
 use "code"
 
-let header = io.read-lines('template/header.html')
-let footer = io.read-lines('template/footer.html')
+set header = io.read-lines('template/header.html')
+set footer = io.read-lines('template/footer.html')
 
 func whitespace(a) {
-  let count = len(a) - len(text.left-strip(a))
+  set count = len(a) - len(text.left-strip(a))
   return a[0:count]
 }
 
@@ -23,27 +23,27 @@ func dark-search-and-replace(content) {
 }
 
 func search-and-replace(path, dark, content) {
-  let out = []
+  set out = []
 
   for line in content {
-    let short = text.trim(line)
+    set short = text.trim(line)
     if text.starts(short, '<header></header>') {
-      let space = whitespace(line)
+      set space = whitespace(line)
       push(out, space + '<header>')
       for h in header {
         push(out, space + '  ' + h)
       }
       push(out, space + '</header>')
     } elif text.starts(short, '<footer></footer>') {
-      let space = whitespace(line)
+      set space = whitespace(line)
       push(out, space + '<footer>')
       for f in footer {
         push(out, space + '  ' + f)
       }
       push(out, space + '</footer>')
     } elif text.starts(short, '<pre>') {
-      let space = whitespace(line)
-      let source = text.replace(text.replace(text.trim(line), '<pre>', ''), '</pre>', '')
+      set space = whitespace(line)
+      set source = text.replace(text.replace(text.trim(line), '<pre>', ''), '</pre>', '')
       source = code-highlight(source)
       push(out, space + '<div class="code"><pre><code>' + source + '</code></pre></div>')
     } else {
@@ -51,7 +51,7 @@ func search-and-replace(path, dark, content) {
     }
   }
 
-  let this = text.replace(path, '\\', '/')
+  set this = text.replace(path, '\\', '/')
   if text.starts(this, './') { this = this[2:] }
 
   content = text.join(out, '\n')
@@ -88,8 +88,8 @@ recursive-remove('dark')
 io.mkdir('dark')
 
 func recursive-make(parent) {
-  let symbol = index(parent, path.symbol)
-  let directory = none
+  set symbol = index(parent, path.symbol)
+  set directory = none
   if symbol > 0 {
     directory = parent[symbol + 1:]
   }
@@ -98,14 +98,14 @@ func recursive-make(parent) {
       recursive-make(file)
       continue
     }
-    let name = path.base(file)
+    set name = path.base(file)
     if directory != none {
       io.mkdir(directory)
       io.mkdir(path.cat('dark', directory))
       name = path.cat(directory, name)
     }
-    let dark = path.cat('dark', name)
-    let contents = io.read-lines(file)
+    set dark = path.cat('dark', name)
+    set contents = io.read-lines(file)
     search-and-replace(name, dark, contents)
   }
 }

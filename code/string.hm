@@ -1,4 +1,4 @@
->>> let x = 256
->>> let s = string(x)
+>>> set x = 256
+>>> set s = string(x)
 >>> echo type(s)
 string

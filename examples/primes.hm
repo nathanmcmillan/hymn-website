@@ -6,8 +6,8 @@ func is-prime(n) {
   return true
 }
 
-let N = 10
-let primes = []
+set N = 10
+set primes = []
 
 for i = 0, i < N {
   if is-prime(i) {

@@ -29,11 +29,11 @@
         <div class="code"><pre><code><comment># I am a comment</comment></code></pre></div>
         <h2>Scope</h2>
         <p>Variable scope uses curly brackets `{` and `}`. Variables in an inner scope will shadow the same identifiers in an outer or global scope.</p>
-        <div class="code"><pre><code><keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>0</constant>
+        <div class="code"><pre><code><keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>0</constant>
 {
-  <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
+  <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
   {
-    <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>2</constant>
+    <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>2</constant>
   }
 }</code></pre></div>
         <h2>Special Variables</h2>
@@ -98,7 +98,7 @@
             <td>Used in a for loop for specifying a value to iterate over</td>
           </tr>
           <tr>
-            <td>let</td>
+            <td>set</td>
             <td>Used to declare a new variable</td>
           </tr>
           <tr>

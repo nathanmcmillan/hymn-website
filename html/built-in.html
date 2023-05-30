@@ -44,10 +44,6 @@
             <td>Returns the index number or table key for the given value</td>
           </tr>
           <tr>
-            <td><a href="#inspect">inspect(value)</a></td>
-            <td>Returns a function's source code</td>
-          </tr>
-          <tr>
             <td><a href="#insert">insert(object, index, value)</a></td>
             <td>Inserts a value into an array at a given index</td>
           </tr>
@@ -79,6 +75,22 @@
             <td><a href="#type">type(value)</a></td>
             <td>Returns the value type as a string</td>
           </tr>
+          <tr>
+            <td><a href="#source">_source(value)</a></td>
+            <td>Returns a function's source code</td>
+          </tr>
+          <tr>
+            <td><a href="#opcodes">_opcodes(value)</a></td>
+            <td>Returns a function's instruction codes</td>
+          </tr>
+          <tr>
+            <td><a href="#stack">_stack</a></td>
+            <td>Returns the current stack</td>
+          </tr>
+          <tr>
+            <td><a href="#reference">_reference(value)</a></td>
+            <td>Returns a variable's reference counts</td>
+          </tr>
         </table>
         <h4><a name="clear">clear(object)</a></h4>
         <p>Removes all elements inside arrays and tables. Strings become blank.</p>
@@ -101,9 +113,6 @@
         <h4><a name="index">index(object, value)</a></h4>
         <p>Returns the index number or table key for the given value.</p>
         <pre>index.hm</pre>
-        <h4><a name="inspect">inspect(value)</a></h4>
-        <p>Returns a function's source code.</p>
-        <pre>inspect.hm</pre>
         <h4><a name="insert">insert(array, index, value)</a></h4>
         <p>Inserts a value into an array at a given index.</p>
         <pre>insert.hm</pre>
@@ -131,6 +140,18 @@
         <h4><a name="type">type(value)</a></h4>
         <p>Returns the value type as a string.</p>
         <pre>type.hm</pre>
+        <h4><a name="source">_source(value)</a></h4>
+        <p>Returns a function's source code.</p>
+        <pre>source.hm</pre>
+        <h4><a name="opcodes">_opcodes(value)</a></h4>
+        <p>Returns a function's instruction codes.</p>
+        <pre>opcodes.hm</pre>
+        <h4><a name="stack">_stack</a></h4>
+        <p>Returns the current stack.</p>
+        <pre>stack.hm</pre>
+        <h4><a name="reference">_reference(value)</a></h4>
+        <p>Returns a function's reference count.</p>
+        <pre>reference.hm</pre>
         <hr class="padding" />
         <p>
           <a class="link" href="/syntax">Back to Syntax</a>
