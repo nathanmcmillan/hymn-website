@@ -1,4 +1,4 @@
->>> let foo = [2, 4]
->>> let bar = copy(array)
+>>> set foo = [2, 4]
+>>> set bar = copy(array)
 >>> echo bar
 [2, 4]

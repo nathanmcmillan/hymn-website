@@ -1,4 +1,4 @@
-let i = 0
+set i = 0
 while i < 12 {
   echo "Hi!"
   i += 2

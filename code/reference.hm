@@ -1,0 +1,4 @@
+>>> set x = {}
+>>> set y = x
+>>> echo _reference(x)
+3

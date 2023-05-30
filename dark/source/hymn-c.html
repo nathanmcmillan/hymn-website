@@ -294,9 +294,8 @@ HymnString <keyword>*</keyword>hymn_string_replace(HymnString <keyword>*</keywor
     HymnStringHead <keyword>*</keyword>head <keyword>=</keyword> hymn_string_head(string);
     <constant>size_t</constant> len <keyword>=</keyword> head-&gt;length;
     <constant>size_t</constant> len_sub <keyword>=</keyword> strlen(find);
-    <keyword>if</keyword> (len <keyword>==</keyword> <constant>0</constant> || len_sub <keyword>&gt;</keyword> len) {
-        <keyword>return</keyword> hymn_new_string(<string>&quot;&quot;</string>);
-    }
+    <keyword>if</keyword> (len <keyword>==</keyword> <constant>0</constant>) <keyword>return</keyword> hymn_new_string(<string>&quot;&quot;</string>);
+    <keyword>if</keyword> (len_sub <keyword>==</keyword> <constant>0</constant> || len_sub <keyword>&gt;</keyword> len) <keyword>return</keyword> hymn_string_copy(string);
     HymnString <keyword>*</keyword>out <keyword>=</keyword> hymn_new_string_with_capacity(len);
     <constant>size_t</constant> end <keyword>=</keyword> len <keyword>-</keyword> len_sub <keyword>+</keyword> <constant>1</constant>;
     <constant>size_t</constant> pos <keyword>=</keyword> <constant>0</constant>;
@@ -311,14 +310,11 @@ HymnString <keyword>*</keyword>hymn_string_replace(HymnString <keyword>*</keywor
         <keyword>if</keyword> (match) {
             out <keyword>=</keyword> hymn_string_append_substring(out, string, pos, i);
             out <keyword>=</keyword> hymn_string_append(out, replace);
-            i <keyword>+</keyword><keyword>=</keyword> len_sub;
-            pos <keyword>=</keyword> i;
-            i--;
+            pos <keyword>=</keyword> i <keyword>+</keyword> len_sub;
+            i <keyword>=</keyword> pos <keyword>-</keyword> <constant>1</constant>;
         }
     }
-    <keyword>if</keyword> (pos <keyword>&lt;</keyword> len) {
-        out <keyword>=</keyword> hymn_string_append_substring(out, string, pos, len);
-    }
+    <keyword>if</keyword> (pos <keyword>&lt;</keyword> len) out <keyword>=</keyword> hymn_string_append_substring(out, string, pos, len);
     <keyword>return</keyword> out;
 }
 
@@ -563,7 +559,9 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     TOKEN_COMMA,
     TOKEN_CONTINUE,
     TOKEN_COPY,
-    TOKEN_DEBUG,
+    TOKEN_OPCODES,
+    TOKEN_STACK,
+    TOKEN_REFERENCE,
     TOKEN_DELETE,
     TOKEN_DIVIDE,
     TOKEN_DOT,
@@ -586,7 +584,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     TOKEN_IN,
     TOKEN_INDEX,
     TOKEN_INSERT,
-    TOKEN_INSPECT,
+    TOKEN_SRC,
     TOKEN_INTEGER,
     TOKEN_KEYS,
     TOKEN_LEFT_CURLY,
@@ -595,7 +593,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     TOKEN_LEN,
     TOKEN_LESS,
     TOKEN_LESS_EQUAL,
-    TOKEN_LET,
+    TOKEN_SET,
     TOKEN_MODULO,
     TOKEN_MULTIPLY,
     TOKEN_NONE,
@@ -667,8 +665,10 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     OP_CLEAR,
     OP_CONSTANT,
     OP_COPY,
+    OP_CODES,
+    OP_STACK,
+    OP_REFERENCE,
     OP_DEFINE_GLOBAL,
-    OP_DEBUG,
     OP_DELETE,
     OP_DIVIDE,
     OP_DUPLICATE,
@@ -685,7 +685,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     OP_GREATER,
     OP_GREATER_EQUAL,
     OP_INDEX,
-    OP_INSPECT,
+    OP_SOURCE,
     OP_JUMP,
     OP_JUMP_IF_EQUAL,
     OP_JUMP_IF_NOT_EQUAL,
@@ -739,7 +739,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
 <keyword>enum</keyword> FunctionType {
     TYPE_FUNCTION,
     TYPE_SCRIPT,
-    TYPE_DO,
+    TYPE_DIRECT,
     TYPE_REPL,
 };
 
@@ -774,8 +774,10 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
 <keyword>static</keyword> <constant>void</constant> keys_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> type_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> exists_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
-<keyword>static</keyword> <constant>void</constant> inspect_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
-<keyword>static</keyword> <constant>void</constant> debug_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
+<keyword>static</keyword> <constant>void</constant> source_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
+<keyword>static</keyword> <constant>void</constant> opcode_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
+<keyword>static</keyword> <constant>void</constant> stack_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
+<keyword>static</keyword> <constant>void</constant> reference_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> function_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> declaration(Compiler <keyword>*</keyword>C);
 <keyword>static</keyword> <constant>void</constant> statement(Compiler <keyword>*</keyword>C);
@@ -1022,7 +1024,9 @@ HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v) {
     [TOKEN_COMMA] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_CONTINUE] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_COPY] <keyword>=</keyword> {copy_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
-    [TOKEN_DEBUG] <keyword>=</keyword> {debug_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
+    [TOKEN_OPCODES] <keyword>=</keyword> {opcode_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
+    [TOKEN_STACK] <keyword>=</keyword> {stack_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
+    [TOKEN_REFERENCE] <keyword>=</keyword> {reference_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_DELETE] <keyword>=</keyword> {delete_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_DIVIDE] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_FACTOR, {<constant>0</constant>}},
     [TOKEN_DOT] <keyword>=</keyword> {<constant>NULL</constant>, compile_dot, PRECEDENCE_CALL, {<constant>0</constant>}},
@@ -1041,7 +1045,7 @@ HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v) {
     [TOKEN_GREATER] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_COMPARE, {<constant>0</constant>}},
     [TOKEN_GREATER_EQUAL] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_COMPARE, {<constant>0</constant>}},
     [TOKEN_IDENT] <keyword>=</keyword> {compile_variable, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
-    [TOKEN_INSPECT] <keyword>=</keyword> {inspect_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
+    [TOKEN_SRC] <keyword>=</keyword> {source_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_IF] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_IN] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_INDEX] <keyword>=</keyword> {index_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
@@ -1054,7 +1058,7 @@ HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v) {
     [TOKEN_LEN] <keyword>=</keyword> {len_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_LESS] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_COMPARE, {<constant>0</constant>}},
     [TOKEN_LESS_EQUAL] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_COMPARE, {<constant>0</constant>}},
-    [TOKEN_LET] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
+    [TOKEN_SET] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_MODULO] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_FACTOR, {<constant>0</constant>}},
     [TOKEN_MULTIPLY] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_FACTOR, {<constant>0</constant>}},
     [TOKEN_NONE] <keyword>=</keyword> {compile_none, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
@@ -1528,7 +1532,7 @@ HymnValue hymn_table_get(HymnTable <keyword>*</keyword>this, <keyword>const</key
         }
 
         <keyword>if</keyword> (begin <keyword>&lt;</keyword> end) {
-            error <keyword>=</keyword> string_append_format(error, <string>&quot;\n  | %.*s\n    &quot;</string>, end <keyword>-</keyword> begin, <keyword>&</keyword>source[begin]);
+            error <keyword>=</keyword> string_append_format(error, <string>&quot;\n  %.*s\n  &quot;</string>, end <keyword>-</keyword> begin, <keyword>&</keyword>source[begin]);
             <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> (<constant>int</constant>)(start <keyword>-</keyword> begin); i++) {
                 error <keyword>=</keyword> hymn_string_append_<constant>char</constant>(error, <string>' '</string>);
             }
@@ -1666,14 +1670,16 @@ clean:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>5</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;reak&quot;</string>, TOKEN_BREAK);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'d'</string>:
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>5</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;ebug&quot;</string>, TOKEN_DEBUG);
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;elete&quot;</string>, TOKEN_DELETE);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'r'</string>:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;eturn&quot;</string>, TOKEN_RETURN);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'s'</string>:
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;tr&quot;</string>, TOKEN_TO_STRING);
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) {
+            <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'e'</string> <keyword>&</keyword><keyword>&</keyword> ident[<constant>2</constant>] <keyword>==</keyword> <string>'t'</string>) <keyword>return</keyword> TOKEN_SET;
+            <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'t'</string> <keyword>&</keyword><keyword>&</keyword> ident[<constant>2</constant>] <keyword>==</keyword> <string>'r'</string>) <keyword>return</keyword> TOKEN_TO_STRING;
+        }
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'k'</string>:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>4</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;eys&quot;</string>, TOKEN_KEYS);
@@ -1684,10 +1690,7 @@ clean:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>8</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;ontinue&quot;</string>, TOKEN_CONTINUE);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'l'</string>:
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant> <keyword>&</keyword><keyword>&</keyword> ident[<constant>1</constant>] <keyword>==</keyword> <string>'e'</string>) {
-            <keyword>if</keyword> (ident[<constant>2</constant>] <keyword>==</keyword> <string>'t'</string>) <keyword>return</keyword> TOKEN_LET;
-            <keyword>if</keyword> (ident[<constant>2</constant>] <keyword>==</keyword> <string>'n'</string>) <keyword>return</keyword> TOKEN_LEN;
-        }
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;en&quot;</string>, TOKEN_LEN);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'t'</string>:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;ry&quot;</string>, TOKEN_TRY);
@@ -1701,7 +1704,6 @@ clean:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;nt&quot;</string>, TOKEN_TO_INTEGER);
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>5</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;ndex&quot;</string>, TOKEN_INDEX);
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;nsert&quot;</string>, TOKEN_INSERT);
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>7</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;nspect&quot;</string>, TOKEN_INSPECT);
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>2</constant>) {
             <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'f'</string>) <keyword>return</keyword> TOKEN_IF;
             <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'n'</string>) <keyword>return</keyword> TOKEN_IN;
@@ -1739,6 +1741,12 @@ clean:
             <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'a'</string>) <keyword>return</keyword> ident_trie(ident, <constant>2</constant>, <string>&quot;lse&quot;</string>, TOKEN_FALSE);
             <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'l'</string>) <keyword>return</keyword> ident_trie(ident, <constant>2</constant>, <string>&quot;oat&quot;</string>, TOKEN_TO_FLOAT);
         }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'_'</string>:
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;stack&quot;</string>, TOKEN_STACK);
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>7</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;source&quot;</string>, TOKEN_SRC);
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>8</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;opcodes&quot;</string>, TOKEN_OPCODES);
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>10</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;reference&quot;</string>, TOKEN_REFERENCE);
         <keyword>break</keyword>;
     <keyword>default</keyword>:
         <keyword>break</keyword>;
@@ -2250,15 +2258,6 @@ clean:
     value_pool_init(<keyword>&</keyword>this-&gt;constants);
 }
 
-<keyword>static</keyword> HymnFunction <keyword>*</keyword>new_function(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script) {
-    HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_calloc(<constant>1</constant>, sizeof(HymnFunction));
-    byte_code_init(<keyword>&</keyword>func-&gt;code);
-    <keyword>if</keyword> (script <keyword>!=</keyword> <constant>NULL</constant>) {
-        func-&gt;script = hymn_new_string(script);
-    }
-    <keyword>return</keyword> func;
-}
-
 <keyword>static</keyword> HymnNativeFunction <keyword>*</keyword>new_native_function(HymnObjectString <keyword>*</keyword>name, HymnNativeCall func) {
     HymnNativeFunction <keyword>*</keyword>native <keyword>=</keyword> hymn_calloc(<constant>1</constant>, sizeof(HymnNativeFunction));
     native-&gt;name = name;
@@ -2475,14 +2474,22 @@ HymnTable <keyword>*</keyword>hymn_new_table(<constant>void</constant>) {
 }
 
 <keyword>static</keyword> <constant>void</constant> scope_init(Compiler <keyword>*</keyword>C, Scope <keyword>*</keyword>scope, <keyword>enum</keyword> FunctionType type, <constant>size_t</constant> begin) {
-    scope-&gt;enclosing = C-&gt;scope;
+
+    Scope <keyword>*</keyword>enclosing <keyword>=</keyword> C-&gt;scope;
+
+    scope-&gt;enclosing = enclosing;
     C-&gt;scope = scope;
 
     scope-&gt;local_count = <constant>0</constant>;
     scope-&gt;depth = <constant>0</constant>;
-    scope-&gt;func = new_function(C-&gt;script);
     scope-&gt;type = type;
     scope-&gt;begin = begin;
+    scope-&gt;func = hymn_calloc(<constant>1</constant>, sizeof(HymnFunction));
+    byte_code_init(<keyword>&</keyword>scope-&gt;func-&gt;code);
+    <keyword>if</keyword> (C-&gt;script <keyword>!=</keyword> <constant>NULL</constant>) {
+        scope-&gt;func-&gt;script = hymn_new_string(C-&gt;script);
+    }
+    scope-&gt;func-&gt;parent = enclosing <keyword>==</keyword> <constant>NULL</constant> ? <constant>NULL</constant> : enclosing-&gt;func;
 
     <keyword>if</keyword> (type <keyword>==</keyword> TYPE_FUNCTION) {
         scope-&gt;func-&gt;name = hymn_substring(C-&gt;source, C-&gt;previous.start, C-&gt;previous.start + C-&gt;previous.length);
@@ -2831,6 +2838,35 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 }
 
 <keyword>static</keyword> <constant>void</constant> function_delete(HymnFunction <keyword>*</keyword>this) {
+    <keyword>if</keyword> (this-&gt;parent <keyword>!=</keyword> <constant>NULL</constant>) {
+        HymnFunction <keyword>*</keyword>parent <keyword>=</keyword> this-&gt;parent;
+        HymnValuePool <keyword>*</keyword>constants <keyword>=</keyword> <keyword>&</keyword>parent-&gt;code.constants;
+        <constant>int</constant> count <keyword>=</keyword> constants-&gt;count;
+        HymnValue <keyword>*</keyword>values <keyword>=</keyword> constants-&gt;values;
+        <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> count; i++) {
+            HymnValue value <keyword>=</keyword> values[i];
+            <keyword>if</keyword> (hymn_is_func(value)) {
+                HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_as_func(value);
+                <keyword>if</keyword> (func <keyword>==</keyword> this) {
+                    values[i] <keyword>=</keyword> hymn_new_undefined();
+                    <keyword>break</keyword>;
+                }
+            }
+        }
+    }
+    HymnValuePool <keyword>*</keyword>constants <keyword>=</keyword> <keyword>&</keyword>this-&gt;code.constants;
+    <constant>int</constant> count <keyword>=</keyword> constants-&gt;count;
+    HymnValue <keyword>*</keyword>values <keyword>=</keyword> constants-&gt;values;
+    <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> count; i++) {
+        HymnValue value <keyword>=</keyword> values[i];
+        <keyword>if</keyword> (hymn_is_func(value)) {
+            HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_as_func(value);
+            func-&gt;parent = <constant>NULL</constant>;
+            <keyword>if</keyword> (func-&gt;count <keyword>==</keyword> <constant>0</constant>) {
+                function_delete(func);
+            }
+        }
+    }
     byte_code_delete(<keyword>&</keyword>this-&gt;code);
     hymn_string_delete(this-&gt;name);
     hymn_string_delete(this-&gt;script);
@@ -3831,7 +3867,7 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 <keyword>static</keyword> HymnFunction <keyword>*</keyword>end_function(Compiler <keyword>*</keyword>C) {
     Scope <keyword>*</keyword>scope <keyword>=</keyword> C-&gt;scope;
     HymnFunction <keyword>*</keyword>func <keyword>=</keyword> scope-&gt;func;
-    <keyword>if</keyword> (scope-&gt;type <keyword>==</keyword> TYPE_SCRIPT || scope-&gt;type <keyword>==</keyword> TYPE_REPL) echo_<keyword>if</keyword>_none(C);
+    <keyword>if</keyword> (scope-&gt;type <keyword>==</keyword> TYPE_DIRECT || scope-&gt;type <keyword>==</keyword> TYPE_REPL) echo_<keyword>if</keyword>_none(C);
     emit(C, OP_VOID);
 <constant>#ifndef</constant> HYMN_NO_OPTIMIZE
     optimize(C);
@@ -3891,7 +3927,7 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 }
 
 <keyword>static</keyword> <constant>void</constant> declaration(Compiler <keyword>*</keyword>C) {
-    <keyword>if</keyword> (match(C, TOKEN_LET)) {
+    <keyword>if</keyword> (match(C, TOKEN_SET)) {
         define_new_variable(C);
     } <keyword>else</keyword> <keyword>if</keyword> (match(C, TOKEN_FUNCTION)) {
         declare_function(C);
@@ -4465,20 +4501,35 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
     emit(C, OP_EXISTS);
 }
 
-<keyword>static</keyword> <constant>void</constant> inspect_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
+<keyword>static</keyword> <constant>void</constant> source_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'inspect'&quot;</string>);
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_source'&quot;</string>);
     expression(C);
-    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'inspect'&quot;</string>);
-    emit(C, OP_INSPECT);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_source'&quot;</string>);
+    emit(C, OP_SOURCE);
 }
 
-<keyword>static</keyword> <constant>void</constant> debug_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
+<keyword>static</keyword> <constant>void</constant> opcode_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'debug'&quot;</string>);
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_opcodes'&quot;</string>);
     expression(C);
-    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'debug'&quot;</string>);
-    emit(C, OP_DEBUG);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_opcodes'&quot;</string>);
+    emit(C, OP_CODES);
+}
+
+<keyword>static</keyword> <constant>void</constant> stack_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
+    (<constant>void</constant>)assign;
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_stack'&quot;</string>);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_stack'&quot;</string>);
+    emit(C, OP_STACK);
+}
+
+<keyword>static</keyword> <constant>void</constant> reference_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
+    (<constant>void</constant>)assign;
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_reference'&quot;</string>);
+    expression(C);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_reference'&quot;</string>);
+    emit(C, OP_REFERENCE);
 }
 
 <keyword>static</keyword> <constant>void</constant> expression_statement(Compiler <keyword>*</keyword>C) {
@@ -4527,18 +4578,6 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
     <keyword>if</keyword> (C.error <keyword>!=</keyword> <constant>NULL</constant>) {
         <constant>char</constant> <keyword>*</keyword>error <keyword>=</keyword> string_to_chars(C.error);
         hymn_string_delete(C.error);
-
-        HymnValuePool <keyword>*</keyword>constants <keyword>=</keyword> <keyword>&</keyword>func-&gt;code.constants;
-        <constant>int</constant> count <keyword>=</keyword> constants-&gt;count;
-        HymnValue <keyword>*</keyword>values <keyword>=</keyword> constants-&gt;values;
-
-        <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> count; i++) {
-            HymnValue value <keyword>=</keyword> values[i];
-            <keyword>if</keyword> (hymn_is_func(value)) {
-                function_delete(hymn_as_func(value));
-            }
-        }
-
         function_delete(func);
         <keyword>return</keyword> (CompileResult){.func <keyword>=</keyword> <constant>NULL</constant>, .error <keyword>=</keyword> error};
     }
@@ -4738,93 +4777,17 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
     H-&gt;frame_count = <constant>0</constant>;
 }
 
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-<keyword>static</keyword> <constant>void</constant> debug_value(HymnValue value) {
-    HymnString <keyword>*</keyword>string <keyword>=</keyword> debug_value_to_string(value);
-    <constant>printf</constant>(<string>&quot;%s&quot;</string>, string);
-    hymn_string_delete(string);
-}
-
-<keyword>static</keyword> <constant>void</constant> debug_reference(HymnValue value) {
-    <constant>int</constant> count;
-    <keyword>switch</keyword> (value.is) {
-    <keyword>case</keyword> HYMN_VALUE_STRING:
-        count <keyword>=</keyword> hymn_as_hymn_string(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_ARRAY:
-        count <keyword>=</keyword> hymn_as_array(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_TABLE:
-        count <keyword>=</keyword> hymn_as_table(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_FUNC:
-        count <keyword>=</keyword> hymn_as_func(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE:
-        count <keyword>=</keyword> hymn_as_native(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>default</keyword>:
-        <keyword>return</keyword>;
-    }
-    <constant>printf</constant>(<string>&quot;REF     | [%p] [&quot;</string>, (<constant>void</constant> <keyword>*</keyword>)value.as.o);
-    debug_value(value);
-    <constant>printf</constant>(<string>&quot;] [%d]\n&quot;</string>, count);
-    assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
-}
-
-<keyword>static</keyword> <constant>void</constant> debug_dereference(HymnValue value) {
-    <constant>int</constant> count;
-    <keyword>switch</keyword> (value.is) {
-    <keyword>case</keyword> HYMN_VALUE_STRING:
-        count <keyword>=</keyword> hymn_as_hymn_string(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_ARRAY:
-        count <keyword>=</keyword> hymn_as_array(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_TABLE:
-        count <keyword>=</keyword> hymn_as_table(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_FUNC:
-        count <keyword>=</keyword> hymn_as_func(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE:
-        count <keyword>=</keyword> hymn_as_native(value)<keyword>-&gt;</keyword>count;
-        <keyword>break</keyword>;
-    <keyword>default</keyword>:
-        <keyword>return</keyword>;
-    }
-    count--;
-    <keyword>if</keyword> (count <keyword>==</keyword> <constant>0</constant>) {
-        <constant>printf</constant>(<string>&quot;FREE    | [%p] [&quot;</string>, (<constant>void</constant> <keyword>*</keyword>)object);
-        debug_value(value);
-        <constant>printf</constant>(<string>&quot;]\n&quot;</string>);
-    } <keyword>else</keyword> <keyword>if</keyword> (count <keyword>&lt;</keyword> <constant>0</constant>) {
-        <constant>printf</constant>(<string>&quot;BAD     | [%p] [&quot;</string>, (<constant>void</constant> <keyword>*</keyword>)object);
-        debug_value(value);
-        <constant>printf</constant>(<string>&quot;]\n&quot;</string>);
-    } <keyword>else</keyword> {
-        <constant>printf</constant>(<string>&quot;DEREF   | [%p] [&quot;</string>, (<constant>void</constant> <keyword>*</keyword>)object);
-        debug_value(value);
-        <constant>printf</constant>(<string>&quot;] [%d]\n&quot;</string>, count);
-    }
-    assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
-}
-<constant>#endif</constant>
-
-<constant>#ifdef</constant> HYMN_NO_MEMORY_MANAGE
+<constant>#ifdef</constant> HYMN_NO_MEMORY
 <constant>void</constant> hymn_reference_string(HymnObjectString <keyword>*</keyword>string) {
     (<constant>void</constant>)string;
 }
 <constant>#else</constant>
 <constant>void</constant> hymn_reference_string(HymnObjectString <keyword>*</keyword>string) {
     string-&gt;count++;
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-    debug_reference(hymn_new_string_value(string));
-<constant>#endif</constant>
 }
 <constant>#endif</constant>
 
-<constant>#ifdef</constant> HYMN_NO_MEMORY_MANAGE
+<constant>#ifdef</constant> HYMN_NO_MEMORY
 <constant>void</constant> hymn_reference(HymnValue value) {
     (<constant>void</constant>)value;
 }
@@ -4833,33 +4796,18 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
     <keyword>switch</keyword> (value.is) {
     <keyword>case</keyword> HYMN_VALUE_STRING:
         ((HymnObjectString <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count++;
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_reference(value);
-<constant>#endif</constant>
         <keyword>return</keyword>;
     <keyword>case</keyword> HYMN_VALUE_ARRAY:
         ((HymnArray <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count++;
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_reference(value);
-<constant>#endif</constant>
         <keyword>return</keyword>;
     <keyword>case</keyword> HYMN_VALUE_TABLE:
         ((HymnTable <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count++;
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_reference(value);
-<constant>#endif</constant>
         <keyword>return</keyword>;
     <keyword>case</keyword> HYMN_VALUE_FUNC:
         ((HymnFunction <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count++;
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_reference(value);
-<constant>#endif</constant>
         <keyword>return</keyword>;
     <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE:
         ((HymnNativeFunction <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count++;
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_reference(value);
-<constant>#endif</constant>
         <keyword>return</keyword>;
     <keyword>default</keyword>:
         <keyword>return</keyword>;
@@ -4867,16 +4815,13 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
 }
 <constant>#endif</constant>
 
-<constant>#ifdef</constant> HYMN_NO_MEMORY_MANAGE
+<constant>#ifdef</constant> HYMN_NO_MEMORY
 <constant>void</constant> hymn_dereference_string(Hymn <keyword>*</keyword>H, HymnObjectString <keyword>*</keyword>string) {
     (<constant>void</constant>)H;
     (<constant>void</constant>)string;
 }
 <constant>#else</constant>
 <constant>void</constant> hymn_dereference_string(Hymn <keyword>*</keyword>H, HymnObjectString <keyword>*</keyword>string) {
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-    debug_dereference(hymn_new_string_value(string));
-<constant>#endif</constant>
     <constant>int</constant> count <keyword>=</keyword> <keyword>-</keyword><keyword>-</keyword>string-&gt;count;
     assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
     <keyword>if</keyword> (count <keyword>==</keyword> <constant>0</constant>) {
@@ -4887,7 +4832,7 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
 }
 <constant>#endif</constant>
 
-<constant>#ifdef</constant> HYMN_NO_MEMORY_MANAGE
+<constant>#ifdef</constant> HYMN_NO_MEMORY
 <constant>void</constant> hymn_dereference(Hymn <keyword>*</keyword>H, HymnValue value) {
     (<constant>void</constant>)H;
     (<constant>void</constant>)value;
@@ -4901,9 +4846,6 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
         <keyword>return</keyword>;
     }
     <keyword>case</keyword> HYMN_VALUE_ARRAY: {
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_dereference(value);
-<constant>#endif</constant>
         HymnArray <keyword>*</keyword>array <keyword>=</keyword> (HymnArray <keyword>*</keyword>)value.as.o;
         <constant>int</constant> count <keyword>=</keyword> <keyword>-</keyword><keyword>-</keyword>array-&gt;count;
         assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
@@ -4913,9 +4855,6 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
         <keyword>return</keyword>;
     }
     <keyword>case</keyword> HYMN_VALUE_TABLE: {
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_dereference(value);
-<constant>#endif</constant>
         HymnTable <keyword>*</keyword>table <keyword>=</keyword> (HymnTable <keyword>*</keyword>)value.as.o;
         <constant>int</constant> count <keyword>=</keyword> <keyword>-</keyword><keyword>-</keyword>table-&gt;count;
         assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
@@ -4925,9 +4864,6 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
         <keyword>return</keyword>;
     }
     <keyword>case</keyword> HYMN_VALUE_FUNC: {
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_dereference(value);
-<constant>#endif</constant>
         HymnFunction <keyword>*</keyword>func <keyword>=</keyword> (HymnFunction <keyword>*</keyword>)value.as.o;
         <constant>int</constant> count <keyword>=</keyword> <keyword>-</keyword><keyword>-</keyword>func-&gt;count;
         assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
@@ -4937,9 +4873,6 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
         <keyword>return</keyword>;
     }
     <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE: {
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-        debug_dereference(value);
-<constant>#endif</constant>
         HymnNativeFunction <keyword>*</keyword>func <keyword>=</keyword> (HymnNativeFunction <keyword>*</keyword>)value.as.o;
         <constant>int</constant> count <keyword>=</keyword> <keyword>-</keyword><keyword>-</keyword>func-&gt;count;
         assert(count <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>);
@@ -5263,15 +5196,13 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
 
     HymnFunction <keyword>*</keyword>func <keyword>=</keyword> result.func;
     HymnValue function <keyword>=</keyword> hymn_new_func_value(func);
-    hymn_reference(function);
+    func-&gt;count = <constant>1</constant>;
 
     push(H, function);
     call(H, func, <constant>0</constant>);
 
     error <keyword>=</keyword> interpret(H);
-    <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) {
-        <keyword>return</keyword> throw_existing_error(H, error);
-    }
+    <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) <keyword>return</keyword> throw_existing_error(H, error);
 
     <keyword>return</keyword> current_frame(H);
 }
@@ -5371,7 +5302,9 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
     <keyword>case</keyword> OP_NEW_TABLE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_NEW_TABLE&quot;</string>, index);
     <keyword>case</keyword> OP_COPY: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_COPY&quot;</string>, index);
     <keyword>case</keyword> OP_DEFINE_GLOBAL: <keyword>return</keyword> debug_constant_instruction(debug, <string>&quot;OP_DEFINE_GLOBAL&quot;</string>, code, index);
-    <keyword>case</keyword> OP_DEBUG: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DEBUG&quot;</string>, index);
+    <keyword>case</keyword> OP_CODES: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_CODES&quot;</string>, index);
+    <keyword>case</keyword> OP_STACK: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_STACK&quot;</string>, index);
+    <keyword>case</keyword> OP_REFERENCE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_REFERENCE&quot;</string>, index);
     <keyword>case</keyword> OP_DELETE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DELETE&quot;</string>, index);
     <keyword>case</keyword> OP_DIVIDE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DIVIDE&quot;</string>, index);
     <keyword>case</keyword> OP_DUPLICATE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DUPLICATE&quot;</string>, index);
@@ -5394,7 +5327,7 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
     <keyword>case</keyword> OP_INCREMENT_LOCAL_AND_SET: <keyword>return</keyword> debug_three_byte_instruction(debug, <string>&quot;OP_INCREMENT_LOCAL_AND_SET&quot;</string>, code, index);
     <keyword>case</keyword> OP_INCREMENT_LOOP: <keyword>return</keyword> debug_increment_loop_instruction(debug, <string>&quot;OP_INCREMENT_LOOP&quot;</string>, code, index);
     <keyword>case</keyword> OP_INDEX: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_INDEX&quot;</string>, index);
-    <keyword>case</keyword> OP_INSPECT: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_INSPECT&quot;</string>, index);
+    <keyword>case</keyword> OP_SOURCE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_SOURCE&quot;</string>, index);
     <keyword>case</keyword> OP_JUMP: <keyword>return</keyword> debug_jump_instruction(debug, <string>&quot;OP_JUMP&quot;</string>, <constant>1</constant>, code, index);
     <keyword>case</keyword> OP_JUMP_IF_EQUAL: <keyword>return</keyword> debug_jump_instruction(debug, <string>&quot;OP_JUMP_IF_EQUAL&quot;</string>, <constant>1</constant>, code, index);
     <keyword>case</keyword> OP_JUMP_IF_FALSE: <keyword>return</keyword> debug_jump_instruction(debug, <string>&quot;OP_JUMP_IF_FALSE&quot;</string>, <constant>1</constant>, code, index);
@@ -5539,28 +5472,6 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
     HymnFrame <keyword>*</keyword>frame <keyword>=</keyword> current_frame(H);
 
 dispatch:
-<constant>#ifdef</constant> HYMN_DEBUG_STACK
-    <keyword>if</keyword> (H-&gt;stack_top <keyword>!=</keyword> H-&gt;stack) {
-        HymnString <keyword>*</keyword>debug <keyword>=</keyword> hymn_new_string(<string>&quot;&quot;</string>);
-        <keyword>for</keyword> (HymnValue <keyword>*</keyword>i <keyword>=</keyword> H-&gt;stack; i <keyword>!=</keyword> H-&gt;stack_top; i++) {
-            debug <keyword>=</keyword> hymn_string_append_<constant>char</constant>(debug, <string>'['</string>);
-            HymnString <keyword>*</keyword>stack_debug <keyword>=</keyword> debug_value_to_string(<keyword>*</keyword>i);
-            debug <keyword>=</keyword> hymn_string_append(debug, stack_debug);
-            hymn_string_delete(stack_debug);
-            debug <keyword>=</keyword> hymn_string_append(debug, <string>&quot;] &quot;</string>);
-        }
-        <constant>printf</constant>(<string>&quot;STACK   | %s\n&quot;</string>, debug);
-        hymn_string_delete(debug);
-    }
-<constant>#endif</constant>
-<constant>#ifdef</constant> HYMN_DEBUG_TRACE
-    {
-        HymnString <keyword>*</keyword>debug <keyword>=</keyword> hymn_new_string(<string>&quot;&quot;</string>);
-        disassemble_instruction(<keyword>&</keyword>debug, <keyword>&</keyword>frame-&gt;func-&gt;code, (<constant>int</constant>)(frame-&gt;ip - frame-&gt;func-&gt;code.instructions));
-        <constant>printf</constant>(<string>&quot;%s\n&quot;</string>, debug);
-        hymn_string_delete(debug);
-    }
-<constant>#endif</constant>
     <keyword>switch</keyword> (READ_BYTE(frame)) {
     <keyword>case</keyword> OP_VOID: {
         H-&gt;frame_count--;
@@ -5633,23 +5544,23 @@ dispatch:
                 <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;
             } <keyword>else</keyword> {
                 HymnValue <keyword>*</keyword>top <keyword>=</keyword> H-&gt;stack_top;
-                HymnValue <keyword>*</keyword>start <keyword>=</keyword> top <keyword>-</keyword> count <keyword>-</keyword> <constant>1</constant>;
+                HymnValue <keyword>*</keyword>new_frame <keyword>=</keyword> top <keyword>-</keyword> count <keyword>-</keyword> <constant>1</constant>;
                 HymnValue <keyword>*</keyword>bottom <keyword>=</keyword> frame-&gt;stack;
-                HymnValue <keyword>*</keyword>move <keyword>=</keyword> start;
-                <keyword>while</keyword> (bottom <keyword>!=</keyword> start) {
+                HymnValue <keyword>*</keyword>shift <keyword>=</keyword> new_frame;
+                <keyword>while</keyword> (bottom <keyword>!=</keyword> new_frame) {
                     hymn_dereference(H, <keyword>*</keyword>bottom);
-                    <keyword>if</keyword> (move <keyword>!=</keyword> top) {
-                        <keyword>*</keyword>bottom <keyword>=</keyword> <keyword>*</keyword>move;
-                        move++;
+                    <keyword>if</keyword> (shift <keyword>!=</keyword> top) {
+                        <keyword>*</keyword>bottom <keyword>=</keyword> <keyword>*</keyword>shift;
+                        shift++;
                     }
                     bottom++;
                 }
-                <keyword>while</keyword> (move <keyword>!=</keyword> top) {
-                    <keyword>*</keyword>bottom <keyword>=</keyword> <keyword>*</keyword>move;
-                    move++;
+                <keyword>while</keyword> (shift <keyword>!=</keyword> top) {
+                    <keyword>*</keyword>bottom <keyword>=</keyword> <keyword>*</keyword>shift;
+                    shift++;
                     bottom++;
                 }
-                H-&gt;stack_top = start;
+                H-&gt;stack_top = frame-&gt;stack + count + <constant>1</constant>;
                 frame-&gt;func = func;
                 frame-&gt;ip = func-&gt;code.instructions;
             }
@@ -7117,7 +7028,7 @@ dispatch:
         hymn_dereference(H, route);
         <keyword>goto</keyword> dispatch;
     }
-    <keyword>case</keyword> OP_INSPECT: {
+    <keyword>case</keyword> OP_SOURCE: {
         HymnValue value <keyword>=</keyword> pop(H);
         HymnString <keyword>*</keyword>inspect <keyword>=</keyword> <constant>NULL</constant>;
         <keyword>if</keyword> (hymn_is_func(value)) {
@@ -7129,7 +7040,7 @@ dispatch:
         hymn_dereference(H, value);
         <keyword>goto</keyword> dispatch;
     }
-    <keyword>case</keyword> OP_DEBUG: {
+    <keyword>case</keyword> OP_CODES: {
         HymnValue value <keyword>=</keyword> pop(H);
         HymnString <keyword>*</keyword>debug <keyword>=</keyword> <constant>NULL</constant>;
         <keyword>if</keyword> (hymn_is_func(value)) {
@@ -7138,6 +7049,48 @@ dispatch:
         }
         <keyword>if</keyword> (debug <keyword>==</keyword> <constant>NULL</constant>) debug <keyword>=</keyword> hymn_value_to_string(value);
         push_string(H, debug);
+        hymn_dereference(H, value);
+        <keyword>goto</keyword> dispatch;
+    }
+    <keyword>case</keyword> OP_STACK: {
+        <keyword>if</keyword> (H-&gt;stack_top <keyword>!=</keyword> H-&gt;stack) {
+            HymnString <keyword>*</keyword>debug <keyword>=</keyword> hymn_new_string(<string>&quot;&quot;</string>);
+            <keyword>for</keyword> (HymnValue <keyword>*</keyword>i <keyword>=</keyword> H-&gt;stack; i <keyword>!=</keyword> H-&gt;stack_top; i++) {
+                debug <keyword>=</keyword> hymn_string_append_<constant>char</constant>(debug, <string>'['</string>);
+                HymnString <keyword>*</keyword>stack_debug <keyword>=</keyword> debug_value_to_string(<keyword>*</keyword>i);
+                debug <keyword>=</keyword> hymn_string_append(debug, stack_debug);
+                hymn_string_delete(stack_debug);
+                debug <keyword>=</keyword> hymn_string_append(debug, <string>&quot;]\n&quot;</string>);
+            }
+            push_string(H, debug);
+        } <keyword>else</keyword> {
+            push_string(H, hymn_new_string(<string>&quot;&quot;</string>));
+        }
+        <keyword>goto</keyword> dispatch;
+    }
+    <keyword>case</keyword> OP_REFERENCE: {
+        HymnValue value <keyword>=</keyword> pop(H);
+        <constant>int</constant> count <keyword>=</keyword> <constant>0</constant>;
+        <keyword>switch</keyword> (value.is) {
+        <keyword>case</keyword> HYMN_VALUE_STRING:
+            count <keyword>=</keyword> ((HymnObjectString <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count;
+            <keyword>break</keyword>;
+        <keyword>case</keyword> HYMN_VALUE_ARRAY:
+            count <keyword>=</keyword> ((HymnArray <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count;
+            <keyword>break</keyword>;
+        <keyword>case</keyword> HYMN_VALUE_TABLE:
+            count <keyword>=</keyword> ((HymnTable <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count;
+            <keyword>break</keyword>;
+        <keyword>case</keyword> HYMN_VALUE_FUNC:
+            count <keyword>=</keyword> ((HymnFunction <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count;
+            <keyword>break</keyword>;
+        <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE:
+            count <keyword>=</keyword> ((HymnNativeFunction <keyword>*</keyword>)value.as.o)<keyword>-&gt;</keyword>count;
+            <keyword>break</keyword>;
+        <keyword>default</keyword>:
+            <keyword>break</keyword>;
+        }
+        push(H, hymn_new_<constant>int</constant>(count));
         hymn_dereference(H, value);
         <keyword>goto</keyword> dispatch;
     }
@@ -7289,18 +7242,6 @@ Hymn <keyword>*</keyword>new_hymn(<constant>void</constant>) {
             }
         }
     }
-<constant>#ifdef</constant> HYMN_DEBUG_MEMORY
-    {
-        <keyword>unsigned</keyword> <constant>int</constant> bins <keyword>=</keyword> strings-&gt;bins;
-        <keyword>for</keyword> (<keyword>unsigned</keyword> <constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> bins; i++) {
-            HymnSetItem <keyword>*</keyword>item <keyword>=</keyword> strings-&gt;items[i];
-            <keyword>while</keyword> (item <keyword>!=</keyword> <constant>NULL</constant>) {
-                <constant>fprintf</constant>(stderr, <string>&quot;ENDING STRING REFERENCE: %s\n&quot;</string>, item-&gt;string-&gt;string);
-                item <keyword>=</keyword> item-&gt;next;
-            }
-        }
-    }
-<constant>#endif</constant>
     assert(strings-&gt;size <keyword>==</keyword> <constant>0</constant>);
     <constant>free</constant>(strings-&gt;items);
 
@@ -7374,9 +7315,7 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
     call_value(H, function, arguments);
 
     <constant>char</constant> <keyword>*</keyword>error <keyword>=</keyword> interpret(H);
-    <keyword>if</keyword> (error) {
-        <keyword>return</keyword> error;
-    }
+    <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) <keyword>return</keyword> error;
 
     assert(H-&gt;stack_top <keyword>==</keyword> H-&gt;stack);
     reset_stack(H);
@@ -7401,7 +7340,7 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
     CompileResult result <keyword>=</keyword> compile(H, script, code, TYPE_SCRIPT);
 
     <constant>char</constant> <keyword>*</keyword>error <keyword>=</keyword> result.error;
-    <keyword>if</keyword> (error) {
+    <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) {
         hymn_string_delete(code);
         <keyword>return</keyword> error;
     }
@@ -7426,14 +7365,6 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
         }
     }
 
-    <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> count; i++) {
-        HymnValue value <keyword>=</keyword> values[i];
-        <keyword>if</keyword> (hymn_is_func(value)) {
-            HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_as_func(value);
-            function_delete(func);
-        }
-    }
-
     function_delete(main);
     hymn_string_delete(code);
 
@@ -7447,21 +7378,17 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
     CompileResult result <keyword>=</keyword> compile(H, script, source, type);
 
     <constant>char</constant> <keyword>*</keyword>error <keyword>=</keyword> result.error;
-    <keyword>if</keyword> (error) {
-        <keyword>return</keyword> error;
-    }
+    <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) <keyword>return</keyword> error;
 
     HymnFunction <keyword>*</keyword>func <keyword>=</keyword> result.func;
     HymnValue function <keyword>=</keyword> hymn_new_func_value(func);
-    hymn_reference(function);
+    func-&gt;count = <constant>1</constant>;
 
     push(H, function);
     call(H, func, <constant>0</constant>);
 
     error <keyword>=</keyword> interpret(H);
-    <keyword>if</keyword> (error) {
-        <keyword>return</keyword> error;
-    }
+    <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) <keyword>return</keyword> error;
 
     assert(H-&gt;stack_top <keyword>==</keyword> H-&gt;stack);
     reset_stack(H);
@@ -7474,7 +7401,11 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
 }
 
 <constant>char</constant> <keyword>*</keyword>hymn_do(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source) {
-    <keyword>return</keyword> exec(H, <constant>NULL</constant>, source, TYPE_DO);
+    <keyword>return</keyword> exec(H, <constant>NULL</constant>, source, TYPE_SCRIPT);
+}
+
+<constant>char</constant> <keyword>*</keyword>hymn_direct(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source) {
+    <keyword>return</keyword> exec(H, <constant>NULL</constant>, source, TYPE_DIRECT);
 }
 
 <constant>char</constant> <keyword>*</keyword>hymn_script(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script) {

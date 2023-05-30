@@ -56,10 +56,6 @@
             <td>Returns the index number or table key for the given value</td>
           </tr>
           <tr>
-            <td><a href="#inspect">inspect(value)</a></td>
-            <td>Returns a function's source code</td>
-          </tr>
-          <tr>
             <td><a href="#insert">insert(object, index, value)</a></td>
             <td>Inserts a value into an array at a given index</td>
           </tr>
@@ -91,85 +87,92 @@
             <td><a href="#type">type(value)</a></td>
             <td>Returns the value type as a string</td>
           </tr>
+          <tr>
+            <td><a href="#source">_source(value)</a></td>
+            <td>Returns a function's source code</td>
+          </tr>
+          <tr>
+            <td><a href="#opcodes">_opcodes(value)</a></td>
+            <td>Returns a function's instruction codes</td>
+          </tr>
+          <tr>
+            <td><a href="#stack">_stack</a></td>
+            <td>Returns the current stack</td>
+          </tr>
+          <tr>
+            <td><a href="#reference">_reference(value)</a></td>
+            <td>Returns a variable's reference counts</td>
+          </tr>
         </table>
         <h4><a name="clear">clear(object)</a></h4>
         <p>Removes all elements inside arrays and tables. Strings become blank.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
 <keyword>&gt;&gt;&gt;</keyword> <constant>clear</constant>(array)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> array
 []</code></pre></div>
         <h4><a name="copy">copy(object)</a></h4>
         <p>Copies all elements in an array or table and returns a new one.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>foo</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
-<keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>bar</entity> <keyword>=</keyword> <constant>copy</constant>(array)
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>foo</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
+<keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>bar</entity> <keyword>=</keyword> <constant>copy</constant>(array)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> bar
 [<constant>2</constant>, <constant>4</constant>]</code></pre></div>
         <h4><a name="delete">delete(object, index)</a></h4>
         <p>Deletes element at index in an array or table.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
 <keyword>&gt;&gt;&gt;</keyword> <constant>delete</constant>(array, <constant>0</constant>)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> array
 [<constant>4</constant>]
-<keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>8</constant>, bar: <constant>16</constant> }
+<keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>8</constant>, bar: <constant>16</constant> }
 <keyword>&gt;&gt;&gt;</keyword> <constant>delete</constant>(table, <string>&quot;foo&quot;</string>)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> table
 { bar: <constant>16</constant> }</code></pre></div>
         <h4><a name="echo">echo value</a></h4>
         <p>Prints to standard out with a new line. Note that converting a table to a string will always sort the keys.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>table</entity> <keyword>=</keyword> { c: <constant>4</constant>, b: <constant>2</constant>, a: <constant>8</constant> }
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>table</entity> <keyword>=</keyword> { c: <constant>4</constant>, b: <constant>2</constant>, a: <constant>8</constant> }
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> table
 { a: <constant>8</constant>, b: <constant>2</constant>, c: <constant>4</constant> }</code></pre></div>
         <h4><a name="exists">exists(table, value)</a></h4>
         <p>Returns true if a given key exists in a table.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>none</constant> }
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>none</constant> }
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>exists</constant>(table, <string>&quot;foo&quot;</string>)
 true
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>exists</constant>(table, <string>&quot;bar&quot;</string>)
 false</code></pre></div>
         <h4><a name="float">float(value)</a></h4>
         <p>Casts a value to a float.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>256</constant>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>256</constant>
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>float</constant>(x)
 <constant>256.0</constant></code></pre></div>
         <h4><a name="index">index(object, value)</a></h4>
         <p>Returns the index number or table key for the given value.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>index</constant>(array, <constant>8</constant>)
 <constant>2</constant>
-<keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>2</constant>, bar: <constant>4</constant> }
+<keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>2</constant>, bar: <constant>4</constant> }
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>index</constant>(table, <constant>4</constant>)
 bar</code></pre></div>
-        <h4><a name="inspect">inspect(value)</a></h4>
-        <p>Returns a function's source code.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>func</keyword> <entity>foo</entity>(x) {
-<keyword>&gt;&gt;&gt;</keyword>   <keyword>return</keyword> x
-<keyword>&gt;&gt;&gt;</keyword> }
-<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>inspect</constant>(foo)
-<keyword>func</keyword> <entity>foo</entity>(x) {
-  <keyword>return</keyword> x
-}</code></pre></div>
         <h4><a name="insert">insert(array, index, value)</a></h4>
         <p>Inserts a value into an array at a given index.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
 <keyword>&gt;&gt;&gt;</keyword> <constant>insert</constant>(array, <constant>1</constant>, <constant>8</constant>)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> array
 [<constant>2</constant>, <constant>8</constant>, <constant>4</constant>]</code></pre></div>
         <h4><a name="int">int(value)</a></h4>
         <p>Casts a value to an integer.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>256.1</constant>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>256.1</constant>
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>int</constant>(x)
 <constant>256</constant></code></pre></div>
         <h4><a name="keys">keys(table)</a></h4>
         <p>Returns a sorted array of keys for a table.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>2</constant>, bar: <constant>4</constant> }
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>table</entity> <keyword>=</keyword> { foo: <constant>2</constant>, bar: <constant>4</constant> }
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>keys</constant>(table)
 [<string>&quot;bar&quot;</string>, <string>&quot;foo&quot;</string>]</code></pre></div>
         <h4><a name="len">len(object)</a></h4>
         <p>Returns the length of an array or string, or size of a table.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>len</constant>(array)
 <constant>3</constant>
-<keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>table</entity> <keyword>=</keyword> { <string>&quot;foo&quot;</string>: <constant>2</constant>, <string>&quot;bar&quot;</string>: <constant>4</constant> }
+<keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>table</entity> <keyword>=</keyword> { <string>&quot;foo&quot;</string>: <constant>2</constant>, <string>&quot;bar&quot;</string>: <constant>4</constant> }
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>len</constant>(table)
 <constant>2</constant>
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>len</constant>(<string>&quot;abc&quot;</string>)
@@ -187,14 +190,14 @@ This is ok
 Error</code></pre></div>
         <h4><a name="push">push(array, value)</a></h4>
         <p>Adds a value to the end of an array.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>array</entity> <keyword>=</keyword> [<constant>2</constant>, <constant>4</constant>]
 <keyword>&gt;&gt;&gt;</keyword> <constant>push</constant>(array, <constant>8</constant>)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> array
 [<constant>2</constant>, <constant>4</constant>, <constant>8</constant>]</code></pre></div>
         <h4><a name="str">str(value)</a></h4>
         <p>Casts a value to a string.</p>
-        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>x</entity> <keyword>=</keyword> <constant>256</constant>
-<keyword>&gt;&gt;&gt;</keyword> <keyword>let</keyword> <entity>s</entity> <keyword>=</keyword> string(x)
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>256</constant>
+<keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>s</entity> <keyword>=</keyword> string(x)
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>type</constant>(s)
 string</code></pre></div>
         <h4><a name="type">type(value)</a></h4>
@@ -205,6 +208,37 @@ integer
 float
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>type</constant>(<string>&quot;256&quot;</string>)
 string</code></pre></div>
+        <h4><a name="source">_source(value)</a></h4>
+        <p>Returns a function's source code.</p>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>func</keyword> <entity>foo</entity>(x) {
+<keyword>&gt;&gt;&gt;</keyword>   <keyword>return</keyword> x
+<keyword>&gt;&gt;&gt;</keyword> }
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> _source(foo)
+<keyword>func</keyword> <entity>foo</entity>(x) {
+  <keyword>return</keyword> x
+}</code></pre></div>
+        <h4><a name="opcodes">_opcodes(value)</a></h4>
+        <p>Returns a function's instruction codes.</p>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>func</keyword> <entity>foo</entity>(x) {
+<keyword>&gt;&gt;&gt;</keyword>   <keyword>return</keyword> x
+<keyword>&gt;&gt;&gt;</keyword> }
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> _opcodes(foo)
+<constant>0000</constant>    <constant>1</constant> OP_GET_LOCAL: [<constant>1</constant>]
+<constant>0002</constant>    | OP_RETURN</code></pre></div>
+        <h4><a name="stack">_stack</a></h4>
+        <p>Returns the current stack.</p>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> {
+<keyword>&gt;&gt;&gt;</keyword>   <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
+<keyword>&gt;&gt;&gt;</keyword>   <constant>echo</constant> _stack()
+<keyword>&gt;&gt;&gt;</keyword> }
+[function: script]
+[integer: <constant>1</constant>]</code></pre></div>
+        <h4><a name="reference">_reference(value)</a></h4>
+        <p>Returns a function's reference count.</p>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> {}
+<keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>y</entity> <keyword>=</keyword> x
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> _reference(x)
+<constant>3</constant></code></pre></div>
         <hr class="padding" />
         <p>
           <a class="link" href="/dark/syntax">Back to Syntax</a>

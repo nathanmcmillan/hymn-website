@@ -1,5 +1,7 @@
-examples.set('new', `let f = "Fizz"
-let b = "Buzz"
+examples.set(
+  'new',
+  `set f = "Fizz"
+set b = "Buzz"
 
 func fizz-buzz(n) {
   if n == 0 {
@@ -20,4 +22,5 @@ func fizz-buzz(n) {
 }
 
 fizz-buzz(20)
-`)
+`
+)

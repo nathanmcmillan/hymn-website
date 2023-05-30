@@ -1,3 +1,3 @@
->>> let table = { c: 4, b: 2, a: 8 }
+>>> set table = { c: 4, b: 2, a: 8 }
 >>> echo table
 { a: 8, b: 2, c: 4 }

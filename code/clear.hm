@@ -1,4 +1,4 @@
->>> let array = [2, 4]
+>>> set array = [2, 4]
 >>> clear(array)
 >>> echo array
 []

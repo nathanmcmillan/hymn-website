@@ -4,8 +4,8 @@
 
 for file in path.list('examples') {
   if text.ends(file, '.hm') {
-    let content = io.read(file)
-    let script = text.replace(file, '.hm', '.js')
+    set content = io.read(file)
+    set script = text.replace(file, '.hm', '.js')
     echo script
     content = text.replace(content, '\${', '\\${')
     content = "examples.set('new', `${content}`)"

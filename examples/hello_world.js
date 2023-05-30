@@ -1,8 +1,11 @@
-examples.set('new', `let hello = "hello"
+examples.set(
+  'new',
+  `set hello = "hello"
 
 func world() {
   return " world"
 }
 
 echo hello + world()
-`)
+`
+)

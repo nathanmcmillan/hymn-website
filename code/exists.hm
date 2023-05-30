@@ -1,4 +1,4 @@
->>> let table = { foo: none }
+>>> set table = { foo: none }
 >>> echo exists(table, "foo")
 true
 >>> echo exists(table, "bar")
