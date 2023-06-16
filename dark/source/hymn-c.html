@@ -1125,8 +1125,8 @@ HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v) {
 
 <keyword>static</keyword> HymnObjectString <keyword>*</keyword>new_hymn_string_with_hash(HymnString <keyword>*</keyword>string, <keyword>unsigned</keyword> <constant>int</constant> hash) {
     HymnObjectString <keyword>*</keyword>object <keyword>=</keyword> hymn_calloc(<constant>1</constant>, sizeof(HymnObjectString));
-    object-&gt;string = string;
     object-&gt;hash = hash;
+    object-&gt;string = string;
     <keyword>return</keyword> object;
 }
 
@@ -5179,13 +5179,30 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
 
     table_put(imports, module, hymn_new_<constant>bool</constant>(<constant>true</constant>));
 
-    HymnString <keyword>*</keyword>source <keyword>=</keyword> hymn_read_file(module-&gt;string);
+    HymnString <keyword>*</keyword>module_string <keyword>=</keyword> module-&gt;string;
+
+<constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
+    <constant>size_t</constant> len <keyword>=</keyword> hymn_string_len(module_string);
+    <constant>size_t</constant> lib_len <keyword>=</keyword> strlen(HYMN_DLIB_EXTENSION);
+    <keyword>if</keyword> (len <keyword>&gt;</keyword> lib_len <keyword>&</keyword><keyword>&</keyword> memcmp(<keyword>&</keyword>module_string[len <keyword>-</keyword> lib_len], HYMN_DLIB_EXTENSION, lib_len) <keyword>==</keyword> <constant>0</constant>) {
+        HymnString <keyword>*</keyword>error <keyword>=</keyword> hymn_use_dlib(H, module_string, <string>&quot;hymn_import&quot;</string>);
+        <keyword>if</keyword> (error <keyword>!=</keyword> <constant>NULL</constant>) {
+            hymn_string_trim(error);
+            HymnString <keyword>*</keyword>failed <keyword>=</keyword> hymn_string_format(<string>&quot;error reading file: %s: %s\n&quot;</string>, module_string, error);
+            hymn_string_delete(error);
+            <keyword>return</keyword> throw_error_string(H, failed);
+        }
+        <keyword>return</keyword> current_frame(H);
+    }
+<constant>#endif</constant>
+
+    HymnString <keyword>*</keyword>source <keyword>=</keyword> hymn_read_file(module_string);
     <keyword>if</keyword> (source <keyword>==</keyword> <constant>NULL</constant>) {
-        HymnString <keyword>*</keyword>failed <keyword>=</keyword> hymn_string_format(<string>&quot;error reading file: %s\n&quot;</string>, module-&gt;string);
+        HymnString <keyword>*</keyword>failed <keyword>=</keyword> hymn_string_format(<string>&quot;error reading file: %s\n&quot;</string>, module_string);
         <keyword>return</keyword> throw_error_string(H, failed);
     }
 
-    CompileResult result <keyword>=</keyword> compile(H, module-&gt;string, source, TYPE_SCRIPT);
+    CompileResult result <keyword>=</keyword> compile(H, module_string, source, TYPE_SCRIPT);
 
     hymn_string_delete(source);
 
@@ -7167,6 +7184,17 @@ Hymn <keyword>*</keyword>new_hymn(<constant>void</constant>) {
     HymnObjectString <keyword>*</keyword>search_libs <keyword>=</keyword> hymn_new_intern_string(H, <string>&quot;.&quot;</string> PATH_SEP_STRING <string>&quot;libs&quot;</string> PATH_SEP_STRING <string>&quot;&lt;path&gt;.hm&quot;</string>);
     hymn_reference_string(search_libs);
 
+<constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
+    HymnObjectString <keyword>*</keyword>search_this_dynamic <keyword>=</keyword> hymn_new_intern_string(H, <string>&quot;&lt;parent&gt;&quot;</string> PATH_SEP_STRING <string>&quot;&lt;path&gt;&quot;</string> HYMN_DLIB_EXTENSION);
+    hymn_reference_string(search_this_dynamic);
+
+    HymnObjectString <keyword>*</keyword>search_relative_dynamic <keyword>=</keyword> hymn_new_intern_string(H, <string>&quot;.&quot;</string> PATH_SEP_STRING <string>&quot;&lt;path&gt;&quot;</string> HYMN_DLIB_EXTENSION);
+    hymn_reference_string(search_relative_dynamic);
+
+    HymnObjectString <keyword>*</keyword>search_libs_dynamic <keyword>=</keyword> hymn_new_intern_string(H, <string>&quot;.&quot;</string> PATH_SEP_STRING <string>&quot;libs&quot;</string> PATH_SEP_STRING <string>&quot;&lt;path&gt;&quot;</string> HYMN_DLIB_EXTENSION);
+    hymn_reference_string(search_libs_dynamic);
+<constant>#endif</constant>
+
 <comment>    // GLOBALS</comment>
 
     table_init(<keyword>&</keyword>H-&gt;globals);
@@ -7182,14 +7210,23 @@ Hymn <keyword>*</keyword>new_hymn(<constant>void</constant>) {
 
 <comment>    // PATHS</comment>
 
-    H-&gt;paths = hymn_new_array(<constant>3</constant>);
-
     HymnObjectString <keyword>*</keyword>paths <keyword>=</keyword> hymn_new_intern_string(H, <string>&quot;PATHS&quot;</string>);
     hymn_reference_string(paths);
 
+<constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
+    H-&gt;paths = hymn_new_array(<constant>6</constant>);
+    H-&gt;paths-&gt;items[<constant>0</constant>] <keyword>=</keyword> hymn_new_string_value(search_this);
+    H-&gt;paths-&gt;items[<constant>1</constant>] <keyword>=</keyword> hymn_new_string_value(search_this_dynamic);
+    H-&gt;paths-&gt;items[<constant>2</constant>] <keyword>=</keyword> hymn_new_string_value(search_relative);
+    H-&gt;paths-&gt;items[<constant>3</constant>] <keyword>=</keyword> hymn_new_string_value(search_relative_dynamic);
+    H-&gt;paths-&gt;items[<constant>4</constant>] <keyword>=</keyword> hymn_new_string_value(search_libs);
+    H-&gt;paths-&gt;items[<constant>5</constant>] <keyword>=</keyword> hymn_new_string_value(search_libs_dynamic);
+<constant>#else</constant>
+    H-&gt;paths = hymn_new_array(<constant>3</constant>);
     H-&gt;paths-&gt;items[<constant>0</constant>] <keyword>=</keyword> hymn_new_string_value(search_this);
     H-&gt;paths-&gt;items[<constant>1</constant>] <keyword>=</keyword> hymn_new_string_value(search_relative);
     H-&gt;paths-&gt;items[<constant>2</constant>] <keyword>=</keyword> hymn_new_string_value(search_libs);
+<constant>#endif</constant>
 
     HymnValue paths_value <keyword>=</keyword> hymn_new_array_value(H-&gt;paths);
     table_put(<keyword>&</keyword>H-&gt;globals, paths, paths_value);
@@ -7964,7 +8001,6 @@ quit:
 }
 
 <constant>#ifdef</constant> _MSC_VER
-<keyword>typedef</keyword> <constant>void</constant> (<keyword>*</keyword>HymnDynamicLib)(Hymn <keyword>*</keyword>H);
 
 <constant>void</constant> hymn_close_dlib(<constant>void</constant> <keyword>*</keyword>library) {
     FreeLibrary(library);
@@ -7973,7 +8009,7 @@ quit:
 HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>func) {
     HINSTANCE lib <keyword>=</keyword> LoadLibrary(path);
     <keyword>if</keyword> (lib <keyword>!=</keyword> <constant>NULL</constant>) {
-        HymnDynamicLib proc <keyword>=</keyword> (HymnDynamicLib)GetProcAddress(lib, func);
+        FARPROC proc <keyword>=</keyword> GetProcAddress(lib, func);
         <keyword>if</keyword> (proc <keyword>!=</keyword> <constant>NULL</constant>) {
             proc(H);
             hymn_add_dlib(H, lib);
@@ -7982,7 +8018,7 @@ HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>H, <keywor
     }
 
     HymnString <keyword>*</keyword>message <keyword>=</keyword> <constant>NULL</constant>;
-    <constant>int</constant> error <keyword>=</keyword> GetLastError();
+    <keyword>unsigned</keyword> long error <keyword>=</keyword> GetLastError();
     <constant>char</constant> buffer[<constant>128</constant>];
     <keyword>if</keyword> (FormatMessage(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM, <constant>0</constant>, error, <constant>0</constant>, buffer, sizeof(buffer), <constant>0</constant>)) {
         message <keyword>=</keyword> hymn_new_string(buffer);

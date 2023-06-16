@@ -46,10 +46,10 @@
 <constant>#include</constant> <string>&lt;sys/types.h&gt;</string>
 <constant>#include</constant> <string>&lt;time.h&gt;</string>
 
-<constant>#define</constant> HYMN_VERSION <string>&quot;0.10.0&quot;</string>
+<constant>#define</constant> HYMN_VERSION <string>&quot;0.10.1&quot;</string>
 
 <comment>// #define HYMN_NO_REPL</comment>
-<constant>#define</constant> HYMN_NO_DYNAMIC_LIBS
+<comment>// #define HYMN_NO_DYNAMIC_LIBS</comment>
 <comment>// #define HYMN_NO_OPTIMIZE</comment>
 <comment>// #define HYMN_NO_MEMORY</comment>
 
@@ -126,13 +126,13 @@ PACK(<keyword>struct</keyword> HymnStringHead {
 
 <constant>#undef</constant> PACK
 
-<constant>void</constant> <keyword>*</keyword>hymn_malloc(<constant>size_t</constant> size);
-<constant>void</constant> <keyword>*</keyword>hymn_calloc(<constant>size_t</constant> count, <constant>size_t</constant> size);
-<constant>void</constant> <keyword>*</keyword>hymn_realloc(<constant>void</constant> <keyword>*</keyword>mem, <constant>size_t</constant> size);
+export <constant>void</constant> <keyword>*</keyword>hymn_malloc(<constant>size_t</constant> size);
+export <constant>void</constant> <keyword>*</keyword>hymn_calloc(<constant>size_t</constant> count, <constant>size_t</constant> size);
+export <constant>void</constant> <keyword>*</keyword>hymn_realloc(<constant>void</constant> <keyword>*</keyword>mem, <constant>size_t</constant> size);
 
-<constant>void</constant> <keyword>*</keyword>hymn_malloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
-<constant>void</constant> <keyword>*</keyword>hymn_calloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
-<constant>void</constant> <keyword>*</keyword>hymn_realloc_<constant>int</constant>(<constant>void</constant> <keyword>*</keyword>mem, <constant>int</constant> count, <constant>size_t</constant> size);
+export <constant>void</constant> <keyword>*</keyword>hymn_malloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
+export <constant>void</constant> <keyword>*</keyword>hymn_calloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
+export <constant>void</constant> <keyword>*</keyword>hymn_realloc_<constant>int</constant>(<constant>void</constant> <keyword>*</keyword>mem, <constant>int</constant> count, <constant>size_t</constant> size);
 
 <keyword>typedef</keyword> <keyword>struct</keyword> HymnValue HymnValue;
 <keyword>typedef</keyword> <keyword>struct</keyword> HymnObjectString HymnObjectString;
@@ -276,141 +276,141 @@ PACK(<keyword>struct</keyword> HymnStringHead {
     <constant>void</constant> (<keyword>*</keyword>print_error)(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>format, ...);
 };
 
-HymnString <keyword>*</keyword>hymn_working_directory(<constant>void</constant>);
-HymnString <keyword>*</keyword>hymn_path_convert(HymnString <keyword>*</keyword>path);
-HymnString <keyword>*</keyword>hymn_path_normalize(HymnString <keyword>*</keyword>path);
-HymnString <keyword>*</keyword>hymn_path_parent(HymnString <keyword>*</keyword>path);
-HymnString <keyword>*</keyword>hymn_path_absolute(HymnString <keyword>*</keyword>path);
+export HymnString <keyword>*</keyword>hymn_working_directory(<constant>void</constant>);
+export HymnString <keyword>*</keyword>hymn_path_convert(HymnString <keyword>*</keyword>path);
+export HymnString <keyword>*</keyword>hymn_path_normalize(HymnString <keyword>*</keyword>path);
+export HymnString <keyword>*</keyword>hymn_path_parent(HymnString <keyword>*</keyword>path);
+export HymnString <keyword>*</keyword>hymn_path_absolute(HymnString <keyword>*</keyword>path);
 
-<constant>size_t</constant> hymn_file_size(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
-HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
-<constant>bool</constant> hymn_file_exists(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
+export <constant>size_t</constant> hymn_file_size(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
+export HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
+export <constant>bool</constant> hymn_file_exists(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path);
 
-HymnString <keyword>*</keyword>hymn_new_string_with_capacity(<constant>size_t</constant> capacity);
-HymnString <keyword>*</keyword>hymn_new_string_with_length(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init, <constant>size_t</constant> length);
-HymnString <keyword>*</keyword>hymn_new_empty_string(<constant>size_t</constant> length);
-HymnString <keyword>*</keyword>hymn_new_string(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init);
-HymnObjectString <keyword>*</keyword>hymn_intern_string(Hymn <keyword>*</keyword>H, HymnString <keyword>*</keyword>string);
-HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>value);
+export HymnString <keyword>*</keyword>hymn_new_string_with_capacity(<constant>size_t</constant> capacity);
+export HymnString <keyword>*</keyword>hymn_new_string_with_length(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init, <constant>size_t</constant> length);
+export HymnString <keyword>*</keyword>hymn_new_empty_string(<constant>size_t</constant> length);
+export HymnString <keyword>*</keyword>hymn_new_string(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init);
+export HymnObjectString <keyword>*</keyword>hymn_intern_string(Hymn <keyword>*</keyword>H, HymnString <keyword>*</keyword>string);
+export HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>value);
 
-HymnString <keyword>*</keyword>hymn_string_copy(HymnString <keyword>*</keyword>string);
-<constant>void</constant> hymn_string_delete(HymnString <keyword>*</keyword>string);
-<constant>void</constant> hymn_string_zero(HymnString <keyword>*</keyword>string);
-HymnString <keyword>*</keyword>hymn_string_append_<constant>char</constant>(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> b);
-HymnString <keyword>*</keyword>hymn_string_append_substring(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>b, <constant>size_t</constant> start, <constant>size_t</constant> end);
-<constant>bool</constant> hymn_string_starts_with(HymnString <keyword>*</keyword>s, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>start);
-HymnString <keyword>*</keyword>hymn_string_replace(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>find, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>replace);
-HymnString <keyword>*</keyword>hymn_string_append(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>b);
-HymnString <keyword>*</keyword>hymn_string_format(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>format, ...);
-HymnString <keyword>*</keyword>hymn_substring(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init, <constant>size_t</constant> start, <constant>size_t</constant> end);
-<constant>void</constant> hymn_string_trim(HymnString <keyword>*</keyword>string);
-HymnString <keyword>*</keyword>hymn_quote_string(HymnString <keyword>*</keyword>string);
+export HymnString <keyword>*</keyword>hymn_string_copy(HymnString <keyword>*</keyword>string);
+export <constant>void</constant> hymn_string_delete(HymnString <keyword>*</keyword>string);
+export <constant>void</constant> hymn_string_zero(HymnString <keyword>*</keyword>string);
+export HymnString <keyword>*</keyword>hymn_string_append_<constant>char</constant>(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> b);
+export HymnString <keyword>*</keyword>hymn_string_append_substring(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>b, <constant>size_t</constant> start, <constant>size_t</constant> end);
+export <constant>bool</constant> hymn_string_starts_with(HymnString <keyword>*</keyword>s, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>start);
+export HymnString <keyword>*</keyword>hymn_string_replace(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>find, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>replace);
+export HymnString <keyword>*</keyword>hymn_string_append(HymnString <keyword>*</keyword>string, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>b);
+export HymnString <keyword>*</keyword>hymn_string_format(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>format, ...);
+export HymnString <keyword>*</keyword>hymn_substring(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>init, <constant>size_t</constant> start, <constant>size_t</constant> end);
+export <constant>void</constant> hymn_string_trim(HymnString <keyword>*</keyword>string);
+export HymnString <keyword>*</keyword>hymn_quote_string(HymnString <keyword>*</keyword>string);
 
-HymnString <keyword>*</keyword>hymn_<constant>int</constant>_to_string(HymnInt number);
-HymnString <keyword>*</keyword>hymn_<constant>float</constant>_to_string(HymnFloat number);
+export HymnString <keyword>*</keyword>hymn_<constant>int</constant>_to_string(HymnInt number);
+export HymnString <keyword>*</keyword>hymn_<constant>float</constant>_to_string(HymnFloat number);
 
-HymnArray <keyword>*</keyword>hymn_new_array(HymnInt length);
+export HymnArray <keyword>*</keyword>hymn_new_array(HymnInt length);
 
-<constant>void</constant> hymn_array_push(HymnArray <keyword>*</keyword>array, HymnValue value);
-<constant>void</constant> hymn_array_insert(HymnArray <keyword>*</keyword>array, HymnInt index, HymnValue value);
-HymnValue hymn_array_get(HymnArray <keyword>*</keyword>array, HymnInt index);
-HymnInt hymn_array_index_of(HymnArray <keyword>*</keyword>array, HymnValue match);
-HymnValue hymn_array_pop(HymnArray <keyword>*</keyword>array);
-HymnValue hymn_array_remove_index(HymnArray <keyword>*</keyword>array, HymnInt index);
-<constant>void</constant> hymn_array_clear(Hymn <keyword>*</keyword>H, HymnArray <keyword>*</keyword>array);
-<constant>void</constant> hymn_array_delete(Hymn <keyword>*</keyword>H, HymnArray <keyword>*</keyword>array);
+export <constant>void</constant> hymn_array_push(HymnArray <keyword>*</keyword>array, HymnValue value);
+export <constant>void</constant> hymn_array_insert(HymnArray <keyword>*</keyword>array, HymnInt index, HymnValue value);
+export HymnValue hymn_array_get(HymnArray <keyword>*</keyword>array, HymnInt index);
+export HymnInt hymn_array_index_of(HymnArray <keyword>*</keyword>array, HymnValue match);
+export HymnValue hymn_array_pop(HymnArray <keyword>*</keyword>array);
+export HymnValue hymn_array_remove_index(HymnArray <keyword>*</keyword>array, HymnInt index);
+export <constant>void</constant> hymn_array_clear(Hymn <keyword>*</keyword>H, HymnArray <keyword>*</keyword>array);
+export <constant>void</constant> hymn_array_delete(Hymn <keyword>*</keyword>H, HymnArray <keyword>*</keyword>array);
 
 export HymnTable <keyword>*</keyword>hymn_new_table(<constant>void</constant>);
 
-HymnValue hymn_table_get(HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>key);
+export HymnValue hymn_table_get(HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>key);
 
-HymnValue hymn_new_undefined(<constant>void</constant>);
-HymnValue hymn_new_none(<constant>void</constant>);
-HymnValue hymn_new_<constant>bool</constant>(<constant>bool</constant> v);
+export HymnValue hymn_new_undefined(<constant>void</constant>);
+export HymnValue hymn_new_none(<constant>void</constant>);
+export HymnValue hymn_new_<constant>bool</constant>(<constant>bool</constant> v);
 export HymnValue hymn_new_<constant>int</constant>(HymnInt v);
-HymnValue hymn_new_<constant>float</constant>(HymnFloat v);
-HymnValue hymn_new_native(HymnNativeFunction <keyword>*</keyword>v);
-HymnValue hymn_new_pointer(<constant>void</constant> <keyword>*</keyword>v);
-HymnValue hymn_new_string_value(HymnObjectString <keyword>*</keyword>v);
-HymnValue hymn_new_array_value(HymnArray <keyword>*</keyword>v);
-HymnValue hymn_new_table_value(HymnTable <keyword>*</keyword>v);
-HymnValue hymn_new_func_value(HymnFunction <keyword>*</keyword>v);
+export HymnValue hymn_new_<constant>float</constant>(HymnFloat v);
+export HymnValue hymn_new_native(HymnNativeFunction <keyword>*</keyword>v);
+export HymnValue hymn_new_pointer(<constant>void</constant> <keyword>*</keyword>v);
+export HymnValue hymn_new_string_value(HymnObjectString <keyword>*</keyword>v);
+export HymnValue hymn_new_array_value(HymnArray <keyword>*</keyword>v);
+export HymnValue hymn_new_table_value(HymnTable <keyword>*</keyword>v);
+export HymnValue hymn_new_func_value(HymnFunction <keyword>*</keyword>v);
 
-HymnObjectString <keyword>*</keyword>hymn_new_string_object(HymnString <keyword>*</keyword>string);
+export HymnObjectString <keyword>*</keyword>hymn_new_string_object(HymnString <keyword>*</keyword>string);
 
-HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value);
+export HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value);
 
-<constant>bool</constant> hymn_as_<constant>bool</constant>(HymnValue v);
-HymnInt hymn_as_<constant>int</constant>(HymnValue v);
-HymnFloat hymn_as_<constant>float</constant>(HymnValue v);
-HymnNativeFunction <keyword>*</keyword>hymn_as_native(HymnValue v);
-<constant>void</constant> <keyword>*</keyword>hymn_as_pointer(HymnValue v);
-<constant>void</constant> <keyword>*</keyword>hymn_as_object(HymnValue v);
-HymnObjectString <keyword>*</keyword>hymn_as_hymn_string(HymnValue v);
-HymnString <keyword>*</keyword>hymn_as_string(HymnValue v);
-HymnArray <keyword>*</keyword>hymn_as_array(HymnValue v);
-HymnTable <keyword>*</keyword>hymn_as_table(HymnValue v);
-HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v);
+export <constant>bool</constant> hymn_as_<constant>bool</constant>(HymnValue v);
+export HymnInt hymn_as_<constant>int</constant>(HymnValue v);
+export HymnFloat hymn_as_<constant>float</constant>(HymnValue v);
+export HymnNativeFunction <keyword>*</keyword>hymn_as_native(HymnValue v);
+export <constant>void</constant> <keyword>*</keyword>hymn_as_pointer(HymnValue v);
+export <constant>void</constant> <keyword>*</keyword>hymn_as_object(HymnValue v);
+export HymnObjectString <keyword>*</keyword>hymn_as_hymn_string(HymnValue v);
+export HymnString <keyword>*</keyword>hymn_as_string(HymnValue v);
+export HymnArray <keyword>*</keyword>hymn_as_array(HymnValue v);
+export HymnTable <keyword>*</keyword>hymn_as_table(HymnValue v);
+export HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v);
 
-<constant>bool</constant> hymn_is_undefined(HymnValue v);
-<constant>bool</constant> hymn_is_none(HymnValue v);
-<constant>bool</constant> hymn_is_<constant>bool</constant>(HymnValue v);
-<constant>bool</constant> hymn_is_<constant>int</constant>(HymnValue v);
-<constant>bool</constant> hymn_is_<constant>float</constant>(HymnValue v);
-<constant>bool</constant> hymn_is_native(HymnValue v);
-<constant>bool</constant> hymn_is_pointer(HymnValue v);
-<constant>bool</constant> hymn_is_string(HymnValue v);
-<constant>bool</constant> hymn_is_array(HymnValue v);
-<constant>bool</constant> hymn_is_table(HymnValue v);
-<constant>bool</constant> hymn_is_func(HymnValue v);
+export <constant>bool</constant> hymn_is_undefined(HymnValue v);
+export <constant>bool</constant> hymn_is_none(HymnValue v);
+export <constant>bool</constant> hymn_is_<constant>bool</constant>(HymnValue v);
+export <constant>bool</constant> hymn_is_<constant>int</constant>(HymnValue v);
+export <constant>bool</constant> hymn_is_<constant>float</constant>(HymnValue v);
+export <constant>bool</constant> hymn_is_native(HymnValue v);
+export <constant>bool</constant> hymn_is_pointer(HymnValue v);
+export <constant>bool</constant> hymn_is_string(HymnValue v);
+export <constant>bool</constant> hymn_is_array(HymnValue v);
+export <constant>bool</constant> hymn_is_table(HymnValue v);
+export <constant>bool</constant> hymn_is_func(HymnValue v);
 
-<constant>bool</constant> hymn_value_<constant>false</constant>(HymnValue value);
-<constant>bool</constant> hymn_values_equal(HymnValue a, HymnValue b);
-<constant>bool</constant> hymn_match_values(HymnValue a, HymnValue b);
+export <constant>bool</constant> hymn_value_<constant>false</constant>(HymnValue value);
+export <constant>bool</constant> hymn_values_equal(HymnValue a, HymnValue b);
+export <constant>bool</constant> hymn_match_values(HymnValue a, HymnValue b);
 
-<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>hymn_value_type(<keyword>enum</keyword> HymnValueType type);
+export <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>hymn_value_type(<keyword>enum</keyword> HymnValueType type);
 
-<constant>void</constant> hymn_reference_string(HymnObjectString <keyword>*</keyword>string);
-<constant>void</constant> hymn_reference(HymnValue value);
-<constant>void</constant> hymn_dereference_string(Hymn <keyword>*</keyword>H, HymnObjectString <keyword>*</keyword>string);
-<constant>void</constant> hymn_dereference(Hymn <keyword>*</keyword>H, HymnValue value);
+export <constant>void</constant> hymn_reference_string(HymnObjectString <keyword>*</keyword>string);
+export <constant>void</constant> hymn_reference(HymnValue value);
+export <constant>void</constant> hymn_dereference_string(Hymn <keyword>*</keyword>H, HymnObjectString <keyword>*</keyword>string);
+export <constant>void</constant> hymn_dereference(Hymn <keyword>*</keyword>H, HymnValue value);
 
-<constant>void</constant> hymn_set_property(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, HymnObjectString <keyword>*</keyword>name, HymnValue value);
-<constant>void</constant> hymn_set_property_<keyword>const</keyword>(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnValue value);
+export <constant>void</constant> hymn_set_property(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, HymnObjectString <keyword>*</keyword>name, HymnValue value);
+export <constant>void</constant> hymn_set_property_<keyword>const</keyword>(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnValue value);
 
-HymnValue hymn_new_exception(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>error);
-HymnValue hymn_arity_exception(Hymn <keyword>*</keyword>H, <constant>int</constant> expected, <constant>int</constant> actual);
-HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword> HymnValueType expected, <keyword>enum</keyword> HymnValueType actual);
+export HymnValue hymn_new_exception(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>error);
+export HymnValue hymn_arity_exception(Hymn <keyword>*</keyword>H, <constant>int</constant> expected, <constant>int</constant> actual);
+export HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword> HymnValueType expected, <keyword>enum</keyword> HymnValueType actual);
 
-Hymn <keyword>*</keyword>new_hymn(<constant>void</constant>);
+export Hymn <keyword>*</keyword>new_hymn(<constant>void</constant>);
 
-<constant>char</constant> <keyword>*</keyword>hymn_call(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <constant>int</constant> arguments);
-<constant>char</constant> <keyword>*</keyword>hymn_debug(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
-<constant>char</constant> <keyword>*</keyword>hymn_run(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
-<constant>char</constant> <keyword>*</keyword>hymn_do(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
-<constant>char</constant> <keyword>*</keyword>hymn_direct(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
-<constant>char</constant> <keyword>*</keyword>hymn_script(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script);
+export <constant>char</constant> <keyword>*</keyword>hymn_call(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <constant>int</constant> arguments);
+export <constant>char</constant> <keyword>*</keyword>hymn_debug(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+export <constant>char</constant> <keyword>*</keyword>hymn_run(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+export <constant>char</constant> <keyword>*</keyword>hymn_do(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+export <constant>char</constant> <keyword>*</keyword>hymn_direct(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>source);
+export <constant>char</constant> <keyword>*</keyword>hymn_script(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>script);
 
-HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name);
+export HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name);
 
-<constant>void</constant> hymn_add(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnValue value);
-<constant>void</constant> hymn_add_string(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>string);
+export <constant>void</constant> hymn_add(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnValue value);
+export <constant>void</constant> hymn_add_string(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>string);
 export <constant>void</constant> hymn_add_table(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnTable <keyword>*</keyword>table);
-<constant>void</constant> hymn_add_pointer(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <constant>void</constant> <keyword>*</keyword>pointer);
-<constant>void</constant> hymn_add_string_to_table(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>string);
+export <constant>void</constant> hymn_add_pointer(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <constant>void</constant> <keyword>*</keyword>pointer);
+export <constant>void</constant> hymn_add_string_to_table(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>string);
 export <constant>void</constant> hymn_add_function_to_table(Hymn <keyword>*</keyword>H, HymnTable <keyword>*</keyword>table, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnNativeCall func);
-<constant>void</constant> hymn_add_function(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnNativeCall func);
+export <constant>void</constant> hymn_add_function(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>name, HymnNativeCall func);
 
-<constant>void</constant> hymn_delete(Hymn <keyword>*</keyword>H);
+export <constant>void</constant> hymn_delete(Hymn <keyword>*</keyword>H);
 
 <constant>#ifndef</constant> HYMN_NO_REPL
-<constant>void</constant> hymn_repl(Hymn <keyword>*</keyword>H);
+export <constant>void</constant> hymn_repl(Hymn <keyword>*</keyword>H);
 <constant>#endif</constant>
 
 <constant>#ifndef</constant> HYMN_NO_DYNAMIC_LIBS
-<constant>void</constant> hymn_add_dlib(Hymn <keyword>*</keyword>H, <constant>void</constant> <keyword>*</keyword>library);
-<constant>void</constant> hymn_close_dlib(<constant>void</constant> <keyword>*</keyword>library);
-HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>hymn, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>func);
+export <constant>void</constant> hymn_add_dlib(Hymn <keyword>*</keyword>H, <constant>void</constant> <keyword>*</keyword>library);
+export <constant>void</constant> hymn_close_dlib(<constant>void</constant> <keyword>*</keyword>library);
+export HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>hymn, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>func);
 <constant>#endif</constant>
 
 <constant>#endif</constant></code></pre></div>
