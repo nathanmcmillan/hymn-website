@@ -1,6 +1,4 @@
-examples.set(
-  'new',
-  `set f = "Fizz"
+examples.set('new', `set f = "Fizz"
 set b = "Buzz"
 
 func fizz-buzz(n) {
@@ -22,5 +20,4 @@ func fizz-buzz(n) {
 }
 
 fizz-buzz(20)
-`
-)
+`)

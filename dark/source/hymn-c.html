@@ -104,6 +104,16 @@
     <constant>memcpy</constant>(dest, src, (<constant>size_t</constant>)count <keyword>*</keyword> size);
 }
 
+FILE <keyword>*</keyword>hymn_open_file(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>mode) {
+<constant>#ifdef</constant> _MSC_VER
+    FILE <keyword>*</keyword>open <keyword>=</keyword> <constant>NULL</constant>;
+    errno_t code <keyword>=</keyword> fopen_s(<keyword>&</keyword>open, path, mode);
+    <keyword>return</keyword> code <keyword>!=</keyword> <constant>0</constant> ? <constant>NULL</constant> : open;
+<constant>#else</constant>
+    <keyword>return</keyword> fopen(path, mode);
+<constant>#endif</constant>
+}
+
 <keyword>static</keyword> HymnStringHead <keyword>*</keyword>string_head_init(<constant>size_t</constant> length, <constant>size_t</constant> capacity) {
     <constant>size_t</constant> memory <keyword>=</keyword> sizeof(HymnStringHead) <keyword>+</keyword> capacity <keyword>+</keyword> <constant>1</constant>;
     HymnStringHead <keyword>*</keyword>head <keyword>=</keyword> (HymnStringHead <keyword>*</keyword>)hymn_malloc(memory);
@@ -145,16 +155,12 @@ HymnString <keyword>*</keyword>hymn_substring(<keyword>const</keyword> <constant
     <keyword>return</keyword> (HymnString <keyword>*</keyword>)string;
 }
 
-<keyword>static</keyword> <constant>bool</constant> space(<constant>char</constant> c) {
-    <keyword>return</keyword> c <keyword>==</keyword> <string>' '</string> || c <keyword>==</keyword> <string>'\t'</string> || c <keyword>==</keyword> <string>'\n'</string> || c <keyword>==</keyword> <string>'\r'</string>;
-}
-
 <constant>void</constant> hymn_string_trim(HymnString <keyword>*</keyword>string) {
     <constant>size_t</constant> len <keyword>=</keyword> hymn_string_len(string);
     <constant>size_t</constant> start <keyword>=</keyword> <constant>0</constant>;
     <keyword>while</keyword> (start <keyword>&lt;</keyword> len) {
         <constant>char</constant> c <keyword>=</keyword> string[start];
-        <keyword>if</keyword> (<keyword>!</keyword>space(c)) {
+        <keyword>if</keyword> (<keyword>!</keyword>(c <keyword>==</keyword> <string>' '</string> || c <keyword>==</keyword> <string>'\t'</string> || c <keyword>==</keyword> <string>'\n'</string> || c <keyword>==</keyword> <string>'\r'</string>)) {
             <keyword>break</keyword>;
         }
         start++;
@@ -165,7 +171,7 @@ HymnString <keyword>*</keyword>hymn_substring(<keyword>const</keyword> <constant
         <constant>size_t</constant> end <keyword>=</keyword> len <keyword>-</keyword> <constant>1</constant>;
         <keyword>while</keyword> (end <keyword>&gt;</keyword> start) {
             <constant>char</constant> c <keyword>=</keyword> string[end];
-            <keyword>if</keyword> (<keyword>!</keyword>space(c)) {
+            <keyword>if</keyword> (<keyword>!</keyword>(c <keyword>==</keyword> <string>' '</string> || c <keyword>==</keyword> <string>'\t'</string> || c <keyword>==</keyword> <string>'\n'</string> || c <keyword>==</keyword> <string>'\r'</string>)) {
                 <keyword>break</keyword>;
             }
             end--;
@@ -474,7 +480,7 @@ HymnString <keyword>*</keyword>hymn_path_absolute(HymnString <keyword>*</keyword
 }
 
 <constant>size_t</constant> hymn_file_size(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path) {
-    FILE <keyword>*</keyword>open <keyword>=</keyword> fopen(path, <string>&quot;r&quot;</string>);
+    FILE <keyword>*</keyword>open <keyword>=</keyword> hymn_open_file(path, <string>&quot;r&quot;</string>);
     <keyword>if</keyword> (open <keyword>==</keyword> <constant>NULL</constant>) {
         <keyword>return</keyword> <constant>0</constant>;
     }
@@ -489,7 +495,7 @@ HymnString <keyword>*</keyword>hymn_path_absolute(HymnString <keyword>*</keyword
 
 HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path) {
     <constant>size_t</constant> size <keyword>=</keyword> hymn_file_size(path);
-    FILE <keyword>*</keyword>open <keyword>=</keyword> fopen(path, <string>&quot;r&quot;</string>);
+    FILE <keyword>*</keyword>open <keyword>=</keyword> hymn_open_file(path, <string>&quot;r&quot;</string>);
     <keyword>if</keyword> (open <keyword>==</keyword> <constant>NULL</constant>) {
         <keyword>return</keyword> <constant>NULL</constant>;
     }
@@ -576,6 +582,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     TOKEN_FALSE,
     TOKEN_FLOAT,
     TOKEN_FOR,
+    TOKEN_FORMAT,
     TOKEN_FUNCTION,
     TOKEN_GREATER,
     TOKEN_GREATER_EQUAL,
@@ -668,6 +675,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
     OP_CODES,
     OP_STACK,
     OP_REFERENCE,
+    OP_FORMAT,
     OP_DEFINE_GLOBAL,
     OP_DELETE,
     OP_DIVIDE,
@@ -778,6 +786,7 @@ HymnString <keyword>*</keyword>hymn_read_file(<keyword>const</keyword> <constant
 <keyword>static</keyword> <constant>void</constant> opcode_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> stack_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> reference_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
+<keyword>static</keyword> <constant>void</constant> format_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> function_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign);
 <keyword>static</keyword> <constant>void</constant> declaration(Compiler <keyword>*</keyword>C);
 <keyword>static</keyword> <constant>void</constant> statement(Compiler <keyword>*</keyword>C);
@@ -1041,6 +1050,7 @@ HymnFunction <keyword>*</keyword>hymn_as_func(HymnValue v) {
     [TOKEN_FALSE] <keyword>=</keyword> {compile_<constant>false</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_FLOAT] <keyword>=</keyword> {compile_<constant>float</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_FOR] <keyword>=</keyword> {<constant>NULL</constant>, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
+    [TOKEN_FORMAT] <keyword>=</keyword> {format_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_FUNCTION] <keyword>=</keyword> {function_expression, <constant>NULL</constant>, PRECEDENCE_NONE, {<constant>0</constant>}},
     [TOKEN_GREATER] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_COMPARE, {<constant>0</constant>}},
     [TOKEN_GREATER_EQUAL] <keyword>=</keyword> {<constant>NULL</constant>, compile_binary, PRECEDENCE_COMPARE, {<constant>0</constant>}},
@@ -1516,18 +1526,24 @@ HymnValue hymn_table_get(HymnTable <keyword>*</keyword>this, <keyword>const</key
                 begin++;
                 <keyword>break</keyword>;
             }
-            <keyword>if</keyword> (begin <keyword>==</keyword> <constant>0</constant>) <keyword>break</keyword>;
+            <keyword>if</keyword> (begin <keyword>==</keyword> <constant>0</constant>) {
+                <keyword>break</keyword>;
+            }
             begin--;
         }
 
         <keyword>while</keyword> (<constant>true</constant>) {
-            <keyword>if</keyword> (source[begin] <keyword>!=</keyword> <string>' '</string> || begin <keyword>==</keyword> size) <keyword>break</keyword>;
+            <keyword>if</keyword> (source[begin] <keyword>!=</keyword> <string>' '</string> || begin <keyword>==</keyword> size) {
+                <keyword>break</keyword>;
+            }
             begin++;
         }
 
         <constant>size_t</constant> end <keyword>=</keyword> start;
         <keyword>while</keyword> (<constant>true</constant>) {
-            <keyword>if</keyword> (source[end] <keyword>==</keyword> <string>'\n'</string> || end <keyword>==</keyword> size) <keyword>break</keyword>;
+            <keyword>if</keyword> (source[end] <keyword>==</keyword> <string>'\n'</string> || end <keyword>==</keyword> size) {
+                <keyword>break</keyword>;
+            }
             end++;
         }
 
@@ -1661,6 +1677,7 @@ clean:
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;nd&quot;</string>, TOKEN_AND);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'n'</string>:
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>3</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;ot&quot;</string>, TOKEN_NOT);
         <keyword>if</keyword> (size <keyword>==</keyword> <constant>4</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;one&quot;</string>, TOKEN_NONE);
         <keyword>break</keyword>;
     <keyword>case</keyword> <string>'w'</string>:
@@ -1742,11 +1759,18 @@ clean:
             <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword> <string>'l'</string>) <keyword>return</keyword> ident_trie(ident, <constant>2</constant>, <string>&quot;oat&quot;</string>, TOKEN_TO_FLOAT);
         }
         <keyword>break</keyword>;
-    <keyword>case</keyword> <string>'_'</string>:
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;stack&quot;</string>, TOKEN_STACK);
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>7</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;source&quot;</string>, TOKEN_SRC);
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>8</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;opcodes&quot;</string>, TOKEN_OPCODES);
-        <keyword>if</keyword> (size <keyword>==</keyword> <constant>10</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;reference&quot;</string>, TOKEN_REFERENCE);
+    <keyword>case</keyword> <string>'S'</string>:
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>5</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;TACK&quot;</string>, TOKEN_STACK);
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;OURCE&quot;</string>, TOKEN_SRC);
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'F'</string>:
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>6</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;ORMAT&quot;</string>, TOKEN_FORMAT);
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'O'</string>:
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>7</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;PCODES&quot;</string>, TOKEN_OPCODES);
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'R'</string>:
+        <keyword>if</keyword> (size <keyword>==</keyword> <constant>9</constant>) <keyword>return</keyword> ident_trie(ident, <constant>1</constant>, <string>&quot;EFERENCE&quot;</string>, TOKEN_REFERENCE);
         <keyword>break</keyword>;
     <keyword>default</keyword>:
         <keyword>break</keyword>;
@@ -1833,7 +1857,9 @@ clean:
                     value_token(C, TOKEN_STRING, start, end);
                     <keyword>while</keyword> (<constant>true</constant>) {
                         c <keyword>=</keyword> next_<constant>char</constant>(C);
-                        <keyword>if</keyword> (c <keyword>==</keyword> <string>'}'</string> || c <keyword>==</keyword> <string>'\0'</string>) <keyword>return</keyword>;
+                        <keyword>if</keyword> (c <keyword>==</keyword> <string>'}'</string> || c <keyword>==</keyword> <string>'\0'</string>) {
+                            <keyword>return</keyword>;
+                        }
                     }
                 } <keyword>else</keyword> {
                     <keyword>continue</keyword>;
@@ -1901,7 +1927,8 @@ clean:
                 next_<constant>char</constant>(C);
                 token_special(C, TOKEN_NOT_EQUAL, <constant>2</constant>, <constant>2</constant>);
             } <keyword>else</keyword> {
-                token(C, TOKEN_NOT);
+                token(C, TOKEN_ERROR);
+                compile_error(C, <keyword>&</keyword>C-&gt;current, <string>&quot;expected '!='&quot;</string>);
             }
             <keyword>return</keyword>;
         <keyword>case</keyword> <string>'='</string>:
@@ -2022,7 +2049,7 @@ clean:
         <keyword>case</keyword> <string>'['</string>: token(C, TOKEN_LEFT_SQUARE); <keyword>return</keyword>;
         <keyword>case</keyword> <string>']'</string>: token(C, TOKEN_RIGHT_SQUARE); <keyword>return</keyword>;
         <keyword>case</keyword> <string>'{'</string>:
-            <keyword>if</keyword> (C-&gt;string_format &gt;= <constant>1</constant>) {
+            <keyword>if</keyword> (C-&gt;string_format &gt; <constant>0</constant>) {
                 C-&gt;string_format++;
             }
             token(C, TOKEN_LEFT_CURLY);
@@ -2619,17 +2646,17 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 
 <keyword>static</keyword> <constant>void</constant> compile_with_precedence(Compiler <keyword>*</keyword>C, <keyword>enum</keyword> Precedence precedence) {
     advance(C);
-    Rule <keyword>*</keyword>rule <keyword>=</keyword> token_rule(C-&gt;previous.type);
-    <constant>void</constant> (<keyword>*</keyword>prefix)(Compiler <keyword>*</keyword>, <constant>bool</constant>) <keyword>=</keyword> rule-&gt;prefix;
+    <keyword>const</keyword> Rule <keyword>*</keyword>rule <keyword>=</keyword> token_rule(C-&gt;previous.type);
+    <constant>void</constant> (<keyword>*</keyword><keyword>const</keyword> prefix)(Compiler <keyword>*</keyword>, <constant>bool</constant>) <keyword>=</keyword> rule-&gt;prefix;
     <keyword>if</keyword> (prefix <keyword>==</keyword> <constant>NULL</constant>) {
         compile_error(C, <keyword>&</keyword>C-&gt;previous, <string>&quot;expression expected near '%.*s'&quot;</string>, C-&gt;previous.length, &C-&gt;source[C-&gt;previous.start]);
         <keyword>return</keyword>;
     }
-    <constant>bool</constant> assign <keyword>=</keyword> precedence <keyword>&lt;</keyword><keyword>=</keyword> PRECEDENCE_ASSIGN;
+    <keyword>const</keyword> <constant>bool</constant> assign <keyword>=</keyword> precedence <keyword>&lt;</keyword><keyword>=</keyword> PRECEDENCE_ASSIGN;
     prefix(C, assign);
     <keyword>while</keyword> (precedence <keyword>&lt;</keyword><keyword>=</keyword> token_rule(C-&gt;current.type)-&gt;precedence) {
         advance(C);
-        <constant>void</constant> (<keyword>*</keyword>infix)(Compiler <keyword>*</keyword>, <constant>bool</constant>) <keyword>=</keyword> token_rule(C-&gt;previous.type)-&gt;infix;
+        <constant>void</constant> (<keyword>*</keyword><keyword>const</keyword> infix)(Compiler <keyword>*</keyword>, <constant>bool</constant>) <keyword>=</keyword> token_rule(C-&gt;previous.type)-&gt;infix;
         <keyword>if</keyword> (infix <keyword>==</keyword> <constant>NULL</constant>) {
             compile_error(C, <keyword>&</keyword>C-&gt;previous, <string>&quot;expected infix&quot;</string>);
             <keyword>return</keyword>;
@@ -2708,12 +2735,12 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 
 <keyword>static</keyword> <constant>void</constant> compile_integer(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    emit_constant(C, hymn_new_<constant>int</constant>(C-&gt;current.integer));
+    emit_constant(C, hymn_new_<constant>int</constant>(C-&gt;previous.integer));
 }
 
 <keyword>static</keyword> <constant>void</constant> compile_<constant>float</constant>(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    emit_constant(C, hymn_new_<constant>float</constant>(C-&gt;current.floating));
+    emit_constant(C, hymn_new_<constant>float</constant>(C-&gt;previous.floating));
 }
 
 <keyword>static</keyword> <constant>char</constant> escape_sequence(<keyword>const</keyword> <constant>char</constant> c) {
@@ -3198,6 +3225,162 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
     compile_with_precedence(C, PRECEDENCE_OR);
 }
 
+<keyword>struct</keyword> PointerSet {
+    <constant>int</constant> count;
+    <constant>int</constant> capacity;
+    <constant>void</constant> <keyword>*</keyword><keyword>*</keyword>items;
+};
+
+<keyword>static</keyword> <constant>bool</constant> pointer_set_has(<keyword>struct</keyword> PointerSet <keyword>*</keyword>set, <constant>void</constant> <keyword>*</keyword>pointer) {
+    <constant>void</constant> <keyword>*</keyword><keyword>*</keyword>items <keyword>=</keyword> set-&gt;items;
+    <keyword>if</keyword> (items) {
+        <constant>int</constant> count <keyword>=</keyword> set-&gt;count;
+        <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> count; i++) {
+            <keyword>if</keyword> (pointer <keyword>==</keyword> items[i]) {
+                <keyword>return</keyword> <constant>true</constant>;
+            }
+        }
+    }
+    <keyword>return</keyword> <constant>false</constant>;
+}
+
+<keyword>static</keyword> <constant>void</constant> pointer_set_add(<keyword>struct</keyword> PointerSet <keyword>*</keyword>set, <constant>void</constant> <keyword>*</keyword>pointer) {
+    <keyword>if</keyword> (set-&gt;items) {
+        <constant>int</constant> count <keyword>=</keyword> set-&gt;count;
+        <keyword>if</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> set-&gt;capacity) {
+            set-&gt;capacity *= <constant>2</constant>;
+            set-&gt;items = hymn_realloc_<constant>int</constant>(set-&gt;items, set-&gt;capacity, sizeof(<constant>void</constant> <keyword>*</keyword>));
+        }
+        set-&gt;items[count] = pointer;
+        set-&gt;count = count + <constant>1</constant>;
+    } <keyword>else</keyword> {
+        set-&gt;count = <constant>1</constant>;
+        set-&gt;capacity = <constant>1</constant>;
+        set-&gt;items = hymn_calloc(<constant>1</constant>, sizeof(<constant>void</constant> <keyword>*</keyword>));
+        set-&gt;items[<constant>0</constant>] <keyword>=</keyword> pointer;
+    }
+}
+
+<keyword>static</keyword> HymnString <keyword>*</keyword>value_to_string_recusive(HymnValue value, <keyword>struct</keyword> PointerSet <keyword>*</keyword>set, <constant>bool</constant> quote) {
+    <keyword>switch</keyword> (value.is) {
+    <keyword>case</keyword> HYMN_VALUE_UNDEFINED: <keyword>return</keyword> hymn_new_string(<string>&quot;undefined&quot;</string>);
+    <keyword>case</keyword> HYMN_VALUE_NONE: <keyword>return</keyword> hymn_new_string(<string>&quot;none&quot;</string>);
+    <keyword>case</keyword> HYMN_VALUE_BOOL: <keyword>return</keyword> hymn_as_<constant>bool</constant>(value) ? hymn_new_string(<string>&quot;true&quot;</string>) : hymn_new_string(<string>&quot;false&quot;</string>);
+    <keyword>case</keyword> HYMN_VALUE_INTEGER: <keyword>return</keyword> hymn_<constant>int</constant>_to_string(hymn_as_<constant>int</constant>(value));
+    <keyword>case</keyword> HYMN_VALUE_FLOAT: <keyword>return</keyword> hymn_<constant>float</constant>_to_string(hymn_as_<constant>float</constant>(value));
+    <keyword>case</keyword> HYMN_VALUE_STRING: {
+        <keyword>if</keyword> (quote) <keyword>return</keyword> hymn_quote_string(hymn_as_string(value));
+        <keyword>return</keyword> hymn_string_copy(hymn_as_string(value));
+    }
+    <keyword>case</keyword> HYMN_VALUE_ARRAY: {
+        HymnArray <keyword>*</keyword>array <keyword>=</keyword> hymn_as_array(value);
+        <keyword>if</keyword> (array <keyword>==</keyword> <constant>NULL</constant> || array-&gt;length <keyword>==</keyword> <constant>0</constant>) {
+            <keyword>return</keyword> hymn_new_string(<string>&quot;[]&quot;</string>);
+        }
+        <keyword>if</keyword> (pointer_set_has(set, array)) {
+            <keyword>return</keyword> hymn_new_string(<string>&quot;[..]&quot;</string>);
+        } <keyword>else</keyword> {
+            pointer_set_add(set, array);
+        }
+        HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_new_string(<string>&quot;[&quot;</string>);
+        <keyword>for</keyword> (HymnInt i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> array-&gt;length; i++) {
+            <keyword>if</keyword> (i <keyword>!=</keyword> <constant>0</constant>) {
+                string <keyword>=</keyword> hymn_string_append(string, <string>&quot;, &quot;</string>);
+            }
+            HymnString <keyword>*</keyword>add <keyword>=</keyword> value_to_string_recusive(array-&gt;items[i], set, <constant>true</constant>);
+            string <keyword>=</keyword> hymn_string_append(string, add);
+            hymn_string_delete(add);
+        }
+        string <keyword>=</keyword> hymn_string_append_<constant>char</constant>(string, <string>']'</string>);
+        <keyword>return</keyword> string;
+    }
+    <keyword>case</keyword> HYMN_VALUE_TABLE: {
+        HymnTable <keyword>*</keyword>table <keyword>=</keyword> hymn_as_table(value);
+        <keyword>if</keyword> (table <keyword>==</keyword> <constant>NULL</constant> || table-&gt;size <keyword>==</keyword> <constant>0</constant>) {
+            <keyword>return</keyword> hymn_new_string(<string>&quot;{}&quot;</string>);
+        } <keyword>else</keyword> <keyword>if</keyword> (pointer_set_has(set, table)) {
+            <keyword>return</keyword> hymn_new_string(<string>&quot;{ .. }&quot;</string>);
+        } <keyword>else</keyword> {
+            pointer_set_add(set, table);
+        }
+        <constant>int</constant> size <keyword>=</keyword> table-&gt;size;
+        HymnObjectString <keyword>*</keyword><keyword>*</keyword>keys <keyword>=</keyword> hymn_malloc_<constant>int</constant>(size, sizeof(HymnObjectString <keyword>*</keyword>));
+        <keyword>unsigned</keyword> <constant>int</constant> total <keyword>=</keyword> <constant>0</constant>;
+        <keyword>unsigned</keyword> <constant>int</constant> bins <keyword>=</keyword> table-&gt;bins;
+        <keyword>for</keyword> (<keyword>unsigned</keyword> <constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> bins; i++) {
+            HymnTableItem <keyword>*</keyword>item <keyword>=</keyword> table-&gt;items[i];
+            <keyword>while</keyword> (item <keyword>!=</keyword> <constant>NULL</constant>) {
+                HymnString <keyword>*</keyword>string <keyword>=</keyword> item-&gt;key-&gt;string;
+                <keyword>unsigned</keyword> <constant>int</constant> insert <keyword>=</keyword> <constant>0</constant>;
+                <keyword>while</keyword> (insert <keyword>!=</keyword> total) {
+                    <keyword>if</keyword> (strcmp(string, keys[insert]<keyword>-&gt;</keyword>string) <keyword>&lt;</keyword> <constant>0</constant>) {
+                        <keyword>for</keyword> (<keyword>unsigned</keyword> <constant>int</constant> swap <keyword>=</keyword> total; swap <keyword>&gt;</keyword> insert; swap--) {
+                            keys[swap] <keyword>=</keyword> keys[swap <keyword>-</keyword> <constant>1</constant>];
+                        }
+                        <keyword>break</keyword>;
+                    }
+                    insert++;
+                }
+                keys[insert] <keyword>=</keyword> item-&gt;key;
+                total++;
+                item <keyword>=</keyword> item-&gt;next;
+            }
+        }
+        HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_new_string(<string>&quot;{ &quot;</string>);
+        <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> size; i++) {
+            <keyword>if</keyword> (i <keyword>!=</keyword> <constant>0</constant>) {
+                string <keyword>=</keyword> hymn_string_append(string, <string>&quot;, &quot;</string>);
+            }
+            HymnObjectString <keyword>*</keyword>key <keyword>=</keyword> keys[i];
+            HymnValue item <keyword>=</keyword> table_get(table, key);
+            HymnString <keyword>*</keyword>add <keyword>=</keyword> value_to_string_recusive(item, set, <constant>true</constant>);
+            HymnString <keyword>*</keyword>quoting <keyword>=</keyword> hymn_quote_string(key-&gt;string);
+            string <keyword>=</keyword> hymn_string_append(string, quoting);
+            string <keyword>=</keyword> hymn_string_append(string, <string>&quot;: &quot;</string>);
+            string <keyword>=</keyword> hymn_string_append(string, add);
+            hymn_string_delete(quoting);
+            hymn_string_delete(add);
+        }
+        string <keyword>=</keyword> hymn_string_append(string, <string>&quot; }&quot;</string>);
+        <constant>free</constant>(keys);
+        <keyword>return</keyword> string;
+    }
+    <keyword>case</keyword> HYMN_VALUE_FUNC: {
+        HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_as_func(value);
+        <keyword>if</keyword> (func-&gt;name) <keyword>return</keyword> hymn_string_copy(func-&gt;name);
+        <keyword>if</keyword> (func-&gt;script) <keyword>return</keyword> hymn_string_copy(func-&gt;script);
+        <keyword>return</keyword> hymn_new_string(<string>&quot;script&quot;</string>);
+    }
+    <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE: <keyword>return</keyword> hymn_string_copy(hymn_as_native(value)<keyword>-&gt;</keyword>name-&gt;string);
+    <keyword>case</keyword> HYMN_VALUE_POINTER: <keyword>return</keyword> hymn_string_format(<string>&quot;%p&quot;</string>, hymn_as_pointer(value));
+    <keyword>default</keyword>:
+        <keyword>break</keyword>;
+    }
+    <keyword>return</keyword> hymn_new_string(<string>&quot;?&quot;</string>);
+}
+
+HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
+    <keyword>struct</keyword> PointerSet set <keyword>=</keyword> {.count <keyword>=</keyword> <constant>0</constant>, .capacity <keyword>=</keyword> <constant>0</constant>, .items <keyword>=</keyword> <constant>NULL</constant>};
+    HymnString <keyword>*</keyword>string <keyword>=</keyword> value_to_string_recusive(value, <keyword>&</keyword>set, <constant>false</constant>);
+    <constant>free</constant>(set.items);
+    <keyword>return</keyword> string;
+}
+
+<keyword>static</keyword> HymnString <keyword>*</keyword>value_concat(HymnValue a, HymnValue b) {
+    HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_value_to_string(a);
+    HymnString <keyword>*</keyword>second <keyword>=</keyword> hymn_value_to_string(b);
+    string <keyword>=</keyword> hymn_string_append(string, second);
+    hymn_string_delete(second);
+    <keyword>return</keyword> string;
+}
+
+<keyword>static</keyword> HymnString <keyword>*</keyword>debug_value_to_string(HymnValue value) {
+    HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_value_to_string(value);
+    HymnString <keyword>*</keyword>format <keyword>=</keyword> hymn_string_format(<string>&quot;%s: %s&quot;</string>, hymn_value_type(value.is), string);
+    hymn_string_delete(string);
+    <keyword>return</keyword> format;
+}
+
 <keyword>static</keyword> <constant>int</constant> next(<constant>uint8_t</constant> instruction) {
     <keyword>switch</keyword> (instruction) {
     <keyword>case</keyword> OP_CALL:
@@ -3315,7 +3498,7 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
     <keyword>return</keyword> <constant>NULL</constant>;
 }
 
-<keyword>static</keyword> <constant>void</constant> rewriting(Optimizer <keyword>*</keyword>optimizer, <constant>int</constant> start, <constant>int</constant> shift, <constant>bool</constant> inside) {
+<keyword>static</keyword> <constant>void</constant> rewrite(Optimizer <keyword>*</keyword>optimizer, <constant>int</constant> start, <constant>int</constant> shift) {
     <constant>uint8_t</constant> <keyword>*</keyword>instructions <keyword>=</keyword> optimizer-&gt;code-&gt;instructions;
     Instruction <keyword>*</keyword>view <keyword>=</keyword> optimizer-&gt;important;
     <keyword>while</keyword> (view <keyword>!=</keyword> <constant>NULL</constant>) {
@@ -3333,14 +3516,11 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (i <keyword>&lt;</keyword> start) {
                 <constant>int</constant> jump <keyword>=</keyword> GET_JUMP(instructions, i, <constant>1</constant>, <constant>2</constant>);
                 <constant>int</constant> destination <keyword>=</keyword> i <keyword>+</keyword> <constant>3</constant> <keyword>+</keyword> jump;
-                assert((destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift) || <keyword>!</keyword>inside);
                 <keyword>if</keyword> (destination <keyword>&gt;</keyword> start) {
                     jump <keyword>-</keyword><keyword>=</keyword> shift;
                     UPDATE_JUMP(instructions, i, <constant>1</constant>, <constant>2</constant>, jump)
-                } <keyword>else</keyword> <keyword>if</keyword> (destination <keyword>&gt;</keyword><keyword>=</keyword> start <keyword>&</keyword><keyword>&</keyword> destination <keyword>&lt;</keyword><keyword>=</keyword> start <keyword>+</keyword> shift <keyword>&</keyword><keyword>&</keyword> inside) {
-<comment>                    // not sure about this</comment>
-                    jump <keyword>-</keyword><keyword>=</keyword> next(optimizer-&gt;code-&gt;instructions[destination]);
-                    UPDATE_JUMP(instructions, i, <constant>1</constant>, <constant>2</constant>, jump)
+                } <keyword>else</keyword> {
+                    assert(destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift || shift <keyword>==</keyword> next(optimizer-&gt;code-&gt;instructions[destination]));
                 }
             }
             <keyword>break</keyword>;
@@ -3349,14 +3529,11 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (i <keyword>&lt;</keyword> start) {
                 <constant>int</constant> jump <keyword>=</keyword> GET_JUMP(instructions, i, <constant>3</constant>, <constant>4</constant>);
                 <constant>int</constant> destination <keyword>=</keyword> i <keyword>+</keyword> <constant>5</constant> <keyword>+</keyword> jump;
-                assert((destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift) || <keyword>!</keyword>inside);
                 <keyword>if</keyword> (destination <keyword>&gt;</keyword> start) {
                     jump <keyword>-</keyword><keyword>=</keyword> shift;
                     UPDATE_JUMP(instructions, i, <constant>3</constant>, <constant>4</constant>, jump)
-                } <keyword>else</keyword> <keyword>if</keyword> (destination <keyword>&gt;</keyword><keyword>=</keyword> start <keyword>&</keyword><keyword>&</keyword> destination <keyword>&lt;</keyword><keyword>=</keyword> start <keyword>+</keyword> shift <keyword>&</keyword><keyword>&</keyword> inside) {
-<comment>                    // not sure about this</comment>
-                    jump <keyword>-</keyword><keyword>=</keyword> next(optimizer-&gt;code-&gt;instructions[destination]);
-                    UPDATE_JUMP(instructions, i, <constant>3</constant>, <constant>4</constant>, jump)
+                } <keyword>else</keyword> {
+                    assert(destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift || shift <keyword>==</keyword> next(optimizer-&gt;code-&gt;instructions[destination]));
                 }
             }
             <keyword>break</keyword>;
@@ -3365,7 +3542,6 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (i <keyword>&lt;</keyword> start) {
                 <constant>int</constant> jump <keyword>=</keyword> GET_JUMP(instructions, i, <constant>2</constant>, <constant>3</constant>);
                 <constant>int</constant> destination <keyword>=</keyword> i <keyword>+</keyword> <constant>4</constant> <keyword>+</keyword> jump;
-                assert((destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift) || <keyword>!</keyword>inside);
                 <keyword>if</keyword> (destination <keyword>&gt;</keyword> start) {
                     jump <keyword>-</keyword><keyword>=</keyword> shift;
                     UPDATE_JUMP(instructions, i, <constant>2</constant>, <constant>3</constant>, jump)
@@ -3377,14 +3553,11 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (i <keyword>&gt;</keyword><keyword>=</keyword> start) {
                 <constant>int</constant> jump <keyword>=</keyword> GET_JUMP(instructions, i, <constant>1</constant>, <constant>2</constant>);
                 <constant>int</constant> destination <keyword>=</keyword> i <keyword>+</keyword> <constant>3</constant> <keyword>-</keyword> jump;
-                assert((destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift) || <keyword>!</keyword>inside);
                 <keyword>if</keyword> (destination <keyword>&lt;</keyword> start) {
                     jump <keyword>-</keyword><keyword>=</keyword> shift;
                     UPDATE_JUMP(instructions, i, <constant>1</constant>, <constant>2</constant>, jump)
-                } <keyword>else</keyword> <keyword>if</keyword> (destination <keyword>&gt;</keyword><keyword>=</keyword> start <keyword>&</keyword><keyword>&</keyword> destination <keyword>&lt;</keyword><keyword>=</keyword> start <keyword>+</keyword> shift <keyword>&</keyword><keyword>&</keyword> inside) {
-<comment>                    // not sure about this</comment>
-                    jump <keyword>-</keyword><keyword>=</keyword> next(optimizer-&gt;code-&gt;instructions[destination]);
-                    UPDATE_JUMP(instructions, i, <constant>1</constant>, <constant>2</constant>, jump)
+                } <keyword>else</keyword> {
+                    assert(destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift || shift <keyword>==</keyword> next(optimizer-&gt;code-&gt;instructions[destination]));
                 }
             }
             <keyword>break</keyword>;
@@ -3393,14 +3566,11 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (i <keyword>&gt;</keyword><keyword>=</keyword> start) {
                 <constant>int</constant> jump <keyword>=</keyword> GET_JUMP(instructions, i, <constant>2</constant>, <constant>3</constant>);
                 <constant>int</constant> destination <keyword>=</keyword> i <keyword>+</keyword> <constant>3</constant> <keyword>-</keyword> jump;
-                assert((destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift) || <keyword>!</keyword>inside);
                 <keyword>if</keyword> (destination <keyword>&lt;</keyword> start) {
                     jump <keyword>-</keyword><keyword>=</keyword> shift;
                     UPDATE_JUMP(instructions, i, <constant>2</constant>, <constant>3</constant>, jump)
-                } <keyword>else</keyword> <keyword>if</keyword> (destination <keyword>&gt;</keyword><keyword>=</keyword> start <keyword>&</keyword><keyword>&</keyword> destination <keyword>&lt;</keyword><keyword>=</keyword> start <keyword>+</keyword> shift <keyword>&</keyword><keyword>&</keyword> inside) {
-<comment>                    // not sure about this</comment>
-                    jump <keyword>-</keyword><keyword>=</keyword> next(optimizer-&gt;code-&gt;instructions[destination]);
-                    UPDATE_JUMP(instructions, i, <constant>2</constant>, <constant>3</constant>, jump)
+                } <keyword>else</keyword> {
+                    assert(destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift || shift <keyword>==</keyword> next(optimizer-&gt;code-&gt;instructions[destination]));
                 }
             }
             <keyword>break</keyword>;
@@ -3409,14 +3579,11 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (i <keyword>&gt;</keyword><keyword>=</keyword> start) {
                 <constant>int</constant> jump <keyword>=</keyword> GET_JUMP(instructions, i, <constant>3</constant>, <constant>4</constant>);
                 <constant>int</constant> destination <keyword>=</keyword> i <keyword>+</keyword> <constant>5</constant> <keyword>-</keyword> jump;
-                assert((destination <keyword>&lt;</keyword> start || destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift) || <keyword>!</keyword>inside);
                 <keyword>if</keyword> (destination <keyword>&lt;</keyword> start) {
                     jump <keyword>-</keyword><keyword>=</keyword> shift;
                     UPDATE_JUMP(instructions, i, <constant>3</constant>, <constant>4</constant>, jump)
-                } <keyword>else</keyword> <keyword>if</keyword> (destination <keyword>&gt;</keyword><keyword>=</keyword> start <keyword>&</keyword><keyword>&</keyword> destination <keyword>&lt;</keyword><keyword>=</keyword> start <keyword>+</keyword> shift <keyword>&</keyword><keyword>&</keyword> inside) {
-<comment>                    // not sure about this</comment>
-                    jump <keyword>-</keyword><keyword>=</keyword> next(optimizer-&gt;code-&gt;instructions[destination]);
-                    UPDATE_JUMP(instructions, i, <constant>3</constant>, <constant>4</constant>, jump)
+                } <keyword>else</keyword> {
+                    assert(destination <keyword>&gt;</keyword> start <keyword>+</keyword> shift || shift <keyword>==</keyword> next(optimizer-&gt;code-&gt;instructions[destination]));
                 }
             }
             <keyword>break</keyword>;
@@ -3448,10 +3615,6 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
         }
         except <keyword>=</keyword> except-&gt;next;
     }
-}
-
-<keyword>static</keyword> <constant>void</constant> rewrite(Optimizer <keyword>*</keyword>optimizer, <constant>int</constant> start, <constant>int</constant> shift) {
-    rewriting(optimizer, start, shift, <constant>true</constant>);
 }
 
 <keyword>static</keyword> <constant>void</constant> update(Optimizer <keyword>*</keyword>optimizer, <constant>int</constant> index, <constant>uint8_t</constant> instruction) {
@@ -3546,6 +3709,8 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
     optimizer-&gt;important = head;
 }
 
+<keyword>static</keyword> HymnString <keyword>*</keyword>disassemble_byte_code(HymnByteCode <keyword>*</keyword>code);
+
 <keyword>static</keyword> <constant>void</constant> optimize(Compiler <keyword>*</keyword>C) {
 
     Scope <keyword>*</keyword>scope <keyword>=</keyword> C-&gt;scope;
@@ -3576,6 +3741,7 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
         <keyword>continue</keyword>;                            \
     }
 
+    <constant>int</constant> zero <keyword>=</keyword> <keyword>-</keyword><constant>1</constant>;
     <constant>int</constant> one <keyword>=</keyword> <constant>0</constant>;
 
     <keyword>while</keyword> (one <keyword>&lt;</keyword> COUNT()) {
@@ -3605,14 +3771,14 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
         <keyword>case</keyword> OP_POP:
         <keyword>case</keyword> OP_POP_TWO: {
             <keyword>if</keyword> (second <keyword>==</keyword> OP_VOID) {
-                rewriting(<keyword>&</keyword>optimizer, one, <constant>1</constant>, <constant>false</constant>);
+                rewrite(<keyword>&</keyword>optimizer, one, <constant>1</constant>);
                 <keyword>continue</keyword>;
             }
             <keyword>break</keyword>;
         }
         <keyword>case</keyword> OP_POP_N: {
             <keyword>if</keyword> (second <keyword>==</keyword> OP_VOID) {
-                rewriting(<keyword>&</keyword>optimizer, one, <constant>2</constant>, <constant>false</constant>);
+                rewrite(<keyword>&</keyword>optimizer, one, <constant>2</constant>);
                 <keyword>continue</keyword>;
             }
             <keyword>break</keyword>;
@@ -3648,7 +3814,7 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
         }
         <keyword>case</keyword> OP_POP: {
             <keyword>if</keyword> (second <keyword>==</keyword> OP_POP) {
-                rewriting(<keyword>&</keyword>optimizer, one, <constant>1</constant>, <constant>false</constant>);
+                rewrite(<keyword>&</keyword>optimizer, one, <constant>1</constant>);
                 SET(one, OP_POP_TWO);
                 <keyword>continue</keyword>;
             }
@@ -3666,7 +3832,7 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>if</keyword> (second <keyword>==</keyword> OP_POP) {
                 <constant>uint8_t</constant> pop <keyword>=</keyword> INSTRUCTION(one <keyword>+</keyword> <constant>1</constant>);
                 <keyword>if</keyword> (pop <keyword>&lt;</keyword> UINT8_MAX <keyword>-</keyword> <constant>1</constant>) {
-                    rewriting(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>1</constant>, <constant>1</constant>, <constant>false</constant>);
+                    rewrite(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>1</constant>, <constant>1</constant>);
                     SET(one <keyword>+</keyword> <constant>1</constant>, (<constant>uint8_t</constant>)(pop <keyword>+</keyword> <constant>1</constant>));
                     <keyword>continue</keyword>;
                 }
@@ -3756,26 +3922,252 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
             <keyword>break</keyword>;
         }
         <keyword>case</keyword> OP_CONSTANT: {
-            <keyword>if</keyword> (second <keyword>==</keyword> OP_NEGATE) {
-                HymnValue value <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
-                <keyword>if</keyword> (hymn_is_<constant>int</constant>(value)) {
-                    value.as.i <keyword>=</keyword> <keyword>-</keyword>value.as.i;
-                } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(value)) {
-                    value.as.f <keyword>=</keyword> <keyword>-</keyword>value.as.f;
+            <keyword>if</keyword> (zero <keyword>==</keyword> <keyword>-</keyword><constant>1</constant>) zero <keyword>=</keyword> one;
+            <keyword>if</keyword> (second <keyword>==</keyword> OP_CONSTANT) {
+                <constant>int</constant> three <keyword>=</keyword> two <keyword>+</keyword> next(second);
+                <constant>uint8_t</constant> third <keyword>=</keyword> three <keyword>&lt;</keyword> COUNT() ? INSTRUCTION(three) : UINT8_MAX;
+                <keyword>if</keyword> (third <keyword>==</keyword> OP_ADD) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue value;
+                    <keyword>if</keyword> (hymn_is_none(a)) {
+                        <keyword>if</keyword> (hymn_is_string(b)) {
+                            value <keyword>=</keyword> compile_intern_string(C-&gt;H, value_concat(a, b));
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>bool</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_string(b)) {
+                            value <keyword>=</keyword> compile_intern_string(C-&gt;H, value_concat(a, b));
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>int</constant>(a.as.i <keyword>+</keyword> b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>((HymnFloat)a.as.i <keyword>+</keyword> b.as.f);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_string(b)) {
+                            value <keyword>=</keyword> compile_intern_string(C-&gt;H, value_concat(a, b));
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>+</keyword> (HymnFloat)b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>+</keyword> b.as.f);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_string(b)) {
+                            value <keyword>=</keyword> compile_intern_string(C-&gt;H, value_concat(a, b));
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_string(a)) {
+                        value <keyword>=</keyword> compile_intern_string(C-&gt;H, value_concat(a, b));
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                    <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                    SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                    rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                    one <keyword>=</keyword> zero;
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_SUBTRACT) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue value;
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>int</constant>(a.as.i <keyword>-</keyword> b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>((HymnFloat)a.as.i <keyword>-</keyword> b.as.f);
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>-</keyword> (HymnFloat)b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>-</keyword> b.as.f);
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                    <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                    SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                    rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                    one <keyword>=</keyword> zero;
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_MULTIPLY) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue value;
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>int</constant>(a.as.i <keyword>*</keyword> b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>((HymnFloat)a.as.i <keyword>*</keyword> b.as.f);
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>*</keyword> (HymnFloat)b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>*</keyword> b.as.f);
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                    <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                    SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                    rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                    one <keyword>=</keyword> zero;
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_DIVIDE) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                    HymnValue value;
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>int</constant>(a.as.i <keyword>/</keyword> b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>((HymnFloat)a.as.i <keyword>/</keyword> b.as.f);
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(a)) {
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>/</keyword> (HymnFloat)b.as.i);
+                        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(b)) {
+                            value <keyword>=</keyword> hymn_new_<constant>float</constant>(a.as.f <keyword>/</keyword> b.as.f);
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                    <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                    SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                    rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                    one <keyword>=</keyword> zero;
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_BIT_AND) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            HymnInt x <keyword>=</keyword> hymn_as_<constant>int</constant>(a);
+                            HymnInt y <keyword>=</keyword> hymn_as_<constant>int</constant>(b);
+                            HymnValue value <keyword>=</keyword> hymn_new_<constant>int</constant>(x <keyword>&</keyword> y);
+                            <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                            SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                            rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                            one <keyword>=</keyword> zero;
+                            <keyword>continue</keyword>;
+                        }
+                    }
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_BIT_OR) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            HymnInt x <keyword>=</keyword> hymn_as_<constant>int</constant>(a);
+                            HymnInt y <keyword>=</keyword> hymn_as_<constant>int</constant>(b);
+                            HymnValue value <keyword>=</keyword> hymn_new_<constant>int</constant>(x | y);
+                            <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                            SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                            rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                            one <keyword>=</keyword> zero;
+                            <keyword>continue</keyword>;
+                        }
+                    }
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_BIT_XOR) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            HymnInt x <keyword>=</keyword> hymn_as_<constant>int</constant>(a);
+                            HymnInt y <keyword>=</keyword> hymn_as_<constant>int</constant>(b);
+                            HymnValue value <keyword>=</keyword> hymn_new_<constant>int</constant>(x <keyword>^</keyword> y);
+                            <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                            SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                            rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                            one <keyword>=</keyword> zero;
+                            <keyword>continue</keyword>;
+                        }
+                    }
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_BIT_LEFT_SHIFT) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            HymnInt x <keyword>=</keyword> hymn_as_<constant>int</constant>(a);
+                            HymnInt y <keyword>=</keyword> hymn_as_<constant>int</constant>(b);
+                            HymnValue value <keyword>=</keyword> hymn_new_<constant>int</constant>(x <keyword>&lt;&lt;</keyword> y);
+                            <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                            SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                            rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                            one <keyword>=</keyword> zero;
+                            <keyword>continue</keyword>;
+                        }
+                    }
+                } <keyword>else</keyword> <keyword>if</keyword> (third <keyword>==</keyword> OP_BIT_RIGHT_SHIFT) {
+                    HymnValue a <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(a)) {
+                        HymnValue b <keyword>=</keyword> CONSTANT(two <keyword>+</keyword> <constant>1</constant>);
+                        <keyword>if</keyword> (hymn_is_<constant>int</constant>(b)) {
+                            HymnInt x <keyword>=</keyword> hymn_as_<constant>int</constant>(a);
+                            HymnInt y <keyword>=</keyword> hymn_as_<constant>int</constant>(b);
+                            HymnValue value <keyword>=</keyword> hymn_new_<constant>int</constant>(x <keyword>&gt;&gt;</keyword> y);
+                            <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                            SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                            rewrite(<keyword>&</keyword>optimizer, two, <constant>3</constant>);
+                            one <keyword>=</keyword> zero;
+                            <keyword>continue</keyword>;
+                        }
+                    }
                 }
-                <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
-                SET(one <keyword>+</keyword> <constant>1</constant>, constant);
-                rewrite(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>2</constant>, <constant>1</constant>);
-                <keyword>continue</keyword>;
-            } <keyword>else</keyword> <keyword>if</keyword> (second <keyword>==</keyword> OP_ADD) {
-                HymnValue value <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
-                <keyword>if</keyword> (hymn_is_<constant>int</constant>(value)) {
-                    HymnInt add <keyword>=</keyword> hymn_as_<constant>int</constant>(value);
-                    <keyword>if</keyword> (add <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant> <keyword>&</keyword><keyword>&</keyword> add <keyword>&lt;</keyword><keyword>=</keyword> UINT8_MAX) {
-                        SET(one, OP_INCREMENT);
-                        SET(one <keyword>+</keyword> <constant>1</constant>, (<constant>uint8_t</constant>)add);
-                        rewrite(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>2</constant>, <constant>1</constant>);
-                        <keyword>continue</keyword>;
+            } <keyword>else</keyword> {
+                zero <keyword>=</keyword> <keyword>-</keyword><constant>1</constant>;
+                <keyword>if</keyword> (second <keyword>==</keyword> OP_NEGATE) {
+                    HymnValue value <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(value)) {
+                        value.as.i <keyword>=</keyword> <keyword>-</keyword>value.as.i;
+                    } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_<constant>float</constant>(value)) {
+                        value.as.f <keyword>=</keyword> <keyword>-</keyword>value.as.f;
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                    <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                    SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                    rewrite(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>2</constant>, <constant>1</constant>);
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (second <keyword>==</keyword> OP_BIT_NOT) {
+                    HymnValue value <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(value)) {
+                        value.as.i <keyword>=</keyword> <keyword>~</keyword>value.as.i;
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                    <constant>uint8_t</constant> constant <keyword>=</keyword> byte_code_new_constant(C, value);
+                    SET(one <keyword>+</keyword> <constant>1</constant>, constant);
+                    rewrite(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>2</constant>, <constant>1</constant>);
+                    <keyword>continue</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (second <keyword>==</keyword> OP_ADD) {
+                    HymnValue value <keyword>=</keyword> CONSTANT(one <keyword>+</keyword> <constant>1</constant>);
+                    <keyword>if</keyword> (hymn_is_<constant>int</constant>(value)) {
+                        HymnInt add <keyword>=</keyword> hymn_as_<constant>int</constant>(value);
+                        <keyword>if</keyword> (add <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant> <keyword>&</keyword><keyword>&</keyword> add <keyword>&lt;</keyword><keyword>=</keyword> UINT8_MAX) {
+                            SET(one, OP_INCREMENT);
+                            SET(one <keyword>+</keyword> <constant>1</constant>, (<constant>uint8_t</constant>)add);
+                            rewrite(<keyword>&</keyword>optimizer, one <keyword>+</keyword> <constant>2</constant>, <constant>1</constant>);
+                            <keyword>continue</keyword>;
+                        }
                     }
                 }
             }
@@ -3860,7 +4252,9 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 <keyword>static</keyword> <constant>void</constant> echo_<keyword>if</keyword>_none(Compiler <keyword>*</keyword>C) {
     HymnByteCode <keyword>*</keyword>code <keyword>=</keyword> <keyword>&</keyword>C-&gt;scope-&gt;func-&gt;code;
     <constant>int</constant> count <keyword>=</keyword> code-&gt;count;
-    <keyword>if</keyword> (C-&gt;barrier <keyword>==</keyword> count) <keyword>return</keyword>;
+    <keyword>if</keyword> (C-&gt;barrier <keyword>==</keyword> count) {
+        <keyword>return</keyword>;
+    }
     <keyword>if</keyword> (C-&gt;pop <keyword>==</keyword> count) code-&gt;instructions[count - <constant>1</constant>] <keyword>=</keyword> OP_ECHO;
 }
 
@@ -4503,33 +4897,41 @@ HymnObjectString <keyword>*</keyword>hymn_new_intern_string(Hymn <keyword>*</key
 
 <keyword>static</keyword> <constant>void</constant> source_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_source'&quot;</string>);
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'SOURCE'&quot;</string>);
     expression(C);
-    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_source'&quot;</string>);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'SOURCE'&quot;</string>);
     emit(C, OP_SOURCE);
 }
 
 <keyword>static</keyword> <constant>void</constant> opcode_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_opcodes'&quot;</string>);
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'OPCODES'&quot;</string>);
     expression(C);
-    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_opcodes'&quot;</string>);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'OPCODES'&quot;</string>);
     emit(C, OP_CODES);
 }
 
 <keyword>static</keyword> <constant>void</constant> stack_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_stack'&quot;</string>);
-    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_stack'&quot;</string>);
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'STACK'&quot;</string>);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'STACK'&quot;</string>);
     emit(C, OP_STACK);
 }
 
 <keyword>static</keyword> <constant>void</constant> reference_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
     (<constant>void</constant>)assign;
-    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to '_reference'&quot;</string>);
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'REFERENCE'&quot;</string>);
     expression(C);
-    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to '_reference'&quot;</string>);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'REFERENCE'&quot;</string>);
     emit(C, OP_REFERENCE);
+}
+
+<keyword>static</keyword> <constant>void</constant> format_expression(Compiler <keyword>*</keyword>C, <constant>bool</constant> assign) {
+    (<constant>void</constant>)assign;
+    consume(C, TOKEN_LEFT_PAREN, <string>&quot;expected opening '(' in call to 'FORMAT'&quot;</string>);
+    expression(C);
+    consume(C, TOKEN_RIGHT_PAREN, <string>&quot;expected closing ')' in call to 'FORMAT'&quot;</string>);
+    emit(C, OP_FORMAT);
 }
 
 <keyword>static</keyword> <constant>void</constant> expression_statement(Compiler <keyword>*</keyword>C) {
@@ -4614,162 +5016,6 @@ HymnString <keyword>*</keyword>hymn_quote_string(HymnString <keyword>*</keyword>
     quoted[len <keyword>+</keyword> extra <keyword>-</keyword> <constant>1</constant>] <keyword>=</keyword> <string>'&quot;'</string>;
     quoted[len <keyword>+</keyword> extra] <keyword>=</keyword> <string>'\0'</string>;
     <keyword>return</keyword> quoted;
-}
-
-<keyword>struct</keyword> PointerSet {
-    <constant>int</constant> count;
-    <constant>int</constant> capacity;
-    <constant>void</constant> <keyword>*</keyword><keyword>*</keyword>items;
-};
-
-<keyword>static</keyword> <constant>bool</constant> pointer_set_has(<keyword>struct</keyword> PointerSet <keyword>*</keyword>set, <constant>void</constant> <keyword>*</keyword>pointer) {
-    <constant>void</constant> <keyword>*</keyword><keyword>*</keyword>items <keyword>=</keyword> set-&gt;items;
-    <keyword>if</keyword> (items) {
-        <constant>int</constant> count <keyword>=</keyword> set-&gt;count;
-        <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> count; i++) {
-            <keyword>if</keyword> (pointer <keyword>==</keyword> items[i]) {
-                <keyword>return</keyword> <constant>true</constant>;
-            }
-        }
-    }
-    <keyword>return</keyword> <constant>false</constant>;
-}
-
-<keyword>static</keyword> <constant>void</constant> pointer_set_add(<keyword>struct</keyword> PointerSet <keyword>*</keyword>set, <constant>void</constant> <keyword>*</keyword>pointer) {
-    <keyword>if</keyword> (set-&gt;items) {
-        <constant>int</constant> count <keyword>=</keyword> set-&gt;count;
-        <keyword>if</keyword> (count <keyword>&gt;</keyword><keyword>=</keyword> set-&gt;capacity) {
-            set-&gt;capacity *= <constant>2</constant>;
-            set-&gt;items = hymn_realloc_<constant>int</constant>(set-&gt;items, set-&gt;capacity, sizeof(<constant>void</constant> <keyword>*</keyword>));
-        }
-        set-&gt;items[count] = pointer;
-        set-&gt;count = count + <constant>1</constant>;
-    } <keyword>else</keyword> {
-        set-&gt;count = <constant>1</constant>;
-        set-&gt;capacity = <constant>1</constant>;
-        set-&gt;items = hymn_calloc(<constant>1</constant>, sizeof(<constant>void</constant> <keyword>*</keyword>));
-        set-&gt;items[<constant>0</constant>] <keyword>=</keyword> pointer;
-    }
-}
-
-<keyword>static</keyword> HymnString <keyword>*</keyword>value_to_string_recusive(HymnValue value, <keyword>struct</keyword> PointerSet <keyword>*</keyword>set, <constant>bool</constant> quote) {
-    <keyword>switch</keyword> (value.is) {
-    <keyword>case</keyword> HYMN_VALUE_UNDEFINED: <keyword>return</keyword> hymn_new_string(<string>&quot;undefined&quot;</string>);
-    <keyword>case</keyword> HYMN_VALUE_NONE: <keyword>return</keyword> hymn_new_string(<string>&quot;none&quot;</string>);
-    <keyword>case</keyword> HYMN_VALUE_BOOL: <keyword>return</keyword> hymn_as_<constant>bool</constant>(value) ? hymn_new_string(<string>&quot;true&quot;</string>) : hymn_new_string(<string>&quot;false&quot;</string>);
-    <keyword>case</keyword> HYMN_VALUE_INTEGER: <keyword>return</keyword> hymn_<constant>int</constant>_to_string(hymn_as_<constant>int</constant>(value));
-    <keyword>case</keyword> HYMN_VALUE_FLOAT: <keyword>return</keyword> hymn_<constant>float</constant>_to_string(hymn_as_<constant>float</constant>(value));
-    <keyword>case</keyword> HYMN_VALUE_STRING: {
-        <keyword>if</keyword> (quote) <keyword>return</keyword> hymn_quote_string(hymn_as_string(value));
-        <keyword>return</keyword> hymn_string_copy(hymn_as_string(value));
-    }
-    <keyword>case</keyword> HYMN_VALUE_ARRAY: {
-        HymnArray <keyword>*</keyword>array <keyword>=</keyword> hymn_as_array(value);
-        <keyword>if</keyword> (array <keyword>==</keyword> <constant>NULL</constant> || array-&gt;length <keyword>==</keyword> <constant>0</constant>) {
-            <keyword>return</keyword> hymn_new_string(<string>&quot;[]&quot;</string>);
-        }
-        <keyword>if</keyword> (pointer_set_has(set, array)) {
-            <keyword>return</keyword> hymn_new_string(<string>&quot;[..]&quot;</string>);
-        } <keyword>else</keyword> {
-            pointer_set_add(set, array);
-        }
-        HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_new_string(<string>&quot;[&quot;</string>);
-        <keyword>for</keyword> (HymnInt i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> array-&gt;length; i++) {
-            <keyword>if</keyword> (i <keyword>!=</keyword> <constant>0</constant>) {
-                string <keyword>=</keyword> hymn_string_append(string, <string>&quot;, &quot;</string>);
-            }
-            HymnString <keyword>*</keyword>add <keyword>=</keyword> value_to_string_recusive(array-&gt;items[i], set, <constant>true</constant>);
-            string <keyword>=</keyword> hymn_string_append(string, add);
-            hymn_string_delete(add);
-        }
-        string <keyword>=</keyword> hymn_string_append_<constant>char</constant>(string, <string>']'</string>);
-        <keyword>return</keyword> string;
-    }
-    <keyword>case</keyword> HYMN_VALUE_TABLE: {
-        HymnTable <keyword>*</keyword>table <keyword>=</keyword> hymn_as_table(value);
-        <keyword>if</keyword> (table <keyword>==</keyword> <constant>NULL</constant> || table-&gt;size <keyword>==</keyword> <constant>0</constant>) {
-            <keyword>return</keyword> hymn_new_string(<string>&quot;{}&quot;</string>);
-        } <keyword>else</keyword> <keyword>if</keyword> (pointer_set_has(set, table)) {
-            <keyword>return</keyword> hymn_new_string(<string>&quot;{ .. }&quot;</string>);
-        } <keyword>else</keyword> {
-            pointer_set_add(set, table);
-        }
-        <constant>int</constant> size <keyword>=</keyword> table-&gt;size;
-        HymnObjectString <keyword>*</keyword><keyword>*</keyword>keys <keyword>=</keyword> hymn_malloc_<constant>int</constant>(size, sizeof(HymnObjectString <keyword>*</keyword>));
-        <keyword>unsigned</keyword> <constant>int</constant> total <keyword>=</keyword> <constant>0</constant>;
-        <keyword>unsigned</keyword> <constant>int</constant> bins <keyword>=</keyword> table-&gt;bins;
-        <keyword>for</keyword> (<keyword>unsigned</keyword> <constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> bins; i++) {
-            HymnTableItem <keyword>*</keyword>item <keyword>=</keyword> table-&gt;items[i];
-            <keyword>while</keyword> (item <keyword>!=</keyword> <constant>NULL</constant>) {
-                HymnString <keyword>*</keyword>string <keyword>=</keyword> item-&gt;key-&gt;string;
-                <keyword>unsigned</keyword> <constant>int</constant> insert <keyword>=</keyword> <constant>0</constant>;
-                <keyword>while</keyword> (insert <keyword>!=</keyword> total) {
-                    <keyword>if</keyword> (strcmp(string, keys[insert]<keyword>-&gt;</keyword>string) <keyword>&lt;</keyword> <constant>0</constant>) {
-                        <keyword>for</keyword> (<keyword>unsigned</keyword> <constant>int</constant> swap <keyword>=</keyword> total; swap <keyword>&gt;</keyword> insert; swap--) {
-                            keys[swap] <keyword>=</keyword> keys[swap <keyword>-</keyword> <constant>1</constant>];
-                        }
-                        <keyword>break</keyword>;
-                    }
-                    insert++;
-                }
-                keys[insert] <keyword>=</keyword> item-&gt;key;
-                total++;
-                item <keyword>=</keyword> item-&gt;next;
-            }
-        }
-        HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_new_string(<string>&quot;{ &quot;</string>);
-        <keyword>for</keyword> (<constant>int</constant> i <keyword>=</keyword> <constant>0</constant>; i <keyword>&lt;</keyword> size; i++) {
-            <keyword>if</keyword> (i <keyword>!=</keyword> <constant>0</constant>) {
-                string <keyword>=</keyword> hymn_string_append(string, <string>&quot;, &quot;</string>);
-            }
-            HymnObjectString <keyword>*</keyword>key <keyword>=</keyword> keys[i];
-            HymnValue item <keyword>=</keyword> table_get(table, key);
-            HymnString <keyword>*</keyword>add <keyword>=</keyword> value_to_string_recusive(item, set, <constant>true</constant>);
-            HymnString <keyword>*</keyword>quoting <keyword>=</keyword> hymn_quote_string(key-&gt;string);
-            string <keyword>=</keyword> hymn_string_append(string, quoting);
-            string <keyword>=</keyword> hymn_string_append(string, <string>&quot;: &quot;</string>);
-            string <keyword>=</keyword> hymn_string_append(string, add);
-            hymn_string_delete(quoting);
-            hymn_string_delete(add);
-        }
-        string <keyword>=</keyword> hymn_string_append(string, <string>&quot; }&quot;</string>);
-        <constant>free</constant>(keys);
-        <keyword>return</keyword> string;
-    }
-    <keyword>case</keyword> HYMN_VALUE_FUNC: {
-        HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_as_func(value);
-        <keyword>if</keyword> (func-&gt;name) <keyword>return</keyword> hymn_string_copy(func-&gt;name);
-        <keyword>if</keyword> (func-&gt;script) <keyword>return</keyword> hymn_string_copy(func-&gt;script);
-        <keyword>return</keyword> hymn_new_string(<string>&quot;script&quot;</string>);
-    }
-    <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE: <keyword>return</keyword> hymn_string_copy(hymn_as_native(value)<keyword>-&gt;</keyword>name-&gt;string);
-    <keyword>case</keyword> HYMN_VALUE_POINTER: <keyword>return</keyword> hymn_string_format(<string>&quot;%p&quot;</string>, hymn_as_pointer(value));
-    <keyword>default</keyword>:
-        <keyword>break</keyword>;
-    }
-    <keyword>return</keyword> hymn_new_string(<string>&quot;?&quot;</string>);
-}
-
-HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
-    <keyword>struct</keyword> PointerSet set <keyword>=</keyword> {.count <keyword>=</keyword> <constant>0</constant>, .capacity <keyword>=</keyword> <constant>0</constant>, .items <keyword>=</keyword> <constant>NULL</constant>};
-    HymnString <keyword>*</keyword>string <keyword>=</keyword> value_to_string_recusive(value, <keyword>&</keyword>set, <constant>false</constant>);
-    <constant>free</constant>(set.items);
-    <keyword>return</keyword> string;
-}
-
-<keyword>static</keyword> HymnString <keyword>*</keyword>value_concat(HymnValue a, HymnValue b) {
-    HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_value_to_string(a);
-    HymnString <keyword>*</keyword>second <keyword>=</keyword> hymn_value_to_string(b);
-    string <keyword>=</keyword> hymn_string_append(string, second);
-    hymn_string_delete(second);
-    <keyword>return</keyword> string;
-}
-
-<keyword>static</keyword> HymnString <keyword>*</keyword>debug_value_to_string(HymnValue value) {
-    HymnString <keyword>*</keyword>string <keyword>=</keyword> hymn_value_to_string(value);
-    HymnString <keyword>*</keyword>format <keyword>=</keyword> hymn_string_format(<string>&quot;%s: %s&quot;</string>, hymn_value_type(value.is), string);
-    hymn_string_delete(string);
-    <keyword>return</keyword> format;
 }
 
 <keyword>static</keyword> <constant>void</constant> reset_stack(Hymn <keyword>*</keyword>H) {
@@ -5101,9 +5347,13 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
     <constant>int</constant> p <keyword>=</keyword> <constant>1</constant>;
     <keyword>while</keyword> (<constant>true</constant>) {
         HymnFrame <keyword>*</keyword>frame <keyword>=</keyword> parent_frame(H, p);
-        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>break</keyword>;
+        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {
+            <keyword>break</keyword>;
+        }
         script <keyword>=</keyword> frame-&gt;func-&gt;script;
-        <keyword>if</keyword> (script) <keyword>break</keyword>;
+        <keyword>if</keyword> (script) {
+            <keyword>break</keyword>;
+        }
         p++;
     }
 
@@ -5322,6 +5572,7 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
     <keyword>case</keyword> OP_CODES: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_CODES&quot;</string>, index);
     <keyword>case</keyword> OP_STACK: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_STACK&quot;</string>, index);
     <keyword>case</keyword> OP_REFERENCE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_REFERENCE&quot;</string>, index);
+    <keyword>case</keyword> OP_FORMAT: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_FORMAT&quot;</string>, index);
     <keyword>case</keyword> OP_DELETE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DELETE&quot;</string>, index);
     <keyword>case</keyword> OP_DIVIDE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DIVIDE&quot;</string>, index);
     <keyword>case</keyword> OP_DUPLICATE: <keyword>return</keyword> debug_instruction(debug, <string>&quot;OP_DUPLICATE&quot;</string>, index);
@@ -5413,7 +5664,9 @@ HymnValue hymn_type_exception(Hymn <keyword>*</keyword>H, <keyword>enum</keyword
 
 <constant>#define</constant> THROW(...)                         \
     frame <keyword>=</keyword> throw_error(H, ##__VA_ARGS__); \
-    <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;             \
+    <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {                   \
+        <keyword>return</keyword>;                            \
+    }                                      \
     <keyword>goto</keyword> dispatch;
 
 <constant>#define</constant> COMPARE_OP(compare)                                                                       \
@@ -5496,7 +5749,9 @@ dispatch:
         <keyword>while</keyword> (H-&gt;stack_top <keyword>!=</keyword> frame-&gt;stack) {
             hymn_dereference(H, pop(H));
         }
-        <keyword>if</keyword> (done) <keyword>return</keyword>;
+        <keyword>if</keyword> (done) {
+            <keyword>return</keyword>;
+        }
         push(H, hymn_new_none());
         frame <keyword>=</keyword> current_frame(H);
         <keyword>goto</keyword> dispatch;
@@ -5508,7 +5763,9 @@ dispatch:
         <keyword>while</keyword> (H-&gt;stack_top <keyword>!=</keyword> frame-&gt;stack) {
             hymn_dereference(H, pop(H));
         }
-        <keyword>if</keyword> (done) <keyword>return</keyword>;
+        <keyword>if</keyword> (done) {
+            <keyword>return</keyword>;
+        }
         push(H, result);
         frame <keyword>=</keyword> current_frame(H);
         <keyword>goto</keyword> dispatch;
@@ -5545,7 +5802,9 @@ dispatch:
         <constant>int</constant> count <keyword>=</keyword> READ_BYTE(frame);
         HymnValue value <keyword>=</keyword> peek(H, count <keyword>+</keyword> <constant>1</constant>);
         frame <keyword>=</keyword> call_value(H, value, count);
-        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;
+        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {
+            <keyword>return</keyword>;
+        }
         <keyword>goto</keyword> dispatch;
     }
     <keyword>case</keyword> OP_TAIL_CALL: {
@@ -5558,7 +5817,9 @@ dispatch:
             <keyword>if</keyword> (count <keyword>!=</keyword> func-&gt;arity) {
                 <keyword>if</keyword> (count <keyword>&lt;</keyword> func-&gt;arity) frame = throw_error(H, <string>&quot;not enough arguments in call to '%s' (expected %d)&quot;</string>, func-&gt;name, func-&gt;arity);
                 frame <keyword>=</keyword> throw_error(H, <string>&quot;too many arguments in call to '%s' (expected %d)&quot;</string>, func-&gt;name, func-&gt;arity);
-                <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;
+                <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {
+                    <keyword>return</keyword>;
+                }
             } <keyword>else</keyword> {
                 HymnValue <keyword>*</keyword>top <keyword>=</keyword> H-&gt;stack_top;
                 HymnValue <keyword>*</keyword>new_frame <keyword>=</keyword> top <keyword>-</keyword> count <keyword>-</keyword> <constant>1</constant>;
@@ -5582,7 +5843,9 @@ dispatch:
                 frame-&gt;ip = func-&gt;code.instructions;
             }
         }
-        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;
+        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {
+            <keyword>return</keyword>;
+        }
         <keyword>goto</keyword> dispatch;
     }
     <keyword>case</keyword> OP_SELF: {
@@ -6206,7 +6469,7 @@ dispatch:
         } <keyword>else</keyword> {
             <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>is <keyword>=</keyword> hymn_value_type(value.is);
             hymn_dereference(H, value);
-            THROW(<string>&quot;not '!' can't use %s (expected boolean)&quot;</string>, is)
+            THROW(<string>&quot;'not' can't use %s (expected boolean)&quot;</string>, is)
         }
         push(H, value);
         <keyword>goto</keyword> dispatch;
@@ -7111,9 +7374,31 @@ dispatch:
         hymn_dereference(H, value);
         <keyword>goto</keyword> dispatch;
     }
+    <keyword>case</keyword> OP_FORMAT: {
+        HymnValue value <keyword>=</keyword> pop(H);
+        HymnString <keyword>*</keyword>inspect <keyword>=</keyword> <constant>NULL</constant>;
+        <keyword>if</keyword> (hymn_is_func(value)) {
+            HymnFunction <keyword>*</keyword>func <keyword>=</keyword> hymn_as_func(value);
+            <keyword>if</keyword> (func-&gt;source <keyword>!=</keyword> <constant>NULL</constant>) {
+                <constant>char</constant> <keyword>*</keyword>new <keyword>=</keyword> hymn_format(func-&gt;source);
+                inspect <keyword>=</keyword> hymn_new_string(new);
+                <constant>free</constant>(new);
+            }
+        } <keyword>else</keyword> <keyword>if</keyword> (hymn_is_string(value)) {
+            <constant>char</constant> <keyword>*</keyword>new <keyword>=</keyword> hymn_format(hymn_as_string(value));
+            inspect <keyword>=</keyword> hymn_new_string(new);
+            <constant>free</constant>(new);
+        }
+        <keyword>if</keyword> (inspect <keyword>==</keyword> <constant>NULL</constant>) inspect <keyword>=</keyword> hymn_value_to_string(value);
+        push_string(H, inspect);
+        hymn_dereference(H, value);
+        <keyword>goto</keyword> dispatch;
+    }
     <keyword>case</keyword> OP_THROW: {
         frame <keyword>=</keyword> exception(H);
-        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;
+        <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {
+            <keyword>return</keyword>;
+        }
         <keyword>goto</keyword> dispatch;
     }
     <keyword>case</keyword> OP_DUPLICATE: {
@@ -7127,7 +7412,9 @@ dispatch:
         <keyword>if</keyword> (hymn_is_string(file)) {
             frame <keyword>=</keyword> import(H, hymn_as_hymn_string(file));
             hymn_dereference(H, file);
-            <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) <keyword>return</keyword>;
+            <keyword>if</keyword> (frame <keyword>==</keyword> <constant>NULL</constant>) {
+                <keyword>return</keyword>;
+            }
         } <keyword>else</keyword> {
             <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>is <keyword>=</keyword> hymn_value_type(file.is);
             hymn_dereference(H, file);
@@ -7576,7 +7863,9 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
     }
     <keyword>while</keyword> (i <keyword>&gt;</keyword> <constant>0</constant>) {
         i--;
-        <keyword>if</keyword> (line[i] <keyword>!=</keyword> <string>'\n'</string>) <keyword>return</keyword>;
+        <keyword>if</keyword> (line[i] <keyword>!=</keyword> <string>'\n'</string>) {
+            <keyword>return</keyword>;
+        }
         line[i] <keyword>=</keyword> <string>'\0'</string>;
     }
 }
@@ -7800,7 +8089,11 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
                        <string>&quot;press ^D to exit interactive mode\n&quot;</string>);
             } <keyword>else</keyword> <keyword>if</keyword> (string_starts_with(line, <string>&quot;.save &quot;</string>)) {
                 <constant>char</constant> path[PATH_MAX];
+<constant>#ifdef</constant> _MSC_VER
+                strcpy_s(path, PATH_MAX, <keyword>&</keyword>line[<constant>6</constant>]);
+<constant>#else</constant>
                 strcpy(path, <keyword>&</keyword>line[<constant>6</constant>]);
+<constant>#endif</constant>
                 <keyword>if</keyword> (path[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
                     <constant>printf</constant>(<string>&quot;bad file path\n&quot;</string>);
                 } <keyword>else</keyword> <keyword>if</keyword> (history <keyword>==</keyword> <constant>NULL</constant>) {
@@ -7808,7 +8101,7 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
                 } <keyword>else</keyword> <keyword>if</keyword> (hymn_file_exists(path)) {
                     <constant>printf</constant>(<string>&quot;history can't overwrite an existing file: %s\n&quot;</string>, path);
                 } <keyword>else</keyword> {
-                    FILE <keyword>*</keyword>open <keyword>=</keyword> fopen(path, <string>&quot;w&quot;</string>);
+                    FILE <keyword>*</keyword>open <keyword>=</keyword> hymn_open_file(path, <string>&quot;w&quot;</string>);
                     <keyword>if</keyword> (open <keyword>==</keyword> <constant>NULL</constant>) {
                         <constant>printf</constant>(<string>&quot;failed to write history: %s\n&quot;</string>, path);
                     } <keyword>else</keyword> {
@@ -7826,7 +8119,11 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
                 }
             } <keyword>else</keyword> <keyword>if</keyword> (string_starts_with(line, <string>&quot;.load &quot;</string>)) {
                 <constant>char</constant> path[PATH_MAX];
+<constant>#ifdef</constant> _MSC_VER
+                strcpy_s(path, PATH_MAX, <keyword>&</keyword>line[<constant>6</constant>]);
+<constant>#else</constant>
                 strcpy(path, <keyword>&</keyword>line[<constant>6</constant>]);
+<constant>#endif</constant>
                 <keyword>if</keyword> (path[<constant>0</constant>] <keyword>==</keyword> <string>'\0'</string>) {
                     <constant>printf</constant>(<string>&quot;bad file path\n&quot;</string>);
                 } <keyword>else</keyword> <keyword>if</keyword> (hymn_file_exists(path)) {
@@ -7876,29 +8173,32 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
         <keyword>if</keyword> (open_editor) {
             open_editor <keyword>=</keyword> <constant>false</constant>;
 
-            <constant>char</constant> <keyword>*</keyword>editor <keyword>=</keyword> getenv(<string>&quot;EDITOR&quot;</string>);
-            <keyword>if</keyword> (editor <keyword>==</keyword> <constant>NULL</constant>) {
-<constant>#ifdef</constant> _MSC_VER
-                editor <keyword>=</keyword> <string>&quot;notepad&quot;</string>;
-<constant>#else</constant>
-                <constant>printf</constant>(<string>&quot;no EDITOR set\n&quot;</string>);
-                <keyword>continue</keyword>;
-<constant>#endif</constant>
-            }
-
             FILE <keyword>*</keyword>temp <keyword>=</keyword> <constant>NULL</constant>;
 
 <constant>#ifdef</constant> _MSC_VER
+            <constant>char</constant> <keyword>*</keyword>editor <keyword>=</keyword> <constant>NULL</constant>;
+            <constant>size_t</constant> size <keyword>=</keyword> <constant>0</constant>;
+            errno_t error <keyword>=</keyword> _dupenv_s(<keyword>&</keyword>editor, <keyword>&</keyword>size, <string>&quot;EDITOR&quot;</string>);
+            <keyword>if</keyword> (error <keyword>!=</keyword> <constant>0</constant>) {
+                <constant>free</constant>(editor);
+                <constant>printf</constant>(<string>&quot;no EDITOR set\n&quot;</string>);
+                <keyword>continue</keyword>;
+            }
             <constant>char</constant> path[MAX_PATH];
             GetTempFileName(temp_dir, <string>&quot;hymn&quot;</string>, <constant>0</constant>, path);
-            temp <keyword>=</keyword> fopen(path, <string>&quot;w&quot;</string>);
+            temp <keyword>=</keyword> hymn_open_file(path, <string>&quot;w&quot;</string>);
 <constant>#else</constant>
+            <constant>char</constant> <keyword>*</keyword>editor <keyword>=</keyword> getenv(<string>&quot;EDITOR&quot;</string>);
+            <keyword>if</keyword> (editor <keyword>==</keyword> <constant>NULL</constant>) {
+                <constant>printf</constant>(<string>&quot;no EDITOR set\n&quot;</string>);
+                <keyword>continue</keyword>;
+            }
             <constant>char</constant> path[] <keyword>=</keyword> <string>&quot;/tmp/hymn.XXXXXX&quot;</string>;
             <keyword>for</keyword> (<constant>int</constant> a <keyword>=</keyword> <constant>0</constant>; a <keyword>&lt;</keyword> <constant>64</constant>; a++) {
                 <keyword>for</keyword> (<constant>int</constant> x <keyword>=</keyword> <constant>0</constant>; x <keyword>&lt;</keyword> <constant>6</constant>; x++) {
                     path[<constant>10</constant> <keyword>+</keyword> x] <keyword>=</keyword> letters[(<constant>size_t</constant>)((<constant>double</constant>)rand() <keyword>/</keyword> RAND_MAX <keyword>*</keyword> (sizeof(letters) <keyword>-</keyword> <constant>1</constant>))];
                 }
-                temp <keyword>=</keyword> fopen(path, <string>&quot;wx&quot;</string>);
+                temp <keyword>=</keyword> hymn_open_file(path, <string>&quot;wx&quot;</string>);
                 <keyword>if</keyword> (temp <keyword>!=</keyword> <constant>NULL</constant>) {
                     <keyword>break</keyword>;
                 }
@@ -7907,6 +8207,9 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
 
             <keyword>if</keyword> (temp <keyword>==</keyword> <constant>NULL</constant>) {
                 <constant>printf</constant>(<string>&quot;failed to create temporary file\n&quot;</string>);
+<constant>#ifdef</constant> _MSC_VER
+                <constant>free</constant>(editor);
+<constant>#endif</constant>
                 <keyword>continue</keyword>;
             }
 
@@ -7918,7 +8221,17 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
 
             fclose(temp);
 
+<constant>#ifdef</constant> _MSC_VER
+            HymnString <keyword>*</keyword>edit;
+            <keyword>if</keyword> (editor <keyword>!=</keyword> <constant>NULL</constant>) {
+                edit <keyword>=</keyword> hymn_string_format(<string>&quot;%s %s&quot;</string>, editor, path);
+                <constant>free</constant>(editor);
+            } <keyword>else</keyword> {
+                edit <keyword>=</keyword> hymn_string_format(<string>&quot;%s %s&quot;</string>, <string>&quot;notepad&quot;</string>, path);
+            }
+<constant>#else</constant>
             HymnString <keyword>*</keyword>edit <keyword>=</keyword> hymn_string_format(<string>&quot;%s %s&quot;</string>, editor, path);
+<constant>#endif</constant>
             <constant>int</constant> result <keyword>=</keyword> system(edit);
             <keyword>if</keyword> (result <keyword>==</keyword> <keyword>-</keyword><constant>1</constant>) {
                 <constant>printf</constant>(<string>&quot;failed edit: %d\n&quot;</string>, result);
@@ -7926,7 +8239,12 @@ HymnValue hymn_get(Hymn <keyword>*</keyword>H, <keyword>const</keyword> <constan
             hymn_string_delete(edit);
 
             HymnString <keyword>*</keyword>content <keyword>=</keyword> hymn_read_file(path);
+
+<constant>#ifdef</constant> _MSC_VER
+            _unlink(path);
+<constant>#else</constant>
             unlink(path);
+<constant>#endif</constant>
 
             <keyword>if</keyword> (content <keyword>==</keyword> <constant>NULL</constant>) {
                 <constant>printf</constant>(<string>&quot;failed to read temporary file\n&quot;</string>);
@@ -8058,7 +8376,672 @@ HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>H, <keywor
 }
 <constant>#endif</constant>
 
-<constant>#endif</constant></code></pre></div>
+<constant>#endif</constant>
+
+<keyword>typedef</keyword> <keyword>struct</keyword> Format Format;
+
+<keyword>struct</keyword> Format {
+    HymnString <keyword>*</keyword>source;
+    <constant>char</constant> <keyword>*</keyword>dest;
+    <constant>char</constant> <keyword>*</keyword>nest;
+    <constant>bool</constant> <keyword>*</keyword>compact;
+    <constant>size_t</constant> size;
+    <constant>size_t</constant> s;
+    <constant>size_t</constant> capacity;
+    <constant>size_t</constant> n;
+    <constant>size_t</constant> deep;
+    <constant>size_t</constant> compact_capacity;
+    <constant>size_t</constant> compact_len;
+    <constant>size_t</constant> nest_capacity;
+    <constant>size_t</constant> nest_len;
+};
+
+<keyword>static</keyword> <constant>bool</constant> important_word(Format <keyword>*</keyword>F, <constant>size_t</constant> start, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>word) {
+    <constant>size_t</constant> a <keyword>=</keyword> <constant>0</constant>;
+    do {
+        <keyword>if</keyword> (F-&gt;dest[start + a] <keyword>!=</keyword> word[a]) {
+            <keyword>return</keyword> <constant>false</constant>;
+        }
+        a++;
+    } <keyword>while</keyword> (word[a] <keyword>!=</keyword> <string>'\0'</string>);
+    <keyword>return</keyword> <constant>true</constant>;
+}
+
+<keyword>static</keyword> <constant>bool</constant> is_important(Format <keyword>*</keyword>F, <constant>size_t</constant> len) {
+    <keyword>if</keyword> (len <keyword>&lt;</keyword> <constant>2</constant>) {
+        <keyword>return</keyword> <constant>false</constant>;
+    }
+    <constant>size_t</constant> start <keyword>=</keyword> len <keyword>-</keyword> <constant>2</constant>;
+    <keyword>while</keyword> (<constant>true</constant>) {
+        <keyword>if</keyword> (<keyword>!</keyword>is_ident(F-&gt;dest[start])) {
+            start++;
+            <keyword>break</keyword>;
+        } <keyword>else</keyword> <keyword>if</keyword> (start <keyword>==</keyword> <constant>0</constant>) {
+            <keyword>break</keyword>;
+        }
+        start--;
+    }
+    <keyword>return</keyword> important_word(F, start, <string>&quot;in&quot;</string>) ||
+           important_word(F, start, <string>&quot;if&quot;</string>) ||
+           important_word(F, start, <string>&quot;for&quot;</string>) ||
+           important_word(F, start, <string>&quot;not&quot;</string>) ||
+           important_word(F, start, <string>&quot;else&quot;</string>) ||
+           important_word(F, start, <string>&quot;elif&quot;</string>) ||
+           important_word(F, start, <string>&quot;echo&quot;</string>) ||
+           important_word(F, start, <string>&quot;while&quot;</string>) ||
+           important_word(F, start, <string>&quot;return&quot;</string>);
+}
+
+<keyword>static</keyword> <constant>void</constant> append(Format <keyword>*</keyword>F, <constant>char</constant> c) {
+    <keyword>const</keyword> <constant>size_t</constant> len <keyword>=</keyword> <keyword>+</keyword><keyword>+</keyword>F-&gt;n;
+    <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> F-&gt;capacity) {
+        F-&gt;capacity += <constant>256</constant>;
+        F-&gt;dest = hymn_realloc(F-&gt;dest, (F-&gt;capacity + <constant>1</constant>) <keyword>*</keyword> sizeof(<constant>char</constant>));
+    }
+    F-&gt;dest[len - <constant>1</constant>] <keyword>=</keyword> c;
+}
+
+<keyword>static</keyword> <constant>void</constant> indent(Format <keyword>*</keyword>F) {
+    <keyword>for</keyword> (<constant>size_t</constant> a <keyword>=</keyword> <constant>0</constant>; a <keyword>&lt;</keyword> F-&gt;deep; a++) {
+        append(F, <string>' '</string>);
+        append(F, <string>' '</string>);
+    }
+}
+
+<keyword>static</keyword> <constant>void</constant> space(Format <keyword>*</keyword>F, <constant>char</constant> t) {
+    <keyword>switch</keyword> (t) {
+    <keyword>case</keyword> <string>' '</string>:
+    <keyword>case</keyword> <string>'\n'</string>:
+    <keyword>case</keyword> <string>'\t'</string>:
+    <keyword>case</keyword> <string>'\r'</string>:
+        <keyword>return</keyword>;
+    <keyword>default</keyword>:
+        <keyword>break</keyword>;
+    }
+    <keyword>const</keyword> <constant>size_t</constant> len <keyword>=</keyword> F-&gt;n;
+    <keyword>if</keyword> (len <keyword>==</keyword> <constant>0</constant>) {
+        <keyword>return</keyword>;
+    }
+    <keyword>const</keyword> <constant>char</constant> p <keyword>=</keyword> F-&gt;dest[len - <constant>1</constant>];
+    <keyword>if</keyword> (p <keyword>==</keyword> <string>'\n'</string>) {
+        indent(F);
+        <keyword>return</keyword>;
+    } <keyword>else</keyword> <keyword>if</keyword> (p <keyword>==</keyword> <string>':'</string>) {
+        <keyword>if</keyword> (F-&gt;nest_len <keyword>==</keyword> <constant>0</constant>) {
+            append(F, <string>' '</string>);
+        } <keyword>else</keyword> {
+            <keyword>const</keyword> <constant>char</constant> nest <keyword>=</keyword> F-&gt;nest[F-&gt;nest_len - <constant>1</constant>];
+            <keyword>if</keyword> (nest <keyword>!=</keyword> <string>'['</string>) {
+                append(F, <string>' '</string>);
+            }
+        }
+        <keyword>return</keyword>;
+    } <keyword>else</keyword> <keyword>if</keyword> (p <keyword>==</keyword> <string>'~'</string>) {
+        <keyword>return</keyword>;
+    }
+    <keyword>if</keyword> (is_digit(t) || is_ident(t)) {
+        <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>' '</string>:
+        <keyword>case</keyword> <string>'.'</string>:
+        <keyword>case</keyword> <string>'('</string>:
+        <keyword>case</keyword> <string>'['</string>:
+            <keyword>return</keyword>;
+        <keyword>case</keyword> <string>'&gt;'</string>:
+            <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> <constant>2</constant> <keyword>&</keyword><keyword>&</keyword> F-&gt;dest[len - <constant>2</constant>] <keyword>==</keyword> <string>'-'</string>) {
+                <keyword>return</keyword>;
+            }
+            <keyword>break</keyword>;
+        <keyword>case</keyword> <string>'-'</string>:
+            <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> <constant>3</constant>) {
+                <keyword>const</keyword> <constant>char</constant> b <keyword>=</keyword> F-&gt;dest[len - <constant>3</constant>];
+                <keyword>if</keyword> (b <keyword>==</keyword> <string>','</string> || b <keyword>==</keyword> <string>'{'</string>) {
+                    <keyword>return</keyword>;
+                }
+                <keyword>if</keyword> (is_ident(b) <keyword>&</keyword><keyword>&</keyword> is_important(F, len <keyword>-</keyword> <constant>2</constant>)) {
+                    <keyword>return</keyword>;
+                }
+            }
+            <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> <constant>2</constant>) {
+                <keyword>const</keyword> <constant>char</constant> b <keyword>=</keyword> F-&gt;dest[len - <constant>2</constant>];
+                <keyword>if</keyword> (b <keyword>!=</keyword> <string>')'</string> <keyword>&</keyword><keyword>&</keyword> b <keyword>!=</keyword> <string>' '</string>) {
+                    <keyword>return</keyword>;
+                }
+            }
+            <keyword>break</keyword>;
+        <keyword>default</keyword>:
+            <keyword>break</keyword>;
+        }
+        append(F, <string>' '</string>);
+        <keyword>return</keyword>;
+    }
+    <keyword>switch</keyword> (t) {
+    <keyword>case</keyword> <string>'{'</string>:
+        <keyword>if</keyword> (p <keyword>==</keyword> <string>'('</string>) {
+            <keyword>return</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'('</string>:
+        <keyword>if</keyword> (is_digit(p)) {
+            <keyword>return</keyword>;
+        } <keyword>else</keyword> <keyword>if</keyword> (is_ident(p)) {
+            <keyword>if</keyword> (is_important(F, len)) {
+                <keyword>break</keyword>;
+            }
+            <keyword>return</keyword>;
+        }
+        <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>' '</string>:
+        <keyword>case</keyword> <string>'('</string>:
+        <keyword>case</keyword> <string>')'</string>:
+        <keyword>case</keyword> <string>'['</string>:
+        <keyword>case</keyword> <string>'}'</string>:
+        <keyword>case</keyword> <string>']'</string>:
+            <keyword>return</keyword>;
+        <keyword>default</keyword>:
+            <keyword>break</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'['</string>:
+        <keyword>if</keyword> (is_ident(p)) {
+            <keyword>if</keyword> (is_important(F, len)) {
+                <keyword>break</keyword>;
+            }
+            <keyword>return</keyword>;
+        }
+        <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>'+'</string>:
+        <keyword>case</keyword> <string>'='</string>:
+        <keyword>case</keyword> <string>','</string>:
+        <keyword>case</keyword> <string>'{'</string>:
+            <keyword>break</keyword>;
+        <keyword>default</keyword>:
+            <keyword>return</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'&lt;'</string>:
+        <keyword>if</keyword> (p <keyword>==</keyword> <string>'&lt;'</string>) {
+            <keyword>return</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'&gt;'</string>:
+        <keyword>if</keyword> (p <keyword>==</keyword> <string>'-'</string> || p <keyword>==</keyword> <string>'&gt;'</string>) {
+            <keyword>return</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'='</string>:
+        <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>'-'</string>:
+        <keyword>case</keyword> <string>'+'</string>:
+        <keyword>case</keyword> <string>'*'</string>:
+        <keyword>case</keyword> <string>'/'</string>:
+        <keyword>case</keyword> <string>'&lt;'</string>:
+        <keyword>case</keyword> <string>'&gt;'</string>:
+        <keyword>case</keyword> <string>'~'</string>:
+        <keyword>case</keyword> <string>'^'</string>:
+        <keyword>case</keyword> <string>'%'</string>:
+        <keyword>case</keyword> <string>'&'</string>:
+        <keyword>case</keyword> <string>'|'</string>:
+        <keyword>case</keyword> <string>'!'</string>:
+        <keyword>case</keyword> <string>'='</string>:
+            <keyword>return</keyword>;
+        <keyword>default</keyword>:
+            <keyword>break</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>'-'</string>:
+        <keyword>if</keyword> (F-&gt;s &lt; F-&gt;size && F-&gt;source[F-&gt;s] <keyword>==</keyword> <string>'&gt;'</string>) {
+            <keyword>return</keyword>;
+        } <keyword>else</keyword> <keyword>if</keyword> (p <keyword>==</keyword> <string>','</string> || p <keyword>==</keyword> <string>'{'</string> || p <keyword>==</keyword> <string>')'</string>) {
+            <keyword>break</keyword>;
+        } <keyword>else</keyword> <keyword>if</keyword> (is_ident(p) || is_digit(p)) {
+            <keyword>break</keyword>;
+        }
+        <keyword>return</keyword>;
+    <keyword>case</keyword> <string>'&quot;'</string>:
+    <keyword>case</keyword> <string>'\'</string>':
+        <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>'('</string>:
+        <keyword>case</keyword> <string>'['</string>:
+            <keyword>return</keyword>;
+        <keyword>default</keyword>:
+            <keyword>break</keyword>;
+        }
+        <keyword>break</keyword>;
+    <keyword>case</keyword> <string>':'</string>:
+    <keyword>case</keyword> <string>','</string>:
+    <keyword>case</keyword> <string>'.'</string>:
+    <keyword>case</keyword> <string>')'</string>:
+    <keyword>case</keyword> <string>']'</string>:
+        <keyword>return</keyword>;
+    <keyword>default</keyword>:
+        <keyword>break</keyword>;
+    }
+    append(F, <string>' '</string>);
+}
+
+<keyword>static</keyword> <constant>void</constant> compact(Format <keyword>*</keyword>F, <constant>bool</constant> v) {
+    <keyword>const</keyword> <constant>size_t</constant> len <keyword>=</keyword> <keyword>+</keyword><keyword>+</keyword>F-&gt;compact_len;
+    <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> F-&gt;compact_capacity) {
+        F-&gt;compact_capacity += <constant>16</constant>;
+        <keyword>if</keyword> (F-&gt;compact <keyword>==</keyword> <constant>NULL</constant>) {
+            F-&gt;compact = hymn_malloc(F-&gt;compact_capacity * sizeof(<constant>bool</constant>));
+        } <keyword>else</keyword> {
+            F-&gt;compact = hymn_realloc(F-&gt;compact, F-&gt;compact_capacity * sizeof(<constant>bool</constant>));
+        }
+    }
+    F-&gt;compact[len - <constant>1</constant>] <keyword>=</keyword> v;
+}
+
+<keyword>static</keyword> <constant>bool</constant> is_compact(Format <keyword>*</keyword>F) {
+    <keyword>if</keyword> (F-&gt;compact_len &gt; <constant>0</constant>) {
+        <keyword>return</keyword> F-&gt;compact[--F-&gt;compact_len];
+    }
+    <keyword>return</keyword> <constant>false</constant>;
+}
+
+<keyword>static</keyword> <constant>void</constant> nest(Format <keyword>*</keyword>F, <constant>char</constant> c) {
+    <keyword>const</keyword> <constant>size_t</constant> len <keyword>=</keyword> <keyword>+</keyword><keyword>+</keyword>F-&gt;nest_len;
+    <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> F-&gt;nest_capacity) {
+        F-&gt;nest_capacity += <constant>16</constant>;
+        <keyword>if</keyword> (F-&gt;nest <keyword>==</keyword> <constant>NULL</constant>) {
+            F-&gt;nest = hymn_malloc(F-&gt;nest_capacity * sizeof(<constant>char</constant>));
+        } <keyword>else</keyword> {
+            F-&gt;nest = hymn_realloc(F-&gt;nest, F-&gt;nest_capacity * sizeof(<constant>char</constant>));
+        }
+    }
+    F-&gt;nest[len - <constant>1</constant>] <keyword>=</keyword> c;
+}
+
+<keyword>static</keyword> <constant>void</constant> nest_pop(Format <keyword>*</keyword>F) {
+    <keyword>if</keyword> (F-&gt;nest_len &gt; <constant>0</constant>) {
+        F-&gt;nest_len--;
+    }
+}
+
+<keyword>static</keyword> <constant>void</constant> skip(Format <keyword>*</keyword>F) {
+    <keyword>if</keyword> (F-&gt;s &gt;= F-&gt;size) {
+        <keyword>return</keyword>;
+    }
+    <constant>char</constant> c <keyword>=</keyword> F-&gt;source[F-&gt;s];
+    <keyword>while</keyword> (c <keyword>==</keyword> <string>' '</string> || c <keyword>==</keyword> <string>'\t'</string> || c <keyword>==</keyword> <string>'\r'</string>) {
+        F-&gt;s++;
+        <keyword>if</keyword> (F-&gt;s &gt;= F-&gt;size) {
+            <keyword>return</keyword>;
+        }
+        c <keyword>=</keyword> F-&gt;source[F-&gt;s];
+    }
+}
+
+<keyword>static</keyword> <constant>void</constant> newline(Format <keyword>*</keyword>F) {
+    append(F, <string>'\n'</string>);
+    skip(F);
+    <keyword>if</keyword> (F-&gt;s &gt;= F-&gt;size) {
+        <keyword>return</keyword>;
+    }
+    <constant>char</constant> c <keyword>=</keyword> F-&gt;source[F-&gt;s];
+    <keyword>if</keyword> (c <keyword>==</keyword> <string>'}'</string> || c <keyword>==</keyword> <string>')'</string>) {
+        F-&gt;s++;
+        <keyword>if</keyword> (F-&gt;deep &gt; <constant>0</constant>) {
+            F-&gt;deep--;
+        }
+        indent(F);
+        append(F, c);
+    }
+}
+
+<keyword>static</keyword> <constant>void</constant> possible_newline(Format <keyword>*</keyword>F) {
+    <constant>size_t</constant> p <keyword>=</keyword> F-&gt;n;
+    <keyword>while</keyword> (<constant>true</constant>) {
+        <keyword>if</keyword> (p <keyword>==</keyword> <constant>0</constant>) {
+            <keyword>return</keyword>;
+        }
+        p--;
+        <constant>char</constant> o <keyword>=</keyword> F-&gt;dest[p];
+        <keyword>if</keyword> (o <keyword>==</keyword> <string>'\n'</string>) {
+            <keyword>return</keyword>;
+        } <keyword>else</keyword> <keyword>if</keyword> (o <keyword>==</keyword> <string>' '</string> || o <keyword>==</keyword> <string>'\t'</string> || o <keyword>==</keyword> <string>'\r'</string>) {
+            <keyword>continue</keyword>;
+        } <keyword>else</keyword> {
+            newline(F);
+            <keyword>return</keyword>;
+        }
+    }
+}
+
+<keyword>static</keyword> <constant>void</constant> stringly(Format <keyword>*</keyword>F, <constant>char</constant> c) {
+    append(F, c);
+    <keyword>while</keyword> (F-&gt;s &lt; F-&gt;size) {
+        <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F-&gt;source[F-&gt;s];
+        append(F, n);
+        F-&gt;s++;
+        <keyword>if</keyword> (n <keyword>==</keyword> <string>'\\'</string>) {
+            append(F, F-&gt;source[F-&gt;s++]);
+        } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> c) {
+            <keyword>break</keyword>;
+        }
+    }
+    <constant>size_t</constant> a <keyword>=</keyword> F-&gt;s;
+    <constant>bool</constant> multiple <keyword>=</keyword> <constant>false</constant>;
+loop:
+    <keyword>while</keyword> (a <keyword>&lt;</keyword> F-&gt;size) {
+        <constant>char</constant> n <keyword>=</keyword> F-&gt;source[a];
+        <keyword>if</keyword> (n <keyword>==</keyword> <string>'\n'</string>) {
+            <keyword>for</keyword> (<constant>size_t</constant> d <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>; d <keyword>&lt;</keyword> F-&gt;size; d++) {
+                <keyword>const</keyword> <constant>char</constant> m <keyword>=</keyword> F-&gt;source[d];
+                <keyword>if</keyword> (m <keyword>==</keyword> <string>'&quot;'</string> || m <keyword>==</keyword> <string>'\'</string>') {
+                    <keyword>if</keyword> (<keyword>!</keyword>multiple) {
+                        multiple <keyword>=</keyword> <constant>true</constant>;
+                        F-&gt;deep++;
+                    }
+                    append(F, <string>'\n'</string>);
+                    indent(F);
+                    append(F, m);
+                    F-&gt;s = d + <constant>1</constant>;
+                    <keyword>while</keyword> (F-&gt;s &lt; F-&gt;size) {
+                        <keyword>const</keyword> <constant>char</constant> i <keyword>=</keyword> F-&gt;source[F-&gt;s];
+                        append(F, i);
+                        F-&gt;s++;
+                        <keyword>if</keyword> (i <keyword>==</keyword> <string>'\\'</string>) {
+                            append(F, F-&gt;source[F-&gt;s++]);
+                        } <keyword>else</keyword> <keyword>if</keyword> (i <keyword>==</keyword> m) {
+                            a <keyword>=</keyword> F-&gt;s;
+                            <keyword>goto</keyword> loop;
+                        }
+                    }
+                    <keyword>goto</keyword> end;
+                }
+                <keyword>if</keyword> (m <keyword>!=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'\r'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'\n'</string>) {
+                    <keyword>goto</keyword> end;
+                }
+            }
+            <keyword>goto</keyword> end;
+        }
+        <keyword>if</keyword> (n <keyword>==</keyword> <string>'&quot;'</string> || n <keyword>==</keyword> <string>'\'</string>') {
+            space(F, n);
+            append(F, n);
+            F-&gt;s = a + <constant>1</constant>;
+            <keyword>while</keyword> (F-&gt;s &lt; F-&gt;size) {
+                <keyword>const</keyword> <constant>char</constant> i <keyword>=</keyword> F-&gt;source[F-&gt;s];
+                append(F, i);
+                F-&gt;s++;
+                <keyword>if</keyword> (i <keyword>==</keyword> <string>'\\'</string>) {
+                    append(F, F-&gt;source[F-&gt;s++]);
+                } <keyword>else</keyword> <keyword>if</keyword> (i <keyword>==</keyword> n) {
+                    a <keyword>=</keyword> F-&gt;s;
+                    <keyword>goto</keyword> loop;
+                }
+            }
+        }
+        <keyword>if</keyword> (n <keyword>!=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword> <string>'\r'</string>) {
+            <keyword>break</keyword>;
+        }
+        a++;
+    }
+end:
+    <keyword>if</keyword> (multiple) {
+        <keyword>if</keyword> (F-&gt;deep &gt; <constant>0</constant>) F-&gt;deep--;
+        possible_newline(F);
+    }
+}
+
+<constant>char</constant> <keyword>*</keyword>hymn_format(HymnString <keyword>*</keyword>source) {
+    <constant>size_t</constant> size <keyword>=</keyword> hymn_string_len(source);
+    Format F <keyword>=</keyword> {<constant>0</constant>};
+    F.source <keyword>=</keyword> source;
+    F.size <keyword>=</keyword> size;
+    F.capacity <keyword>=</keyword> size;
+    F.dest <keyword>=</keyword> hymn_malloc((size <keyword>+</keyword> <constant>1</constant>) <keyword>*</keyword> sizeof(<constant>char</constant>));
+    skip(<keyword>&</keyword>F);
+    <keyword>while</keyword> (F.s <keyword>&lt;</keyword> size) {
+        <constant>char</constant> c <keyword>=</keyword> source[F.s++];
+        space(<keyword>&</keyword>F, c);
+        <keyword>if</keyword> (is_digit(c)) {
+            append(<keyword>&</keyword>F, c);
+            <keyword>if</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                <keyword>if</keyword> (c <keyword>==</keyword> <string>'0'</string>) {
+                    <constant>char</constant> n <keyword>=</keyword> source[F.s];
+                    <keyword>if</keyword> (n <keyword>==</keyword> <string>'x'</string>) {
+                        append(<keyword>&</keyword>F, c);
+                        F.s++;
+                        <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                            <constant>char</constant> m <keyword>=</keyword> source[F.s];
+                            <keyword>if</keyword> (<keyword>!</keyword>(m <keyword>&gt;</keyword><keyword>=</keyword> <string>'0'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>&lt;</keyword><keyword>=</keyword> <string>'9'</string>) <keyword>&</keyword><keyword>&</keyword> <keyword>!</keyword>(m <keyword>&gt;</keyword><keyword>=</keyword> <string>'a'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>&lt;</keyword><keyword>=</keyword> <string>'f'</string>)) {
+                                <keyword>break</keyword>;
+                            }
+                            append(<keyword>&</keyword>F, m);
+                            F.s++;
+                        }
+                        <keyword>continue</keyword>;
+                    } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>'b'</string>) {
+                        append(<keyword>&</keyword>F, c);
+                        F.s++;
+                        <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                            <constant>char</constant> m <keyword>=</keyword> source[F.s];
+                            <keyword>if</keyword> (m <keyword>!=</keyword> <string>'0'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'1'</string>) {
+                                <keyword>break</keyword>;
+                            }
+                            append(<keyword>&</keyword>F, m);
+                            F.s++;
+                        }
+                        <keyword>continue</keyword>;
+                    }
+                }
+                <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                    <constant>char</constant> n <keyword>=</keyword> source[F.s];
+                    <keyword>if</keyword> (<keyword>!</keyword>is_digit(n)) {
+                        <keyword>if</keyword> (n <keyword>==</keyword> <string>'.'</string>) {
+                            append(<keyword>&</keyword>F, n);
+                            F.s++;
+                            <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                                <constant>char</constant> d <keyword>=</keyword> source[F.s];
+                                <keyword>if</keyword> (<keyword>!</keyword>is_digit(d)) {
+                                    <keyword>if</keyword> (d <keyword>==</keyword> <string>'e'</string> || d <keyword>==</keyword> <string>'E'</string>) {
+                                        append(<keyword>&</keyword>F, d);
+                                        F.s++;
+                                        <keyword>if</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                                            <keyword>const</keyword> <constant>char</constant> m <keyword>=</keyword> F.source[F.s];
+                                            <keyword>if</keyword> (m <keyword>==</keyword> <string>'+'</string> || m <keyword>==</keyword> <string>'-'</string>) {
+                                                append(<keyword>&</keyword>F, m);
+                                                F.s++;
+                                            }
+                                            <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                                                <keyword>const</keyword> <constant>char</constant> e <keyword>=</keyword> F.source[F.s];
+                                                <keyword>if</keyword> (<keyword>!</keyword>is_digit(e)) {
+                                                    <keyword>break</keyword>;
+                                                }
+                                                append(<keyword>&</keyword>F, e);
+                                                F.s++;
+                                            }
+                                        }
+                                        <keyword>break</keyword>;
+                                    }
+                                    <keyword>break</keyword>;
+                                }
+                                append(<keyword>&</keyword>F, d);
+                                F.s++;
+                            }
+                            <keyword>break</keyword>;
+                        } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>'e'</string> || n <keyword>==</keyword> <string>'E'</string>) {
+                            append(<keyword>&</keyword>F, n);
+                            F.s++;
+                            <keyword>if</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                                <keyword>const</keyword> <constant>char</constant> m <keyword>=</keyword> F.source[F.s];
+                                <keyword>if</keyword> (m <keyword>==</keyword> <string>'+'</string> || m <keyword>==</keyword> <string>'-'</string>) {
+                                    append(<keyword>&</keyword>F, m);
+                                    F.s++;
+                                }
+                                <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                                    <keyword>const</keyword> <constant>char</constant> e <keyword>=</keyword> F.source[F.s];
+                                    <keyword>if</keyword> (<keyword>!</keyword>is_digit(e)) {
+                                        <keyword>break</keyword>;
+                                    }
+                                    append(<keyword>&</keyword>F, e);
+                                    F.s++;
+                                }
+                            }
+                            <keyword>break</keyword>;
+                        } <keyword>else</keyword> {
+                            <keyword>break</keyword>;
+                        }
+                    }
+                    append(<keyword>&</keyword>F, n);
+                    F.s++;
+                }
+            }
+            <keyword>continue</keyword>;
+        } <keyword>else</keyword> <keyword>if</keyword> (is_ident(c)) {
+            append(<keyword>&</keyword>F, c);
+            <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F.source[F.s];
+                <keyword>if</keyword> (is_ident(n)) {
+                    append(<keyword>&</keyword>F, n);
+                    F.s++;
+                } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>'-'</string> <keyword>&</keyword><keyword>&</keyword> F.s <keyword>+</keyword> <constant>1</constant> <keyword>&lt;</keyword> F.size) {
+                    <keyword>const</keyword> <constant>char</constant> m <keyword>=</keyword> F.source[F.s <keyword>+</keyword> <constant>1</constant>];
+                    <keyword>if</keyword> (is_ident(m)) {
+                        append(<keyword>&</keyword>F, <string>'-'</string>);
+                        append(<keyword>&</keyword>F, m);
+                        F.s <keyword>+</keyword><keyword>=</keyword> <constant>2</constant>;
+                    } <keyword>else</keyword> {
+                        <keyword>break</keyword>;
+                    }
+                } <keyword>else</keyword> {
+                    <keyword>break</keyword>;
+                }
+            }
+            <keyword>continue</keyword>;
+        }
+        <keyword>switch</keyword> (c) {
+        <keyword>case</keyword> <string>'('</string>: {
+            append(<keyword>&</keyword>F, c);
+            nest(<keyword>&</keyword>F, c);
+            <keyword>for</keyword> (<constant>size_t</constant> a <keyword>=</keyword> F.s; a <keyword>&lt;</keyword> F.size; a++) {
+                <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F.source[a];
+                <keyword>if</keyword> (n <keyword>==</keyword> <string>'\n'</string>) {
+                    F.deep++;
+                    newline(<keyword>&</keyword>F);
+                    compact(<keyword>&</keyword>F, <constant>false</constant>);
+                    <keyword>break</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>')'</string>) {
+                    compact(<keyword>&</keyword>F, <constant>true</constant>);
+                    <keyword>break</keyword>;
+                }
+            }
+            <keyword>break</keyword>;
+        }
+        <keyword>case</keyword> <string>'{'</string>: {
+            append(<keyword>&</keyword>F, c);
+            nest(<keyword>&</keyword>F, c);
+            <constant>bool</constant> any <keyword>=</keyword> <constant>false</constant>;
+            <keyword>for</keyword> (<constant>size_t</constant> a <keyword>=</keyword> F.s; a <keyword>&lt;</keyword> F.size; a++) {
+                <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F.source[a];
+                <keyword>if</keyword> (n <keyword>==</keyword> <string>'\n'</string>) {
+                    <constant>bool</constant> ok <keyword>=</keyword> <constant>true</constant>;
+                    <keyword>if</keyword> (<keyword>!</keyword>any) {
+                        <keyword>for</keyword> (<constant>size_t</constant> d <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>; d <keyword>&lt;</keyword> F.size; d++) {
+                            <keyword>const</keyword> <constant>char</constant> m <keyword>=</keyword> F.source[d];
+                            <keyword>if</keyword> (m <keyword>==</keyword> <string>'}'</string>) {
+                                ok <keyword>=</keyword> <constant>false</constant>;
+                                append(<keyword>&</keyword>F, <string>'\n'</string>);
+                                indent(<keyword>&</keyword>F);
+                                append(<keyword>&</keyword>F, <string>'}'</string>);
+                                F.s <keyword>=</keyword> d <keyword>+</keyword> <constant>1</constant>;
+                                <keyword>break</keyword>;
+                            } <keyword>else</keyword> <keyword>if</keyword> (m <keyword>!=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'\r'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword> <string>'\n'</string>) {
+                                <keyword>break</keyword>;
+                            }
+                        }
+                    }
+                    <keyword>if</keyword> (ok) {
+                        F.deep++;
+                        newline(<keyword>&</keyword>F);
+                        compact(<keyword>&</keyword>F, <constant>false</constant>);
+                    }
+                    <keyword>break</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>'}'</string>) {
+                    <keyword>if</keyword> (any) {
+                        compact(<keyword>&</keyword>F, <constant>true</constant>);
+                    } <keyword>else</keyword> {
+                        append(<keyword>&</keyword>F, <string>'}'</string>);
+                        F.s <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>;
+                    }
+                    <keyword>break</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>!=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword> <string>'\r'</string>) {
+                    any <keyword>=</keyword> <constant>true</constant>;
+                }
+            }
+            <keyword>break</keyword>;
+        }
+        <keyword>case</keyword> <string>'['</string>:
+            append(<keyword>&</keyword>F, c);
+            nest(<keyword>&</keyword>F, c);
+            <keyword>break</keyword>;
+        <keyword>case</keyword> <string>')'</string>:
+        <keyword>case</keyword> <string>'}'</string>: {
+            nest_pop(<keyword>&</keyword>F);
+            <keyword>if</keyword> (<keyword>!</keyword>is_compact(<keyword>&</keyword>F)) {
+                <keyword>if</keyword> (F.deep <keyword>&gt;</keyword> <constant>0</constant>) {
+                    F.deep--;
+                }
+                possible_newline(<keyword>&</keyword>F);
+            }
+            append(<keyword>&</keyword>F, c);
+            <keyword>break</keyword>;
+        }
+        <keyword>case</keyword> <string>']'</string>:
+            nest_pop(<keyword>&</keyword>F);
+            append(<keyword>&</keyword>F, c);
+            <keyword>break</keyword>;
+        <keyword>case</keyword> <string>'\'</string>':
+        <keyword>case</keyword> <string>'&quot;'</string>:
+            stringly(<keyword>&</keyword>F, c);
+            <keyword>break</keyword>;
+        <keyword>case</keyword> <string>'#'</string>: {
+            append(<keyword>&</keyword>F, c);
+            <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F.source[F.s];
+                append(<keyword>&</keyword>F, n);
+                <keyword>if</keyword> (n <keyword>==</keyword> <string>'\n'</string>) {
+                    <keyword>break</keyword>;
+                }
+                F.s++;
+            }
+            <keyword>break</keyword>;
+        }
+        <keyword>case</keyword> <string>'\n'</string>: {
+            <constant>bool</constant> twice <keyword>=</keyword> <constant>false</constant>;
+            <keyword>while</keyword> (F.s <keyword>&lt;</keyword> F.size) {
+                <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F.source[F.s];
+                <keyword>if</keyword> (n <keyword>==</keyword> <string>'\n'</string>) {
+                    F.s++;
+                    twice <keyword>=</keyword> <constant>true</constant>;
+                } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>' '</string> || n <keyword>==</keyword> <string>'\t'</string> || n <keyword>==</keyword> <string>'\r'</string>) {
+                    F.s++;
+                } <keyword>else</keyword> {
+                    <keyword>break</keyword>;
+                }
+            }
+            possible_newline(<keyword>&</keyword>F);
+            <keyword>if</keyword> (twice) {
+                newline(<keyword>&</keyword>F);
+            }
+            <keyword>break</keyword>;
+        }
+        <keyword>case</keyword> <string>' '</string>:
+        <keyword>case</keyword> <string>'\t'</string>:
+        <keyword>case</keyword> <string>'\r'</string>:
+            <keyword>break</keyword>;
+        <keyword>default</keyword>:
+            append(<keyword>&</keyword>F, c);
+            <keyword>break</keyword>;
+        }
+    }
+    F.dest[F.capacity] <keyword>=</keyword> <string>'\0'</string>;
+    F.dest[F.n] <keyword>=</keyword> <string>'\0'</string>;
+    <constant>free</constant>(F.compact);
+    <constant>free</constant>(F.nest);
+    <keyword>return</keyword> F.dest;
+}</code></pre></div>
       </section>
     </main>
     <footer>

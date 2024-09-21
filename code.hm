@@ -38,6 +38,7 @@ set rules = [
   { pattern: "(return)[%s%p]", capture: [none, "keyword"] },
   { pattern: "(break)[%s%p]", capture: [none, "keyword"] },
   { pattern: "(continue)[%s%p]", capture: [none, "keyword"] },
+  { pattern: "(not)[%s%p]", capture: [none, "keyword"] },
   { pattern: "(in)[%s%p]", capture: [none, "keyword"] },
   { pattern: "(try)[%s%p]", capture: [none, "keyword"] },
   { pattern: "(except)[%s%p]", capture: [none, "keyword"] },
@@ -141,7 +142,7 @@ func code-span(file, rules) {
         set match = pattern.find(line, rule.pattern)
         if match == none { continue }
         set zero = match[0]
-        if zero > 0 and !pattern.match(line[zero - 1], "[%s%p]") { continue }
+        if zero > 0 and not pattern.match(line[zero - 1], "[%s%p]") { continue }
         if top == none or zero < left[0] {
           top = rule
           left = match

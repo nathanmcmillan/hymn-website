@@ -28,7 +28,7 @@
 <comment> * License, v. 2.0. If a copy of the MPL was not distributed with this</comment>
 <comment> * file, You can obtain one at https://mozilla.org/MPL/2.0/. */</comment>
 
-<keyword>const</keyword> HYMN_VERSION <keyword>=</keyword> <string>'0.10.1'</string>
+<keyword>const</keyword> HYMN_VERSION <keyword>=</keyword> <string>'0.11.0'</string>
 
 <keyword>const</keyword> UINT8_MAX <keyword>=</keyword> <constant>255</constant>
 <keyword>const</keyword> UINT16_MAX <keyword>=</keyword> <constant>65535</constant>
@@ -252,6 +252,7 @@ class Hymn {
 <keyword>const</keyword> TOKEN_OPCODES <keyword>=</keyword> <constant>84</constant>
 <keyword>const</keyword> TOKEN_STACK <keyword>=</keyword> <constant>85</constant>
 <keyword>const</keyword> TOKEN_REFERENCE <keyword>=</keyword> <constant>86</constant>
+<keyword>const</keyword> TOKEN_FORMAT <keyword>=</keyword> <constant>87</constant>
 
 <keyword>const</keyword> PRECEDENCE_NONE <keyword>=</keyword> <constant>0</constant>
 <keyword>const</keyword> PRECEDENCE_ASSIGN <keyword>=</keyword> <constant>1</constant>
@@ -340,6 +341,7 @@ class Hymn {
 <keyword>const</keyword> OP_CODES <keyword>=</keyword> <constant>66</constant>
 <keyword>const</keyword> OP_STACK <keyword>=</keyword> <constant>67</constant>
 <keyword>const</keyword> OP_REFERENCE <keyword>=</keyword> <constant>68</constant>
+<keyword>const</keyword> OP_FORMAT <keyword>=</keyword> <constant>69</constant>
 
 <keyword>const</keyword> TYPE_FUNCTION <keyword>=</keyword> <constant>0</constant>
 <keyword>const</keyword> TYPE_SCRIPT <keyword>=</keyword> <constant>1</constant>
@@ -362,6 +364,7 @@ function copyToken(dest, src) {
   dest.column <keyword>=</keyword> src.column
   dest.start <keyword>=</keyword> src.start
   dest.length <keyword>=</keyword> src.length
+  dest.number <keyword>=</keyword> src.number
 }
 
 class Local {
@@ -475,6 +478,7 @@ rules[TOKEN_EXISTS] <keyword>=</keyword> new Rule(existsExpression, null, PRECED
 rules[TOKEN_FALSE] <keyword>=</keyword> new Rule(compileFalse, null, PRECEDENCE_NONE)
 rules[TOKEN_FLOAT] <keyword>=</keyword> new Rule(compileFloat, null, PRECEDENCE_NONE)
 rules[TOKEN_FOR] <keyword>=</keyword> new Rule(null, null, PRECEDENCE_NONE)
+rules[TOKEN_FORMAT] <keyword>=</keyword> new Rule(formatExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_FUNCTION] <keyword>=</keyword> new Rule(functionExpression, null, PRECEDENCE_NONE)
 rules[TOKEN_GREATER] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_COMPARE)
 rules[TOKEN_GREATER_EQUAL] <keyword>=</keyword> new Rule(null, compileBinary, PRECEDENCE_COMPARE)
@@ -818,8 +822,8 @@ function newFuncValue(func) {
   <keyword>return</keyword> new HymnValue(HYMN_VALUE_FUNC, func)
 }
 
-function newFuncNativeValue(func) {
-  <keyword>return</keyword> new HymnValue(HYMN_VALUE_FUNC_NATIVE, func)
+function newNativeFuncValue(name, func) {
+  <keyword>return</keyword> new HymnValue(HYMN_VALUE_FUNC_NATIVE, new HymnNativeFunction(name, func))
 }
 
 function newPointerValue(pointer) {
@@ -831,10 +835,6 @@ function newFunction(script) {
   func.code <keyword>=</keyword> new HymnByteCode()
   <keyword>if</keyword> (script) func.script <keyword>=</keyword> script
   <keyword>return</keyword> func
-}
-
-function newNativeFunction(name, func) {
-  <keyword>return</keyword> new HymnNativeFunction(name, func)
 }
 
 function isNone(value) {
@@ -1008,6 +1008,7 @@ function identKey(ident, size) {
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'nd'</string>, TOKEN_AND)
       break
     <keyword>case</keyword> <string>'n'</string>:
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>3</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'ot'</string>, TOKEN_NOT)
       <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>4</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'one'</string>, TOKEN_NONE)
       break
     <keyword>case</keyword> <string>'w'</string>:
@@ -1089,11 +1090,18 @@ function identKey(ident, size) {
         <keyword>if</keyword> (ident[<constant>1</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'l'</string>) <keyword>return</keyword> identTrie(ident, <constant>2</constant>, <string>'oat'</string>, TOKEN_TO_FLOAT)
       }
       break
-    <keyword>case</keyword> <string>'_'</string>:
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'stack'</string>, TOKEN_STACK)
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>7</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'source'</string>, TOKEN_SRC)
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>8</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'opcodes'</string>, TOKEN_OPCODES)
-      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>10</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'reference'</string>, TOKEN_REFERENCE)
+    <keyword>case</keyword> <string>'S'</string>:
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>5</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'TACK'</string>, TOKEN_STACK)
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'OURCE'</string>, TOKEN_SRC)
+      break
+    <keyword>case</keyword> <string>'F'</string>:
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>6</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'ORMAT'</string>, TOKEN_FORMAT)
+      break
+    <keyword>case</keyword> <string>'O'</string>:
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>7</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'PCODES'</string>, TOKEN_OPCODES)
+      break
+    <keyword>case</keyword> <string>'R'</string>:
+      <keyword>if</keyword> (size <keyword>==</keyword><keyword>=</keyword> <constant>9</constant>) <keyword>return</keyword> identTrie(ident, <constant>1</constant>, <string>'EFERENCE'</string>, TOKEN_REFERENCE)
       break
   }
   <keyword>return</keyword> TOKEN_UNDEFINED
@@ -1245,7 +1253,8 @@ function advance(C) {
           nextChar(C)
           tokenSpecial(C, TOKEN_NOT_EQUAL, <constant>2</constant>, <constant>2</constant>)
         } <keyword>else</keyword> {
-          token(C, TOKEN_NOT)
+          token(C, TOKEN_ERROR)
+          compileError(C, C.current, <string>&quot;expected '!='&quot;</string>)
         }
         return
       <keyword>case</keyword> <string>'='</string>:
@@ -1380,7 +1389,7 @@ function advance(C) {
         token(C, TOKEN_RIGHT_SQUARE)
         return
       <keyword>case</keyword> <string>'{'</string>:
-        <keyword>if</keyword> (C.stringFormat <keyword>&gt;</keyword><keyword>=</keyword> <constant>1</constant>) {
+        <keyword>if</keyword> (C.stringFormat <keyword>&gt;</keyword> <constant>0</constant>) {
           C.stringFormat++
         }
         token(C, TOKEN_LEFT_CURLY)
@@ -1801,11 +1810,11 @@ function compileFalse(C) {
 }
 
 function compileInteger(C) {
-  emitConstant(C, newInt(C.current.number))
+  emitConstant(C, newInt(C.previous.number))
 }
 
 function compileFloat(C) {
-  emitConstant(C, newFloat(C.current.number))
+  emitConstant(C, newFloat(C.previous.number))
 }
 
 function escapeSequence(c) {
@@ -2886,30 +2895,37 @@ function existsExpression(C) {
 }
 
 function sourceExpression(C) {
-  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_source'</string>`)
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'SOURCE'</string>`)
   expression(C)
-  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_source'</string>`)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'SOURCE'</string>`)
   emit(C, OP_SOURCE)
 }
 
 function opCodesExpression(C) {
-  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_opcodes'</string>`)
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'OPCODES'</string>`)
   expression(C)
-  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_opcodes'</string>`)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'OPCODES'</string>`)
   emit(C, OP_CODES)
 }
 
 function stackExpression(C) {
-  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_stack'</string>`)
-  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_stack'</string>`)
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'STACK'</string>`)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'STACK'</string>`)
   emit(C, OP_STACK)
 }
 
 function referenceExpression(C) {
-  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'_reference'</string>`)
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'REFERENCE'</string>`)
   expression(C)
-  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'_reference'</string>`)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'REFERENCE'</string>`)
   emit(C, OP_REFERENCE)
+}
+
+function formatExpression(C) {
+  consume(C, TOKEN_LEFT_PAREN, `expected opening <string>'('</string> in call to <string>'FORMAT'</string>`)
+  expression(C)
+  consume(C, TOKEN_RIGHT_PAREN, `expected closing <string>')'</string> in call to <string>'FORMAT'</string>`)
+  emit(C, OP_FORMAT)
 }
 
 function expressionStatement(C) {
@@ -3077,6 +3093,15 @@ function valueToDebug(value) {
   <keyword>return</keyword> valueToStringRecursive(value, null, <constant>false</constant>)
 }
 
+function valueToFormat(value) {
+  <keyword>if</keyword> (value.is <keyword>==</keyword><keyword>=</keyword> HYMN_VALUE_FUNC) {
+    <keyword>return</keyword> format(value.value.source)
+  } <keyword>else</keyword> <keyword>if</keyword> (value.is <keyword>==</keyword><keyword>=</keyword> HYMN_VALUE_STRING) {
+    <keyword>return</keyword> format(value.value)
+  }
+  <keyword>return</keyword> valueToStringRecursive(value, null, <constant>false</constant>)
+}
+
 function hymnConcat(a, b) {
   <keyword>return</keyword> newString(valueToString(a) <keyword>+</keyword> valueToString(b))
 }
@@ -3209,7 +3234,7 @@ function hymnCallValue(H, value, count) {
       <keyword>return</keyword> hymnCall(H, value.value, count)
     <keyword>case</keyword> HYMN_VALUE_FUNC_NATIVE: {
       <keyword>const</keyword> func <keyword>=</keyword> value.value.func
-      <keyword>const</keyword> result <keyword>=</keyword> func(H, count, H.stack[H.stackTop <keyword>-</keyword> count])
+      <keyword>const</keyword> result <keyword>=</keyword> func(H, count, H.stack.slice(H.stackTop <keyword>-</keyword> count))
       <keyword>const</keyword> top <keyword>=</keyword> H.stackTop <keyword>-</keyword> count <keyword>-</keyword> <constant>1</constant>
       H.stackTop <keyword>=</keyword> top
       hymnPush(H, result)
@@ -3575,6 +3600,8 @@ function disassembleInstruction(debug, code, index) {
       <keyword>return</keyword> debugInstruction(debug, <string>'OP_STACK'</string>, index)
     <keyword>case</keyword> OP_REFERENCE:
       <keyword>return</keyword> debugInstruction(debug, <string>'OP_REFERENCE'</string>, index)
+    <keyword>case</keyword> OP_FORMAT:
+      <keyword>return</keyword> debugInstruction(debug, <string>'OP_FORMAT'</string>, index)
     <keyword>default</keyword>:
       <keyword>return</keyword> (debug[<constant>0</constant>] <keyword>+</keyword><keyword>=</keyword> <string>'UNKNOWN_OPCODE '</string> <keyword>+</keyword> instruction)
   }
@@ -4100,7 +4127,7 @@ async function hymnRun(H) {
         <keyword>if</keyword> (isBool(value)) {
           value.value <keyword>=</keyword> <keyword>!</keyword>value.value
         } <keyword>else</keyword> {
-          frame <keyword>=</keyword> hymnThrowError(H, `not <string>'!'</string> can't use ${valueType(value.is)} (expected boolean)`)
+          frame <keyword>=</keyword> hymnThrowError(H, `<string>'not'</string> can't use ${valueType(value.is)} (expected boolean)`)
           <keyword>if</keyword> (frame <keyword>==</keyword><keyword>=</keyword> null) return
           <keyword>else</keyword> break
         }
@@ -4778,6 +4805,11 @@ async function hymnRun(H) {
         hymnPush(H, newInt(<constant>0</constant>))
         break
       }
+      <keyword>case</keyword> OP_FORMAT: {
+        <keyword>const</keyword> value <keyword>=</keyword> hymnPop(H)
+        hymnPush(H, newString(valueToFormat(value)))
+        break
+      }
       <keyword>case</keyword> OP_THROW: {
         frame <keyword>=</keyword> hymnException(H)
         <keyword>if</keyword> (frame <keyword>==</keyword><keyword>=</keyword> null) return
@@ -4807,13 +4839,20 @@ async function hymnRun(H) {
   }
 }
 
+function addTable(H, name, table) {
+  tablePut(H.globals, name, newTableValue(table))
+}
+
 function addFunction(H, name, func) {
-  <keyword>const</keyword> value <keyword>=</keyword> newNativeFunction(name, func)
-  tablePut(H.globals, name, newFuncNativeValue(value))
+  tablePut(H.globals, name, newNativeFuncValue(name, func))
 }
 
 function addPointer(H, name, pointer) {
   tablePut(H.globals, name, newPointerValue(pointer))
+}
+
+function addFunctionToTable(table, name, func) {
+  tablePut(table, name, newNativeFuncValue(name, func))
 }
 
 async function debugScript(H, script, source) {
@@ -4891,25 +4930,558 @@ function newVM() {
   <keyword>return</keyword> H
 }
 
+class Format {
+  constructor(source) {
+    this.source <keyword>=</keyword> source
+    this.size <keyword>=</keyword> source.length
+    this.dest <keyword>=</keyword> new Array()
+    this.s <keyword>=</keyword> <constant>0</constant>
+    this.deep <keyword>=</keyword> <constant>0</constant>
+    this.compact <keyword>=</keyword> new Array()
+    this.nest <keyword>=</keyword> new Array()
+  }
+}
+
+function isImportant(f, len) {
+  let start <keyword>=</keyword> len <keyword>-</keyword> <constant>2</constant>
+  <keyword>while</keyword> (start <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>) {
+    <keyword>if</keyword> (<keyword>!</keyword>isIdent(f.dest[start])) break
+    start--
+  }
+  <keyword>const</keyword> word <keyword>=</keyword> f.dest.slice(start <keyword>+</keyword> <constant>1</constant>, len).join(<string>''</string>)
+  <keyword>switch</keyword> (word) {
+    <keyword>case</keyword> <string>'in'</string>:
+    <keyword>case</keyword> <string>'if'</string>:
+    <keyword>case</keyword> <string>'for'</string>:
+    <keyword>case</keyword> <string>'not'</string>:
+    <keyword>case</keyword> <string>'else'</string>:
+    <keyword>case</keyword> <string>'elif'</string>:
+    <keyword>case</keyword> <string>'echo'</string>:
+    <keyword>case</keyword> <string>'while'</string>:
+    <keyword>case</keyword> <string>'return'</string>:
+      <keyword>return</keyword> true
+    <keyword>default</keyword>:
+      <keyword>return</keyword> false
+  }
+}
+
+function space(f, t) {
+  <keyword>switch</keyword> (t) {
+    <keyword>case</keyword> <string>' '</string>:
+    <keyword>case</keyword> <string>'\n'</string>:
+    <keyword>case</keyword> <string>'\t'</string>:
+    <keyword>case</keyword> <string>'\r'</string>:
+      return
+  }
+  <keyword>const</keyword> len <keyword>=</keyword> f.dest.length
+  <keyword>if</keyword> (len <keyword>==</keyword><keyword>=</keyword> <constant>0</constant>) return
+  <keyword>const</keyword> p <keyword>=</keyword> f.dest[len <keyword>-</keyword> <constant>1</constant>]
+  <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+    indent(f)
+    return
+  } <keyword>else</keyword> <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>':'</string>) {
+    <keyword>if</keyword> (f.nest.length <keyword>==</keyword><keyword>=</keyword> <constant>0</constant>) {
+      f.dest.push(<string>' '</string>)
+    } <keyword>else</keyword> {
+      <keyword>const</keyword> nest <keyword>=</keyword> f.nest[f.nest.length <keyword>-</keyword> <constant>1</constant>]
+      <keyword>if</keyword> (nest <keyword>!=</keyword><keyword>=</keyword> <string>'['</string>) {
+        f.dest.push(<string>' '</string>)
+      }
+    }
+    return
+  } <keyword>else</keyword> <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>'~'</string>) {
+    return
+  }
+  <keyword>if</keyword> (isDigit(t) || isIdent(t)) {
+    <keyword>switch</keyword> (p) {
+      <keyword>case</keyword> <string>' '</string>:
+      <keyword>case</keyword> <string>'.'</string>:
+      <keyword>case</keyword> <string>'('</string>:
+      <keyword>case</keyword> <string>'['</string>:
+        return
+      <keyword>case</keyword> <string>'&gt;'</string>:
+        <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> <constant>2</constant> <keyword>&</keyword><keyword>&</keyword> f.dest[len <keyword>-</keyword> <constant>2</constant>] <keyword>==</keyword><keyword>=</keyword> <string>'-'</string>) return
+        break
+      <keyword>case</keyword> <string>'-'</string>:
+        <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> <constant>3</constant>) {
+          <keyword>const</keyword> b <keyword>=</keyword> f.dest[len <keyword>-</keyword> <constant>3</constant>]
+          <keyword>if</keyword> (b <keyword>==</keyword><keyword>=</keyword> <string>','</string> || b <keyword>==</keyword><keyword>=</keyword> <string>'{'</string>) return
+          <keyword>if</keyword> (isIdent(b) <keyword>&</keyword><keyword>&</keyword> isImportant(f, len <keyword>-</keyword> <constant>2</constant>)) return
+        }
+        <keyword>if</keyword> (len <keyword>&gt;</keyword><keyword>=</keyword> <constant>2</constant>) {
+          <keyword>const</keyword> b <keyword>=</keyword> f.dest[len <keyword>-</keyword> <constant>2</constant>]
+          <keyword>if</keyword> (b <keyword>!=</keyword><keyword>=</keyword> <string>')'</string> <keyword>&</keyword><keyword>&</keyword> b <keyword>!=</keyword><keyword>=</keyword> <string>' '</string>) return
+        }
+        break
+    }
+    f.dest.push(<string>' '</string>)
+    return
+  }
+  <keyword>switch</keyword> (t) {
+    <keyword>case</keyword> <string>'{'</string>:
+      <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>'('</string>) return
+      break
+    <keyword>case</keyword> <string>'('</string>:
+      <keyword>if</keyword> (isDigit(p)) return
+      <keyword>if</keyword> (isIdent(p)) {
+        <keyword>if</keyword> (isImportant(f, len)) break
+        return
+      }
+      <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>' '</string>:
+        <keyword>case</keyword> <string>'('</string>:
+        <keyword>case</keyword> <string>')'</string>:
+        <keyword>case</keyword> <string>'['</string>:
+        <keyword>case</keyword> <string>'}'</string>:
+        <keyword>case</keyword> <string>']'</string>:
+          return
+      }
+      break
+    <keyword>case</keyword> <string>'['</string>:
+      <keyword>if</keyword> (isIdent(p)) {
+        <keyword>if</keyword> (isImportant(f, len)) break
+        return
+      }
+      <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>'+'</string>:
+        <keyword>case</keyword> <string>'='</string>:
+        <keyword>case</keyword> <string>','</string>:
+        <keyword>case</keyword> <string>'{'</string>:
+          break
+        <keyword>default</keyword>:
+          return
+      }
+      break
+    <keyword>case</keyword> <string>'&lt;'</string>:
+      <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>'&lt;'</string>) return
+      break
+    <keyword>case</keyword> <string>'&gt;'</string>:
+      <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>'-'</string> || p <keyword>==</keyword><keyword>=</keyword> <string>'&gt;'</string>) return
+      break
+    <keyword>case</keyword> <string>'='</string>:
+      <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>'-'</string>:
+        <keyword>case</keyword> <string>'+'</string>:
+        <keyword>case</keyword> <string>'*'</string>:
+        <keyword>case</keyword> <string>'/'</string>:
+        <keyword>case</keyword> <string>'&lt;'</string>:
+        <keyword>case</keyword> <string>'&gt;'</string>:
+        <keyword>case</keyword> <string>'~'</string>:
+        <keyword>case</keyword> <string>'^'</string>:
+        <keyword>case</keyword> <string>'%'</string>:
+        <keyword>case</keyword> <string>'&'</string>:
+        <keyword>case</keyword> <string>'|'</string>:
+        <keyword>case</keyword> <string>'!'</string>:
+        <keyword>case</keyword> <string>'='</string>:
+          return
+      }
+      break
+    <keyword>case</keyword> <string>'-'</string>:
+      <keyword>if</keyword> (f.s <keyword>&lt;</keyword> f.size <keyword>&</keyword><keyword>&</keyword> f.source[f.s] <keyword>==</keyword><keyword>=</keyword> <string>'&gt;'</string>) return
+      <keyword>if</keyword> (p <keyword>==</keyword><keyword>=</keyword> <string>','</string> || p <keyword>==</keyword><keyword>=</keyword> <string>'{'</string> || p <keyword>==</keyword><keyword>=</keyword> <string>')'</string>) break
+      <keyword>if</keyword> (isIdent(p) || isDigit(p)) break
+      return
+    <keyword>case</keyword> <string>'&quot;'</string>:
+    <keyword>case</keyword> <string>&quot;'&quot;</string>:
+      <keyword>switch</keyword> (p) {
+        <keyword>case</keyword> <string>'('</string>:
+        <keyword>case</keyword> <string>'['</string>:
+          return
+      }
+      break
+    <keyword>case</keyword> <string>':'</string>:
+    <keyword>case</keyword> <string>','</string>:
+    <keyword>case</keyword> <string>'.'</string>:
+    <keyword>case</keyword> <string>')'</string>:
+    <keyword>case</keyword> <string>']'</string>:
+      return
+  }
+  f.dest.push(<string>' '</string>)
+}
+
+function skip(f) {
+  <keyword>if</keyword> (f.s <keyword>&gt;</keyword><keyword>=</keyword> f.size) return
+  let c <keyword>=</keyword> f.source[f.s]
+  <keyword>while</keyword> (c <keyword>==</keyword><keyword>=</keyword> <string>' '</string> || c <keyword>==</keyword><keyword>=</keyword> <string>'\t'</string> || c <keyword>==</keyword><keyword>=</keyword> <string>'\r'</string>) {
+    f.s++
+    <keyword>if</keyword> (f.s <keyword>&gt;</keyword><keyword>=</keyword> f.size) return
+    c <keyword>=</keyword> f.source[f.s]
+  }
+}
+
+function indent(f) {
+  <keyword>for</keyword> (let a <keyword>=</keyword> <constant>0</constant>; a <keyword>&lt;</keyword> f.deep; a++) {
+    f.dest.push(<string>' '</string>)
+    f.dest.push(<string>' '</string>)
+  }
+}
+
+function newline(f) {
+  f.dest.push(<string>'\n'</string>)
+  skip(f)
+  <keyword>if</keyword> (f.s <keyword>&gt;</keyword><keyword>=</keyword> f.size) return
+  <keyword>const</keyword> c <keyword>=</keyword> f.source[f.s]
+  <keyword>if</keyword> (c <keyword>==</keyword><keyword>=</keyword> <string>'}'</string> || c <keyword>==</keyword><keyword>=</keyword> <string>')'</string>) {
+    f.s++
+    <keyword>if</keyword> (f.deep <keyword>&gt;</keyword> <constant>0</constant>) f.deep--
+    indent(f)
+    f.dest.push(c)
+  }
+}
+
+function possibleNewline(f) {
+  <keyword>for</keyword> (let p <keyword>=</keyword> f.dest.length <keyword>-</keyword> <constant>1</constant>; p <keyword>&gt;</keyword><keyword>=</keyword> <constant>0</constant>; p--) {
+    <keyword>const</keyword> o <keyword>=</keyword> f.dest[p]
+    <keyword>if</keyword> (o <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+      return
+    } <keyword>else</keyword> <keyword>if</keyword> (o <keyword>==</keyword><keyword>=</keyword> <string>' '</string> || o <keyword>==</keyword><keyword>=</keyword> <string>'\t'</string> || o <keyword>==</keyword><keyword>=</keyword> <string>'\r'</string>) {
+      continue
+    } <keyword>else</keyword> {
+      newline(f)
+      return
+    }
+  }
+}
+
+function stringly(f, c) {
+  <keyword>const</keyword> source <keyword>=</keyword> f.source
+  <keyword>const</keyword> dest <keyword>=</keyword> f.dest
+  dest.push(c)
+  <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+    <keyword>const</keyword> n <keyword>=</keyword> source[f.s]
+    dest.push(n)
+    f.s++
+    <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\\'</string>) {
+      dest.push(source[f.s++])
+    } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> c) {
+      break
+    }
+  }
+  let a <keyword>=</keyword> f.s
+  let multiple <keyword>=</keyword> false
+  loop: <keyword>while</keyword> (a <keyword>&lt;</keyword> f.size) {
+    <keyword>const</keyword> n <keyword>=</keyword> source[a]
+    <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+      <keyword>for</keyword> (let d <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>; d <keyword>&lt;</keyword> f.size; d++) {
+        <keyword>const</keyword> m <keyword>=</keyword> source[d]
+        <keyword>if</keyword> (m <keyword>==</keyword><keyword>=</keyword> <string>'&quot;'</string> || m <keyword>==</keyword><keyword>=</keyword> <string>&quot;'&quot;</string>) {
+          <keyword>if</keyword> (<keyword>!</keyword>multiple) {
+            multiple <keyword>=</keyword> true
+            f.deep++
+          }
+          dest.push(<string>'\n'</string>)
+          indent(f)
+          dest.push(m)
+          f.s <keyword>=</keyword> d <keyword>+</keyword> <constant>1</constant>
+          <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+            <keyword>const</keyword> i <keyword>=</keyword> source[f.s]
+            dest.push(i)
+            f.s++
+            <keyword>if</keyword> (i <keyword>==</keyword><keyword>=</keyword> <string>'\\'</string>) {
+              dest.push(source[f.s++])
+            } <keyword>else</keyword> <keyword>if</keyword> (i <keyword>==</keyword><keyword>=</keyword> m) {
+              a <keyword>=</keyword> f.s
+              <keyword>continue</keyword> loop
+            }
+          }
+          <keyword>break</keyword> loop
+        }
+        <keyword>if</keyword> (m <keyword>!=</keyword><keyword>=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'\r'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'\n'</string>) <keyword>break</keyword> loop
+      }
+      <keyword>break</keyword> loop
+    }
+    <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'&quot;'</string> || n <keyword>==</keyword><keyword>=</keyword> <string>&quot;'&quot;</string>) {
+      space(f, n)
+      dest.push(n)
+      f.s <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>
+      <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+        <keyword>const</keyword> i <keyword>=</keyword> source[f.s]
+        dest.push(i)
+        f.s++
+        <keyword>if</keyword> (i <keyword>==</keyword><keyword>=</keyword> <string>'\\'</string>) {
+          dest.push(source[f.s++])
+        } <keyword>else</keyword> <keyword>if</keyword> (i <keyword>==</keyword><keyword>=</keyword> n) {
+          a <keyword>=</keyword> f.s
+          <keyword>continue</keyword> loop
+        }
+      }
+    }
+    <keyword>if</keyword> (n <keyword>!=</keyword><keyword>=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword><keyword>=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword><keyword>=</keyword> <string>'\r'</string>) break
+    a++
+  }
+  <keyword>if</keyword> (multiple) {
+    <keyword>if</keyword> (f.deep <keyword>&gt;</keyword> <constant>0</constant>) f.deep--
+    possibleNewline(f)
+  }
+}
+
+function format(source) {
+  <keyword>const</keyword> f <keyword>=</keyword> new Format(source)
+  <keyword>const</keyword> dest <keyword>=</keyword> f.dest
+  <keyword>const</keyword> compact <keyword>=</keyword> f.compact
+  <keyword>const</keyword> nest <keyword>=</keyword> f.nest
+  skip(f)
+  <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+    <keyword>const</keyword> c <keyword>=</keyword> source[f.s++]
+    space(f, c)
+    <keyword>if</keyword> (isDigit(c)) {
+      dest.push(c)
+      <keyword>if</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+        <keyword>if</keyword> (c <keyword>==</keyword><keyword>=</keyword> <string>'0'</string>) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[f.s]
+          <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'x'</string>) {
+            dest.push(n)
+            f.s++
+            <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+              <keyword>const</keyword> m <keyword>=</keyword> source[f.s]
+              <keyword>if</keyword> (<keyword>!</keyword>(m <keyword>&gt;</keyword><keyword>=</keyword> <string>'0'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>&lt;</keyword><keyword>=</keyword> <string>'9'</string>) <keyword>&</keyword><keyword>&</keyword> <keyword>!</keyword>(m <keyword>&gt;</keyword><keyword>=</keyword> <string>'a'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>&lt;</keyword><keyword>=</keyword> <string>'f'</string>)) break
+              dest.push(m)
+              f.s++
+            }
+            continue
+          } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'b'</string>) {
+            dest.push(n)
+            f.s++
+            <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+              <keyword>const</keyword> m <keyword>=</keyword> source[f.s]
+              <keyword>if</keyword> (m <keyword>!=</keyword><keyword>=</keyword> <string>'0'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'1'</string>) break
+              dest.push(m)
+              f.s++
+            }
+            continue
+          }
+        }
+        <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[f.s]
+          <keyword>if</keyword> (<keyword>!</keyword>isDigit(n)) {
+            <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'.'</string>) {
+              dest.push(n)
+              f.s++
+              <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+                <keyword>const</keyword> d <keyword>=</keyword> source[f.s]
+                <keyword>if</keyword> (<keyword>!</keyword>isDigit(d)) {
+                  <keyword>if</keyword> (d <keyword>==</keyword><keyword>=</keyword> <string>'e'</string> || d <keyword>==</keyword><keyword>=</keyword> <string>'E'</string>) {
+                    dest.push(d)
+                    f.s++
+                    <keyword>if</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+                      <keyword>const</keyword> m <keyword>=</keyword> source[f.s]
+                      <keyword>if</keyword> (m <keyword>==</keyword><keyword>=</keyword> <string>'+'</string> || m <keyword>==</keyword><keyword>=</keyword> <string>'-'</string>) {
+                        dest.push(m)
+                        f.s++
+                      }
+                      <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+                        <keyword>const</keyword> e <keyword>=</keyword> source[f.s]
+                        <keyword>if</keyword> (<keyword>!</keyword>isDigit(e)) break
+                        dest.push(e)
+                        f.s++
+                      }
+                    }
+                    break
+                  }
+                  break
+                }
+                dest.push(d)
+                f.s++
+              }
+              break
+            } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'e'</string> || n <keyword>==</keyword><keyword>=</keyword> <string>'E'</string>) {
+              dest.push(n)
+              f.s++
+              <keyword>if</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+                <keyword>const</keyword> m <keyword>=</keyword> source[f.s]
+                <keyword>if</keyword> (m <keyword>==</keyword><keyword>=</keyword> <string>'+'</string> || m <keyword>==</keyword><keyword>=</keyword> <string>'-'</string>) {
+                  dest.push(m)
+                  f.s++
+                }
+                <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+                  <keyword>const</keyword> e <keyword>=</keyword> source[f.s]
+                  <keyword>if</keyword> (<keyword>!</keyword>isDigit(e)) break
+                  dest.push(e)
+                  f.s++
+                }
+              }
+              break
+            } <keyword>else</keyword> {
+              break
+            }
+          }
+          dest.push(n)
+          f.s++
+        }
+      }
+      continue
+    } <keyword>else</keyword> <keyword>if</keyword> (isIdent(c)) {
+      dest.push(c)
+      <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+        <keyword>const</keyword> n <keyword>=</keyword> source[f.s]
+        <keyword>if</keyword> (isIdent(n)) {
+          dest.push(n)
+          f.s++
+        } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'-'</string> <keyword>&</keyword><keyword>&</keyword> f.s <keyword>+</keyword> <constant>1</constant> <keyword>&lt;</keyword> f.size) {
+          <keyword>const</keyword> m <keyword>=</keyword> source[f.s <keyword>+</keyword> <constant>1</constant>]
+          <keyword>if</keyword> (isIdent(m)) {
+            dest.push(<string>'-'</string>)
+            dest.push(m)
+            f.s <keyword>+</keyword><keyword>=</keyword> <constant>2</constant>
+          } <keyword>else</keyword> {
+            break
+          }
+        } <keyword>else</keyword> {
+          break
+        }
+      }
+      continue
+    }
+    <keyword>switch</keyword> (c) {
+      <keyword>case</keyword> <string>'('</string>: {
+        dest.push(c)
+        nest.push(c)
+        <keyword>for</keyword> (let a <keyword>=</keyword> f.s; a <keyword>&lt;</keyword> f.size; a++) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[a]
+          <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+            f.deep++
+            newline(f)
+            compact.push(<constant>false</constant>)
+            break
+          } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>')'</string>) {
+            compact.push(<constant>true</constant>)
+            break
+          }
+        }
+        break
+      }
+      <keyword>case</keyword> <string>'{'</string>: {
+        dest.push(c)
+        nest.push(c)
+        let any <keyword>=</keyword> false
+        <keyword>for</keyword> (let a <keyword>=</keyword> f.s; a <keyword>&lt;</keyword> f.size; a++) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[a]
+          <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+            let ok <keyword>=</keyword> true
+            <keyword>if</keyword> (<keyword>!</keyword>any) {
+              <keyword>for</keyword> (let d <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>; d <keyword>&lt;</keyword> f.size; d++) {
+                <keyword>const</keyword> m <keyword>=</keyword> source[d]
+                <keyword>if</keyword> (m <keyword>==</keyword><keyword>=</keyword> <string>'}'</string>) {
+                  ok <keyword>=</keyword> false
+                  dest.push(<string>'\n'</string>)
+                  indent(f)
+                  dest.push(<string>'}'</string>)
+                  f.s <keyword>=</keyword> d <keyword>+</keyword> <constant>1</constant>
+                  break
+                } <keyword>else</keyword> <keyword>if</keyword> (m <keyword>!=</keyword><keyword>=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'\r'</string> <keyword>&</keyword><keyword>&</keyword> m <keyword>!=</keyword><keyword>=</keyword> <string>'\n'</string>) {
+                  break
+                }
+              }
+            }
+            <keyword>if</keyword> (ok) {
+              f.deep++
+              newline(f)
+              compact.push(<constant>false</constant>)
+            }
+            break
+          } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'}'</string>) {
+            <keyword>if</keyword> (any) {
+              compact.push(<constant>true</constant>)
+            } <keyword>else</keyword> {
+              dest.push(<string>'}'</string>)
+              f.s <keyword>=</keyword> a <keyword>+</keyword> <constant>1</constant>
+            }
+            break
+          } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>!=</keyword><keyword>=</keyword> <string>' '</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword><keyword>=</keyword> <string>'\t'</string> <keyword>&</keyword><keyword>&</keyword> n <keyword>!=</keyword><keyword>=</keyword> <string>'\r'</string>) {
+            any <keyword>=</keyword> true
+          }
+        }
+        break
+      }
+      <keyword>case</keyword> <string>'['</string>:
+        dest.push(c)
+        nest.push(c)
+        break
+      <keyword>case</keyword> <string>')'</string>:
+      <keyword>case</keyword> <string>'}'</string>: {
+        nest.pop()
+        <keyword>if</keyword> (<keyword>!</keyword>compact.pop()) {
+          <keyword>if</keyword> (f.deep <keyword>&gt;</keyword> <constant>0</constant>) f.deep--
+          possibleNewline(f)
+        }
+        dest.push(c)
+        break
+      }
+      <keyword>case</keyword> <string>']'</string>:
+        nest.pop()
+        dest.push(c)
+        break
+      <keyword>case</keyword> <string>&quot;'&quot;</string>:
+      <keyword>case</keyword> <string>'&quot;'</string>:
+        stringly(f, c)
+        break
+      <keyword>case</keyword> <string>'#'</string>: {
+        dest.push(c)
+        <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[f.s]
+          dest.push(n)
+          <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) break
+          f.s++
+        }
+        break
+      }
+      <keyword>case</keyword> <string>'\n'</string>: {
+        let twice <keyword>=</keyword> false
+        <keyword>while</keyword> (f.s <keyword>&lt;</keyword> f.size) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[f.s]
+          <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+            f.s++
+            twice <keyword>=</keyword> true
+          } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>' '</string> || n <keyword>==</keyword><keyword>=</keyword> <string>'\t'</string> || n <keyword>==</keyword><keyword>=</keyword> <string>'\r'</string>) {
+            f.s++
+          } <keyword>else</keyword> {
+            break
+          }
+        }
+        possibleNewline(f)
+        <keyword>if</keyword> (twice) {
+          newline(f)
+        }
+        break
+      }
+      <keyword>case</keyword> <string>' '</string>:
+      <keyword>case</keyword> <string>'\t'</string>:
+      <keyword>case</keyword> <string>'\r'</string>:
+        break
+      <keyword>default</keyword>:
+        dest.push(c)
+        break
+    }
+  }
+  <keyword>return</keyword> dest.join(<string>''</string>)
+}
+
 <keyword>if</keyword> (node) {
   module.exports <keyword>=</keyword> {
     version: HYMN_VERSION,
+    HymnTable: HymnTable,
     isFloat: isFloat,
+    isString: isString,
     isFuncNative: isFuncNative,
     isPointer: isPointer,
     newNone: newNone,
+    newBool: newBool,
     newFloat: newFloat,
-    newFuncNativeValue: newFuncNativeValue,
+    newString: newString,
+    newArrayValue: newArrayValue,
+    newNativeFuncValue: newNativeFuncValue,
     newPointerValue: newPointerValue,
     newFunction: newFunction,
-    newNativeFunction: newNativeFunction,
+    addTable: addTable,
     addFunction: addFunction,
     addPointer: addPointer,
+    addFunctionToTable: addFunctionToTable,
     interpretScript: interpretScript,
     interpret: interpret,
-    direct: direct,
-    newVM: newVM,
     debug: debugScript,
+    direct: direct,
+    format: format,
+    newVM: newVM,
   }
 }</code></pre></div>
       </section>

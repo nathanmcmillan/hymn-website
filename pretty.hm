@@ -1,0 +1,10 @@
+for file in path.walk("code") {
+  if not text.ends(file, ".hm") { continue }
+  echo "File: " + file
+  set read = io.read(file)
+  set format = FORMAT(read)
+  if read != format {
+    echo "Not formatted!"
+    io.write(file, format)
+  }
+}

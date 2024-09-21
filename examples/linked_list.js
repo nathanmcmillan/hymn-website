@@ -1,6 +1,4 @@
-examples.set(
-  'new',
-  `func new-node(value) {
+examples.set('new', `func new-node(value) {
   return { value: value, next: none }
 }
 
@@ -17,5 +15,4 @@ set list = new-node("hello")
 node-add(list, "world")
 
 echo list
-`
-)
+`)

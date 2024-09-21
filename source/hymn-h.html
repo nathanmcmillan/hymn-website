@@ -46,7 +46,7 @@
 <constant>#include</constant> <string>&lt;sys/types.h&gt;</string>
 <constant>#include</constant> <string>&lt;time.h&gt;</string>
 
-<constant>#define</constant> HYMN_VERSION <string>&quot;0.10.1&quot;</string>
+<constant>#define</constant> HYMN_VERSION <string>&quot;0.11.0&quot;</string>
 
 <comment>// #define HYMN_NO_REPL</comment>
 <comment>// #define HYMN_NO_DYNAMIC_LIBS</comment>
@@ -55,7 +55,9 @@
 
 <constant>#ifdef</constant> _MSC_VER
 <constant>#include</constant> <string>&lt;Windows.h&gt;</string>
+<constant>#include</constant> <string>&lt;corecrt.h&gt;</string>
 <constant>#include</constant> <string>&lt;direct.h&gt;</string>
+<constant>#include</constant> <string>&lt;stdio.h&gt;</string>
 <constant>#define</constant> getcwd _getcwd
 <constant>#define</constant> PATH_MAX FILENAME_MAX
 <constant>#define</constant> PATH_SEP <string>'\\'</string>
@@ -133,6 +135,8 @@ export <constant>void</constant> <keyword>*</keyword>hymn_realloc(<constant>void
 export <constant>void</constant> <keyword>*</keyword>hymn_malloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
 export <constant>void</constant> <keyword>*</keyword>hymn_calloc_<constant>int</constant>(<constant>int</constant> count, <constant>size_t</constant> size);
 export <constant>void</constant> <keyword>*</keyword>hymn_realloc_<constant>int</constant>(<constant>void</constant> <keyword>*</keyword>mem, <constant>int</constant> count, <constant>size_t</constant> size);
+
+export FILE <keyword>*</keyword>hymn_open_file(<keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>mode);
 
 <keyword>typedef</keyword> <keyword>struct</keyword> HymnValue HymnValue;
 <keyword>typedef</keyword> <keyword>struct</keyword> HymnObjectString HymnObjectString;
@@ -412,6 +416,8 @@ export <constant>void</constant> hymn_add_dlib(Hymn <keyword>*</keyword>H, <cons
 export <constant>void</constant> hymn_close_dlib(<constant>void</constant> <keyword>*</keyword>library);
 export HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>hymn, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>path, <keyword>const</keyword> <constant>char</constant> <keyword>*</keyword>func);
 <constant>#endif</constant>
+
+export <constant>char</constant> <keyword>*</keyword>hymn_format(HymnString <keyword>*</keyword>source);
 
 <constant>#endif</constant></code></pre></div>
       </section>

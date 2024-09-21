@@ -5,7 +5,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 func remove(file) {
-  if !io.exists(file) { return }
+  if not io.exists(file) { return }
   io.remove(file)
 }
 

@@ -74,7 +74,7 @@ for file in path.list('source') {
 }
 
 func recursive-remove(file) {
-  if !io.exists(file) { return }
+  if not io.exists(file) { return }
   if (io.stats(file).directory) {
     for child in path.list(file) {
       recursive-remove(child)
