@@ -1,6 +1,6 @@
 >>> func foo(x) {
 >>>   return x
 >>> }
->>> echo _opcodes(foo)
+>>> echo OPCODES(foo)
 0000    1 OP_GET_LOCAL: [1]
 0002    | OP_RETURN

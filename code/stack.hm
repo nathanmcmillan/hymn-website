@@ -1,6 +1,6 @@
 >>> {
 >>>   set x = 1
->>>   echo _stack()
+>>>   echo STACK()
 >>> }
 [function: script]
 [integer: 1]

@@ -1,4 +1,4 @@
 >>> set x = {}
 >>> set y = x
->>> echo _reference(x)
+>>> echo REFERENCE(x)
 3

@@ -1,7 +1,7 @@
 >>> func foo(x) {
 >>>   return x
 >>> }
->>> echo _source(foo)
+>>> echo SOURCE(foo)
 func foo(x) {
   return x
 }

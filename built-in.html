@@ -88,20 +88,24 @@
             <td>Returns the value type as a string</td>
           </tr>
           <tr>
-            <td><a href="#source">_source(value)</a></td>
+            <td><a href="#source">SOURCE(value)</a></td>
             <td>Returns a function's source code</td>
           </tr>
           <tr>
-            <td><a href="#opcodes">_opcodes(value)</a></td>
+            <td><a href="#opcodes">OPCODES(value)</a></td>
             <td>Returns a function's instruction codes</td>
           </tr>
           <tr>
-            <td><a href="#stack">_stack</a></td>
+            <td><a href="#stack">STACK</a></td>
             <td>Returns the current stack</td>
           </tr>
           <tr>
-            <td><a href="#reference">_reference(value)</a></td>
+            <td><a href="#reference">REFERENCE(value)</a></td>
             <td>Returns a variable's reference counts</td>
+          </tr>
+          <tr>
+            <td><a href="#format">FORMAT(string)</a></td>
+            <td>Formats a string of source code</td>
           </tr>
         </table>
         <h4><a name="clear">clear(object)</a></h4>
@@ -208,37 +212,42 @@ integer
 float
 <keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> <constant>type</constant>(<string>&quot;256&quot;</string>)
 string</code></pre></div>
-        <h4><a name="source">_source(value)</a></h4>
+        <h4><a name="source">SOURCE(value)</a></h4>
         <p>Returns a function's source code.</p>
         <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>func</keyword> <entity>foo</entity>(x) {
 <keyword>&gt;&gt;&gt;</keyword>   <keyword>return</keyword> x
 <keyword>&gt;&gt;&gt;</keyword> }
-<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> _source(foo)
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> SOURCE(foo)
 <keyword>func</keyword> <entity>foo</entity>(x) {
   <keyword>return</keyword> x
 }</code></pre></div>
-        <h4><a name="opcodes">_opcodes(value)</a></h4>
+        <h4><a name="opcodes">OPCODES(value)</a></h4>
         <p>Returns a function's instruction codes.</p>
         <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>func</keyword> <entity>foo</entity>(x) {
 <keyword>&gt;&gt;&gt;</keyword>   <keyword>return</keyword> x
 <keyword>&gt;&gt;&gt;</keyword> }
-<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> _opcodes(foo)
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> OPCODES(foo)
 <constant>0000</constant>    <constant>1</constant> OP_GET_LOCAL: [<constant>1</constant>]
 <constant>0002</constant>    | OP_RETURN</code></pre></div>
-        <h4><a name="stack">_stack</a></h4>
+        <h4><a name="stack">STACK</a></h4>
         <p>Returns the current stack.</p>
         <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> {
 <keyword>&gt;&gt;&gt;</keyword>   <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> <constant>1</constant>
-<keyword>&gt;&gt;&gt;</keyword>   <constant>echo</constant> _stack()
+<keyword>&gt;&gt;&gt;</keyword>   <constant>echo</constant> STACK()
 <keyword>&gt;&gt;&gt;</keyword> }
 [function: script]
 [integer: <constant>1</constant>]</code></pre></div>
-        <h4><a name="reference">_reference(value)</a></h4>
+        <h4><a name="reference">REFERENCE(value)</a></h4>
         <p>Returns a function's reference count.</p>
         <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>x</entity> <keyword>=</keyword> {}
 <keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>y</entity> <keyword>=</keyword> x
-<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> _reference(x)
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> REFERENCE(x)
 <constant>3</constant></code></pre></div>
+        <h4><a name="format">FORMAT(value)</a></h4>
+        <p>Formats a string of source code.</p>
+        <div class="code"><pre><code><keyword>&gt;&gt;&gt;</keyword> <keyword>set</keyword> <entity>source</entity> <keyword>=</keyword> <string>&quot;2+4&quot;</string>
+<keyword>&gt;&gt;&gt;</keyword> <constant>echo</constant> FORMAT(x)
+<constant>2</constant> <keyword>+</keyword> <constant>4</constant></code></pre></div>
         <hr class="padding" />
         <p>
           <a class="link" href="/syntax">Back to Syntax</a>
