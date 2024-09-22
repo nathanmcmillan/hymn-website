@@ -2665,6 +2665,7 @@ function popStackLoop(C) {
 function breakStatement(C) {
   <keyword>if</keyword> (C.loop <keyword>==</keyword><keyword>=</keyword> null) {
     compileError(C, C.previous, <string>'break statement outside of loop'</string>)
+    return
   }
   popStackLoop(C)
   <keyword>const</keyword> jumpNext <keyword>=</keyword> C.jump
@@ -2678,6 +2679,7 @@ function breakStatement(C) {
 function continueStatement(C) {
   <keyword>if</keyword> (C.loop <keyword>==</keyword><keyword>=</keyword> null) {
     compileError(C, C.previous, <string>'continue statement outside of loop'</string>)
+    return
   }
   popStackLoop(C)
   <keyword>if</keyword> (C.loop.isFor) {
@@ -5121,7 +5123,7 @@ function newline(f) {
   skip(f)
   <keyword>if</keyword> (f.s <keyword>&gt;</keyword><keyword>=</keyword> f.size) return
   <keyword>const</keyword> c <keyword>=</keyword> f.source[f.s]
-  <keyword>if</keyword> (c <keyword>==</keyword><keyword>=</keyword> <string>'}'</string> || c <keyword>==</keyword><keyword>=</keyword> <string>')'</string>) {
+  <keyword>if</keyword> (c <keyword>==</keyword><keyword>=</keyword> <string>')'</string> || c <keyword>==</keyword><keyword>=</keyword> <string>']'</string> || c <keyword>==</keyword><keyword>=</keyword> <string>'}'</string>) {
     f.s++
     <keyword>if</keyword> (f.deep <keyword>&gt;</keyword> <constant>0</constant>) f.deep--
     indent(f)
@@ -5350,6 +5352,23 @@ function format(source) {
         }
         break
       }
+      <keyword>case</keyword> <string>'['</string>: {
+        dest.push(c)
+        nest.push(c)
+        <keyword>for</keyword> (let a <keyword>=</keyword> f.s; a <keyword>&lt;</keyword> f.size; a++) {
+          <keyword>const</keyword> n <keyword>=</keyword> source[a]
+          <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>'\n'</string>) {
+            f.deep++
+            newline(f)
+            compact.push(<constant>false</constant>)
+            break
+          } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword><keyword>=</keyword> <string>']'</string>) {
+            compact.push(<constant>true</constant>)
+            break
+          }
+        }
+        break
+      }
       <keyword>case</keyword> <string>'{'</string>: {
         dest.push(c)
         nest.push(c)
@@ -5393,11 +5412,8 @@ function format(source) {
         }
         break
       }
-      <keyword>case</keyword> <string>'['</string>:
-        dest.push(c)
-        nest.push(c)
-        break
       <keyword>case</keyword> <string>')'</string>:
+      <keyword>case</keyword> <string>']'</string>:
       <keyword>case</keyword> <string>'}'</string>: {
         nest.pop()
         <keyword>if</keyword> (<keyword>!</keyword>compact.pop()) {
@@ -5407,10 +5423,6 @@ function format(source) {
         dest.push(c)
         break
       }
-      <keyword>case</keyword> <string>']'</string>:
-        nest.pop()
-        dest.push(c)
-        break
       <keyword>case</keyword> <string>&quot;'&quot;</string>:
       <keyword>case</keyword> <string>'&quot;'</string>:
         stringly(f, c)

@@ -4648,6 +4648,7 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
 <keyword>static</keyword> <constant>void</constant> <keyword>break</keyword>_statement(Compiler <keyword>*</keyword>C) {
     <keyword>if</keyword> (C-&gt;loop <keyword>==</keyword> <constant>NULL</constant>) {
         compile_error(C, <keyword>&</keyword>C-&gt;previous, <string>&quot;break statement outside of loop&quot;</string>);
+        <keyword>return</keyword>;
     }
     pop_stack_loop(C);
     JumpList <keyword>*</keyword>jump_next <keyword>=</keyword> C-&gt;jump;
@@ -4661,6 +4662,7 @@ HymnString <keyword>*</keyword>hymn_value_to_string(HymnValue value) {
 <keyword>static</keyword> <constant>void</constant> <keyword>continue</keyword>_statement(Compiler <keyword>*</keyword>C) {
     <keyword>if</keyword> (C-&gt;loop <keyword>==</keyword> <constant>NULL</constant>) {
         compile_error(C, <keyword>&</keyword>C-&gt;previous, <string>&quot;continue statement outside of loop&quot;</string>);
+        <keyword>return</keyword>;
     }
     pop_stack_loop(C);
     <keyword>if</keyword> (C-&gt;loop-&gt;is_<keyword>for</keyword>) {
@@ -8421,15 +8423,25 @@ HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>H, <keywor
         }
         start--;
     }
-    <keyword>return</keyword> important_word(F, start, <string>&quot;in&quot;</string>) ||
-           important_word(F, start, <string>&quot;if&quot;</string>) ||
-           important_word(F, start, <string>&quot;for&quot;</string>) ||
-           important_word(F, start, <string>&quot;not&quot;</string>) ||
-           important_word(F, start, <string>&quot;else&quot;</string>) ||
-           important_word(F, start, <string>&quot;elif&quot;</string>) ||
-           important_word(F, start, <string>&quot;echo&quot;</string>) ||
-           important_word(F, start, <string>&quot;while&quot;</string>) ||
-           important_word(F, start, <string>&quot;return&quot;</string>);
+    <keyword>const</keyword> <constant>size_t</constant> size <keyword>=</keyword> len <keyword>-</keyword> start;
+    <keyword>switch</keyword> (size) {
+    <keyword>case</keyword> <constant>2</constant>:
+        <keyword>return</keyword> important_word(F, start, <string>&quot;in&quot;</string>) ||
+               important_word(F, start, <string>&quot;if&quot;</string>);
+    <keyword>case</keyword> <constant>3</constant>:
+        <keyword>return</keyword> important_word(F, start, <string>&quot;for&quot;</string>) ||
+               important_word(F, start, <string>&quot;not&quot;</string>);
+    <keyword>case</keyword> <constant>4</constant>:
+        <keyword>return</keyword> important_word(F, start, <string>&quot;else&quot;</string>) ||
+               important_word(F, start, <string>&quot;elif&quot;</string>) ||
+               important_word(F, start, <string>&quot;echo&quot;</string>);
+    <keyword>case</keyword> <constant>5</constant>:
+        <keyword>return</keyword> important_word(F, start, <string>&quot;while&quot;</string>);
+    <keyword>case</keyword> <constant>6</constant>:
+        <keyword>return</keyword> important_word(F, start, <string>&quot;return&quot;</string>);
+    <keyword>default</keyword>:
+        <keyword>return</keyword> <constant>false</constant>;
+    }
 }
 
 <keyword>static</keyword> <constant>void</constant> append(Format <keyword>*</keyword>F, <constant>char</constant> c) {
@@ -8496,8 +8508,7 @@ HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>H, <keywor
                 <keyword>const</keyword> <constant>char</constant> b <keyword>=</keyword> F-&gt;dest[len - <constant>3</constant>];
                 <keyword>if</keyword> (b <keyword>==</keyword> <string>','</string> || b <keyword>==</keyword> <string>'{'</string>) {
                     <keyword>return</keyword>;
-                }
-                <keyword>if</keyword> (is_ident(b) <keyword>&</keyword><keyword>&</keyword> is_important(F, len <keyword>-</keyword> <constant>2</constant>)) {
+                } <keyword>else</keyword> <keyword>if</keyword> (is_ident(b) <keyword>&</keyword><keyword>&</keyword> is_important(F, len <keyword>-</keyword> <constant>2</constant>)) {
                     <keyword>return</keyword>;
                 }
             }
@@ -8679,7 +8690,7 @@ HymnString <keyword>*</keyword>hymn_use_dlib(Hymn <keyword>*</keyword>H, <keywor
         <keyword>return</keyword>;
     }
     <constant>char</constant> c <keyword>=</keyword> F-&gt;source[F-&gt;s];
-    <keyword>if</keyword> (c <keyword>==</keyword> <string>'}'</string> || c <keyword>==</keyword> <string>')'</string>) {
+    <keyword>if</keyword> (c <keyword>==</keyword> <string>')'</string> || c <keyword>==</keyword> <string>']'</string> || c <keyword>==</keyword> <string>'}'</string>) {
         F-&gt;s++;
         <keyword>if</keyword> (F-&gt;deep &gt; <constant>0</constant>) {
             F-&gt;deep--;
@@ -8929,6 +8940,23 @@ end:
             }
             <keyword>break</keyword>;
         }
+        <keyword>case</keyword> <string>'['</string>: {
+            append(<keyword>&</keyword>F, c);
+            nest(<keyword>&</keyword>F, c);
+            <keyword>for</keyword> (<constant>size_t</constant> a <keyword>=</keyword> F.s; a <keyword>&lt;</keyword> F.size; a++) {
+                <keyword>const</keyword> <constant>char</constant> n <keyword>=</keyword> F.source[a];
+                <keyword>if</keyword> (n <keyword>==</keyword> <string>'\n'</string>) {
+                    F.deep++;
+                    newline(<keyword>&</keyword>F);
+                    compact(<keyword>&</keyword>F, <constant>false</constant>);
+                    <keyword>break</keyword>;
+                } <keyword>else</keyword> <keyword>if</keyword> (n <keyword>==</keyword> <string>']'</string>) {
+                    compact(<keyword>&</keyword>F, <constant>true</constant>);
+                    <keyword>break</keyword>;
+                }
+            }
+            <keyword>break</keyword>;
+        }
         <keyword>case</keyword> <string>'{'</string>: {
             append(<keyword>&</keyword>F, c);
             nest(<keyword>&</keyword>F, c);
@@ -8972,11 +9000,8 @@ end:
             }
             <keyword>break</keyword>;
         }
-        <keyword>case</keyword> <string>'['</string>:
-            append(<keyword>&</keyword>F, c);
-            nest(<keyword>&</keyword>F, c);
-            <keyword>break</keyword>;
         <keyword>case</keyword> <string>')'</string>:
+        <keyword>case</keyword> <string>']'</string>:
         <keyword>case</keyword> <string>'}'</string>: {
             nest_pop(<keyword>&</keyword>F);
             <keyword>if</keyword> (<keyword>!</keyword>is_compact(<keyword>&</keyword>F)) {
@@ -8988,10 +9013,6 @@ end:
             append(<keyword>&</keyword>F, c);
             <keyword>break</keyword>;
         }
-        <keyword>case</keyword> <string>']'</string>:
-            nest_pop(<keyword>&</keyword>F);
-            append(<keyword>&</keyword>F, c);
-            <keyword>break</keyword>;
         <keyword>case</keyword> <string>'\'</string>':
         <keyword>case</keyword> <string>'&quot;'</string>:
             stringly(<keyword>&</keyword>F, c);
